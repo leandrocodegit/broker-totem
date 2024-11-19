@@ -51,10 +51,10 @@ public class ComandoController {
         }
     }
 
-    @GetMapping(value = "/{mac}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizar(@PathVariable String mac) {
         return  Flux.concat(
-                Mono.just(""),
+                Mono.just("ok"),
                 comandoService.enviardComandoSincronizar(mac, true)
                         .timeout(Duration.ofSeconds(10))
                         .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
