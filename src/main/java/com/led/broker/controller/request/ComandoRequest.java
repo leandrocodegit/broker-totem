@@ -3,24 +3,19 @@ package com.led.broker.controller.request;
 import com.led.broker.model.constantes.Efeito;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-import java.util.UUID;
-
-@Getter
 @Setter
-public class CorRequest {
+@Getter
+@SuperBuilder
+public class ComandoRequest {
 
-    private UUID id;
-    private String nome;
     private Efeito efeito;
     private int[] cor;
-    private String primaria;
-    private String secundaria;
+    private int leds;
+    private int faixa;
+    private int intensidade;
     private int[] correcao;
     private int velocidade;
-    private long time;
-    private boolean rapida;
     private boolean responder;
-    private String mac;
-
 }

@@ -1,23 +1,19 @@
 package com.led.broker.service;
 
 import com.google.gson.Gson;
-import com.led.broker.controller.response.ComandoRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.led.broker.controller.request.ComandoRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class MqttService {
-    @Autowired
-    private MessageHandler mqttOutbound;
 
-
-
-
+    private final MessageHandler mqttOutbound;
 
     public void sendRetainedMessage(String topic, String message, boolean reter) {
         message = message.replaceAll("#", "");

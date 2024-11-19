@@ -1,7 +1,5 @@
 package com.led.broker.service;
 
-import com.led.broker.controller.request.TemporizadorRequest;
-import com.led.broker.mapper.CorMapper;
 import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
@@ -11,9 +9,8 @@ import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
 import com.led.broker.util.TimeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -21,20 +18,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class CorService {
 
-    @Autowired
-    private CorRepository corRepository;
-    @Autowired
-    private DispositivoRepository dispositivoRepository;
-    @Autowired
-    private CorMapper corMapper;
-    @Autowired
-    private ComandoService comandoService;
-    @Autowired
-    private LogRepository logRepository;
-
-
+    private final CorRepository corRepository;
+    private final DispositivoRepository dispositivoRepository;
+    private final ComandoService comandoService;
+    private final LogRepository logRepository;
 
     public Optional<Cor> buscaCor(UUID id){
         return corRepository.findById(id);

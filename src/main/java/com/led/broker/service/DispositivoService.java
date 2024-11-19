@@ -4,42 +4,37 @@ import com.led.broker.controller.response.DispositivoResponse;
 import com.led.broker.mapper.DispositivoMapper;
 import com.led.broker.model.*;
 import com.led.broker.model.constantes.Comando;
+import com.led.broker.model.constantes.StatusConexao;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
 import com.led.broker.util.TimeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class DispositivoService {
 
-    @Autowired
-    private DispositivoRepository dispositivoRepository;
-    @Autowired
-    private DispositivoMapper dispositivoMapper;
-    @Autowired
-    private LogRepository logRepository;
-    @Autowired
-    private CorService configuracaoService;
-    @Autowired
-    private ComandoService comandoService;
-    @Autowired
-    private AgendaDeviceService agendaDeviceService;
-
+    private final DispositivoRepository dispositivoRepository;
+    private final DispositivoMapper dispositivoMapper;
+    private final LogRepository logRepository;
+    private final CorService configuracaoService;
+    private final ComandoService comandoService;
+    private final AgendaDeviceService agendaDeviceService;
 
     public void salvarDispositivoComoOffline(Dispositivo dispositivo) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(dispositivo.getMac());
         if (dispositivoOptional.isPresent()) {
             Dispositivo dispositivoDB = dispositivoOptional.get();
-            dispositivoDB.setComando(Comando.OFFLINE);
+            dispositivoDB.setStatus(StatusConexao.Offline);
             dispositivoRepository.save(dispositivo);
         }
     }
@@ -166,14 +161,9 @@ public class DispositivoService {
     }
 
     public List<String> listaTodosDispositivos() {
-
-//        List<String> dispositivos = new ArrayList<>();
-//        for (int i = 0; i < 100; i++) {
-//            dispositivos.add(String.valueOf(i));
-//        }
-//        return dispositivos;
        return dispositivoRepository.findAllByAtivo(true).stream().map(device -> device.getMac()).toList();
     }
+
     public List<Dispositivo> dispositivosQueFicaramOffilne() {
         LocalDateTime cincoMinutosAtras = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(6);
         Date dataLimite = Date.from(cincoMinutosAtras.atZone(ZoneOffset.UTC).toInstant());

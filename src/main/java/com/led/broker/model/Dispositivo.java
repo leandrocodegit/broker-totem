@@ -1,6 +1,7 @@
 package com.led.broker.model;
 
 import com.led.broker.model.constantes.Comando;
+import com.led.broker.model.constantes.StatusConexao;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +33,7 @@ public class Dispositivo {
     private String enderecoCompleto;
     private Temporizador temporizador;
     private Configuracao configuracao;
+    private StatusConexao status;
     @DBRef
     private Cor cor;
     @DBRef

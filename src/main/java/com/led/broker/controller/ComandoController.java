@@ -1,36 +1,26 @@
 package com.led.broker.controller;
 
-import com.led.broker.controller.request.ParametroRequest;
-import com.led.broker.controller.request.TemporizadorRequest;
 import com.led.broker.service.ComandoService;
 import com.led.broker.service.CorService;
 import com.led.broker.service.DispositivoService;
-import com.led.broker.service.MqttService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.UUID;
-import java.util.function.BinaryOperator;
-import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/comando")
 @CrossOrigin("*")
+@RequiredArgsConstructor
 public class ComandoController {
 
-    @Autowired
-    private ComandoService comandoService;
-    @Autowired
-    private DispositivoService dispositivoService;
-    @Autowired
-    private CorService corService;
+    private final ComandoService comandoService;
+    private final DispositivoService dispositivoService;
+    private final CorService corService;
 
     @GetMapping(value = "/sincronizar/{responder}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizarTodos(@PathVariable boolean responder) {

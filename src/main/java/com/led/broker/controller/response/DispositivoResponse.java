@@ -3,11 +3,11 @@ package com.led.broker.controller.response;
 import com.led.broker.model.Configuracao;
 import com.led.broker.model.Temporizador;
 import com.led.broker.model.constantes.Comando;
+import com.led.broker.model.constantes.StatusConexao;
 import com.led.broker.util.TimeUtil;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Getter
@@ -23,7 +23,7 @@ public class DispositivoResponse {
     private boolean ignorarAgenda;
     private LocalDateTime ultimaAtualizacao;
     private boolean ativo;
-    private String conexao;
+    private StatusConexao conexao;
     private String latitude;
     private String longitude;
     private Comando comando;
@@ -33,15 +33,6 @@ public class DispositivoResponse {
     private String enderecoCompleto;
     private boolean isTimer;
     private Temporizador temporizador;
-
-
-    public String getConexao() {
-        long differenceInMinutes = Duration.between(ultimaAtualizacao, LocalDateTime.now()).toMinutes();
-        if (differenceInMinutes >= 5)
-           return "Offline";
-        return "Online";
-    }
-
     public boolean isTimer() {
         return TimeUtil.isTime(this);
     }

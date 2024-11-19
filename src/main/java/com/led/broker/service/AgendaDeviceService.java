@@ -1,9 +1,8 @@
 package com.led.broker.service;
 
-import com.led.broker.mapper.AgendaMapper;
 import com.led.broker.model.Agenda;
 import com.led.broker.repository.AgendaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,12 +11,10 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class AgendaDeviceService {
 
-    @Autowired
-    private AgendaRepository agendaRepository;
-    @Autowired
-    private AgendaMapper agendaMapper;
+    private final AgendaRepository agendaRepository;
 
     public List<Agenda> listaTodosAgendasPrevistaHoje() {
         LocalDate data = LocalDateTime.now().plusHours(3).toLocalDate();

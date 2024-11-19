@@ -1,4 +1,4 @@
-package com.led.broker.controller.request;
+package com.led.broker.controller.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,10 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ConfiguracaoRequest {
-
-    private int leds;
-    private int intensidade;
-    private int faixa;
-
+public class DispositivoPorCorResponse {
+    private String item;
+    private int quantidade;
 }

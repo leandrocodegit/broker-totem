@@ -24,12 +24,11 @@ public class MqttIntegrationConfig {
     @Value("${mqtt.client.id}")
     private String clientId;
 
-    private String topicos[] = {Topico.DEVICE_SEND + "#"};
     @Bean
     public Mqttv5PahoMessageDrivenChannelAdapter mqttInbound() {
 
         Mqttv5PahoMessageDrivenChannelAdapter adapter =
-                new Mqttv5PahoMessageDrivenChannelAdapter(connectionOptions(), clientId, topicos);
+                new Mqttv5PahoMessageDrivenChannelAdapter(connectionOptions(), clientId, Topico.DEVICE_SEND + "#");
         adapter.setMessageConverter(new MessageSmart());
         adapter.setQos(0);
         adapter.setCompletionTimeout(5000);
@@ -55,7 +54,6 @@ public class MqttIntegrationConfig {
     public MessageChannel outputChannel() {
         return new DirectChannel();  // Canal de saída
     }
-
 
     private MqttConnectionOptions connectionOptions() {
         MqttConnectionOptions options = new MqttConnectionOptions();

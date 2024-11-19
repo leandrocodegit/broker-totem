@@ -2,9 +2,6 @@ package com.led.broker.service;
 
 
 import com.google.gson.Gson;
-import com.led.broker.controller.request.ParametroRequest;
-import com.led.broker.controller.response.DispositivoResponse;
-import com.led.broker.mapper.DispositivoMapper;
 import com.led.broker.model.Agenda;
 import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
@@ -16,8 +13,7 @@ import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
 import com.led.broker.util.ConfiguracaoUtil;
 import com.led.broker.util.TimeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
@@ -27,20 +23,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ComandoService {
-    @Autowired
-    private MqttService mqttService;
 
-    @Autowired
-    private DispositivoRepository dispositivoRepository;
-    @Autowired
-    private LogRepository logRepository;
-    @Autowired
-    private DispositivoMapper dispositivoMapper;
-    @Autowired
-    private AgendaDeviceService agendaDeviceService;
-    @Autowired
-    private CorRepository corRepository;
+    private final MqttService mqttService;
+    private final DispositivoRepository dispositivoRepository;
+    private final AgendaDeviceService agendaDeviceService;
+    private final CorRepository corRepository;
+    private final LogRepository logRepository;
     public static Map<String, MonoSink<String>> streams = new HashMap<>();
 
 
@@ -257,12 +247,6 @@ public class ComandoService {
                     .mac(agenda.getDispositivos().stream().map(mac -> mac.getMac()).collect(Collectors.toList()).toString())
                     .build());
         }
-    }
-
-    public void atualizarDispositivo(ParametroRequest parametro, String mac) {
-        Dispositivo dispositivo = buscarPorMac(mac);
-        dispositivo.setComando(Comando.ENVIADO);
-
     }
 
     public Optional<Cor> buscaCor(UUID id) {

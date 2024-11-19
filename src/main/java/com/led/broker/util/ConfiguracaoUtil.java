@@ -1,7 +1,7 @@
 package com.led.broker.util;
 
 
-import com.led.broker.controller.response.ComandoRequest;
+import com.led.broker.controller.request.ComandoRequest;
 import com.led.broker.model.Configuracao;
 import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
@@ -9,6 +9,7 @@ import com.led.broker.model.constantes.Efeito;
 
 public class ConfiguracaoUtil {
 
+    private ConfiguracaoUtil() {}
 
     public static ComandoRequest gerarComando(Cor cor, Configuracao configuracao ){
         return ComandoRequest.builder()
