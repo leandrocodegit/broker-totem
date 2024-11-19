@@ -60,11 +60,20 @@ public class ComandoController {
                         .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
     }
 
-    @GetMapping("/temporizar/{idCor}/{mac}/{cancelar}")
-    public Flux<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @PathVariable boolean cancelar) {
+    @GetMapping("/temporizar/{idCor}/{mac}")
+    public Flux<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac) {
        return Flux.concat(
                 Mono.just("ok"),
-                corService.salvarCorTemporizada(idCor, mac, cancelar)
+                corService.salvarCorTemporizada(idCor, mac, false)
+                        .timeout(Duration.ofSeconds(10))
+                        .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
+    }
+
+    @GetMapping("/temporizar/{mac}")
+    public Flux<String> cancelarTemporizar(@PathVariable String mac) {
+        return Flux.concat(
+                Mono.just("ok"),
+                corService.salvarCorTemporizada(null, mac, true)
                         .timeout(Duration.ofSeconds(10))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
