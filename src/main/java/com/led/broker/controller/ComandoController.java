@@ -23,7 +23,7 @@ public class ComandoController {
     private final CorService corService;
 
     @GetMapping(value = "/sincronizar/{responder}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizarTodos(@PathVariable boolean responder) {
+    public Flux<String> sincronizarTodos(@PathVariable boolean responder, @RequestParam("token") String token) {
         if(!responder) {
             Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos());
             return devicesFlux.flatMap(mac ->
@@ -42,7 +42,7 @@ public class ComandoController {
     }
 
     @GetMapping(value = "/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizar(@PathVariable String mac) {
+    public Flux<String> sincronizar(@PathVariable String mac, @RequestParam("token") String token) {
         return  Flux.concat(
                 Mono.just("ok"),
                 comandoService.enviardComandoSincronizar(mac, true)
@@ -51,7 +51,7 @@ public class ComandoController {
     }
 
     @GetMapping("/temporizar/{idCor}/{mac}")
-    public Flux<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac) {
+    public Flux<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
        return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(idCor, mac, false)
@@ -60,7 +60,7 @@ public class ComandoController {
     }
 
     @GetMapping("/temporizar/{mac}")
-    public Flux<String> cancelarTemporizar(@PathVariable String mac) {
+    public Flux<String> cancelarTemporizar(@PathVariable String mac, @RequestParam("token") String token) {
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(null, mac, true)

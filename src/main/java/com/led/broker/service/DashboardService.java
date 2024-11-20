@@ -2,13 +2,13 @@ package com.led.broker.service;
 
 
 import com.led.broker.controller.response.DashboardResponse;
-import org.springframework.stereotype.Service;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 
-@Service
+@FeignClient(value = "dashboard", url = "http://localhost:8000/totem")
 public interface DashboardService {
-
-    @GetMapping
-    public DashboardResponse gerarDashBoard();
+    @GetMapping("/dashboard/gerar")
+    public DashboardResponse atualizarDashboard(@RequestHeader("Authorization") String authorization);
 
 }

@@ -29,7 +29,7 @@ public class DispositivoResponse {
     private Comando comando;
     private Configuracao configuracao;
     private CorResponse cor;
-     private String enderecoComplento;
+    private String enderecoComplento;
     private String enderecoCompleto;
     private boolean isTimer;
     private Temporizador temporizador;

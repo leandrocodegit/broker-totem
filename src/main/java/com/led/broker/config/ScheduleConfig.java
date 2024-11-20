@@ -1,13 +1,11 @@
 package com.led.broker.config;
 
+import com.led.broker.controller.response.DashboardResponse;
 import com.led.broker.model.Agenda;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.repository.LogRepository;
-import com.led.broker.service.AgendaDeviceService;
-import com.led.broker.service.ComandoService;
-import com.led.broker.service.DispositivoService;
-import com.led.broker.service.WebSocketService;
+import com.led.broker.service.*;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +26,7 @@ public class ScheduleConfig {
     private final DispositivoService dispositivoService;
     private final LogRepository logRepository;
     private final WebSocketService webSocketService;
+    private final DashboardService dashboardService;
     private Boolean enviarDashBoard = false;
 
     @Scheduled(fixedRate = 5000)
@@ -94,7 +93,8 @@ public class ScheduleConfig {
     public void atualizacaoDashboard() {
         if(Boolean.TRUE.equals(enviarDashBoard)){
             System.out.println("Atualizando dashboard");
-            // webSocketService.sendMessageDipositivos(dispositivoService.listaTodosDispositivosPorFiltro(Filtro.CORDENADAS));
+            DashboardResponse response = dashboardService.atualizarDashboard("");
+             webSocketService.sendMessageDashboard(response);
             enviarDashBoard = false;
         }
     }
