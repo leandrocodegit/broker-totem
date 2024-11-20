@@ -23,4 +23,4 @@ COPY --from=builder /app/target/broker-0.0.1-SNAPSHOT.jar /app/broker-0.0.1-SNAP
 EXPOSE 8080
 
 # Comando para executar a aplicação
-CMD ["java", "-jar", "/app/totem-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "/app/broker-0.0.1-SNAPSHOT.jar"]
