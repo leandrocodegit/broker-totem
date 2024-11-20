@@ -134,7 +134,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>3.3.4</version>
 				<configuration>
-					<mainClass>br.com.totem.TotemApplication</mainClass> <!-- Substitua pelo seu pacote e nome da classe -->
+					<mainClass>com.led.broker.BrokerApplication</mainClass>
 				</configuration>
 			</plugin>
 		</plugins>
