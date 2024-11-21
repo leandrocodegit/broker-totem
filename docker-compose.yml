@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8080:8082"
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=prod
     networks:
