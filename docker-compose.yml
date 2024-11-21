@@ -9,10 +9,11 @@ services:
       - "8080:8082"
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=prod
+    container_name: broker-container
     networks:
       - totem-network
 
 
 networks:
   totem-network:
-    external: true
+    driver: bridge
