@@ -72,6 +72,8 @@ public class JwtValidationFilter extends OncePerRequestFilter {
     private Boolean validateTokenWithExternalService(String token, boolean isWebSocket) {
         try {
             if (isWebSocket) {
+                System.out.println("Validando token");
+                System.err.println(token);
                 authService.validarwebSocker(token);
             } else {
                 authService.validarToken(token);
