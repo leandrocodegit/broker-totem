@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(value = "totem", url = "http://172.20.0.1:8000/totem")
+@FeignClient(value = "totem", url = "http://localhost:8000/totem")
 public interface AuthService {
 
     @GetMapping("/auth/valid")
