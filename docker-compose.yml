@@ -17,6 +17,6 @@ services:
 networks:
   totem-network:
     ipam:
-      driver: default
+      driver: bridge
       config:
         - subnet: "192.168.10.0/30"
