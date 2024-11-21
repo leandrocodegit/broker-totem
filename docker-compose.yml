@@ -9,16 +9,9 @@ services:
       - "8080:8080"
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=prod
-    container_name: broker-container
     networks:
-      totem-network:
-        ipv4_address: 192.168.10.1
-        ipv6_address: 2001:3984:3989::10
+      - totem-network
 
 networks:
   totem-network:
-    ipam:
-      driver: default
-      config:
-        - subnet: "192.168.10.0/24"
-        - subnet: "2001:3984:3989::/64"
+    external: true
