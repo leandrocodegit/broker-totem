@@ -11,8 +11,12 @@ services:
       - JAVA_OPTS=-Dspring.profiles.active=prod
     container_name: broker-container
     networks:
-      - app-network
+      app-network:
+        ipv4_address: 192.168.10.1
 
 networks:
   app-network:
-    external: true
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "192.168.10.0/24"
