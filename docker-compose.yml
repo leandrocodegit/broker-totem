@@ -14,4 +14,4 @@ services:
 
 networks:
   totem-network:
-    external: true
+    driver: bridge
