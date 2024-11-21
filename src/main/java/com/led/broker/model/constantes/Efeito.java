@@ -9,5 +9,6 @@ public enum Efeito {
     SINALIZADOR,
     GIRATORIO,
     BATIDA,
-    TESTE
+    TESTE,
+    UPDATE
 }

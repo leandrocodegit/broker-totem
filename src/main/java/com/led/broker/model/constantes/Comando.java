@@ -14,7 +14,9 @@ public enum Comando {
     TESTE("Teste de cor"),
     CONCLUIDO("Teste concluido"),
     TIMER_CONCLUIDO("Timer finalizado para %S"),
-    TIMER_CRIADO("Timer criado para %S");
+    TIMER_CRIADO("Timer criado para %S"),
+    UPDATE("Comando de atualização de firmware enviado para %S"),
+    FIRMWARE("Firmware atualizado para dispositivo %S");
 
     private String value;
 
