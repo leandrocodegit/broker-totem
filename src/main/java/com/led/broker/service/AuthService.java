@@ -1,11 +1,11 @@
-package com.led.broker.config;
+package com.led.broker.service;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(value = "totem", url = "http://backend-toten_app_1:8000/totem")
+@FeignClient(value = "totem", url = "http://totem-container:8000/totem")
 public interface AuthService {
 
     @GetMapping("/auth/valid")
