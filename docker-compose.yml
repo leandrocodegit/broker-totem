@@ -12,6 +12,7 @@ services:
     networks:
       - totem-network
 
+
 networks:
   totem-network:
     driver: bridge
