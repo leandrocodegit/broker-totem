@@ -16,4 +16,5 @@ services:
 
 networks:
   totem-network:
+    ipam:
       driver: bridge
