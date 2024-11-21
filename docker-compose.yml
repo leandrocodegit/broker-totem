@@ -11,12 +11,12 @@ services:
       - JAVA_OPTS=-Dspring.profiles.active=prod
     container_name: broker-container
     networks:
-      app-network:
+      totem-network:
         ipv4_address: 192.168.10.1
 
 networks:
-  app-network:
-    driver: bridge
+  totem-network:
     ipam:
+      driver: default
       config:
-        - subnet: "192.168.10.0/24"
+        - subnet: "192.168.10.0/30"
