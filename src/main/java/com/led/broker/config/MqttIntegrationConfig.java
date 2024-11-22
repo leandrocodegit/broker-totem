@@ -58,8 +58,8 @@ public class MqttIntegrationConfig {
     private MqttConnectionOptions connectionOptions() {
         MqttConnectionOptions options = new MqttConnectionOptions();
         options.setServerURIs(new String[]{brokerUrl});
-        options.setUserName("broker");
-        options.setPassword("pass2020".getBytes());
+       // options.setUserName("broker");
+      //  options.setPassword("pass2020".getBytes());
         options.setMaxReconnectDelay(5000);
         options.setKeepAliveInterval(60);
         options.setAutomaticReconnect(true);
