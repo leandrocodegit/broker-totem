@@ -11,7 +11,7 @@ services:
       - JAVA_OPTS=-Dspring.profiles.active=prod
     container_name: broker-container
     networks:
-      - totem-network
+      - backend-toten_totem-network
     deploy:
       resources:
         limits:
@@ -20,5 +20,5 @@ services:
           memory: 512m
 
 networks:
-  totem-network:
+  backend-toten_totem-network:
     external: true
