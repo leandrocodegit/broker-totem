@@ -51,13 +51,13 @@ public class JwtValidationFilter extends OncePerRequestFilter {
             }
         } catch (Exception ex) {
             // Token inválido ou erro na validação
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token inválido ou erro na validação.");
+          //  response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+           // response.getWriter().write("Token inválido ou erro na validação.");
             return;
         }
 
         // Prossegue com a cadeia de filtros
-        filterChain.doFilter(request, response);
+      //  filterChain.doFilter(request, response);
     }
 
     private String recoveryToken(HttpServletRequest request) {
