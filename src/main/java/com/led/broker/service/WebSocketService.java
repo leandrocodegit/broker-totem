@@ -7,19 +7,19 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
+//@Service
 public class WebSocketService {
 
-    private final SimpMessagingTemplate messagingTemplate;
-
-    public WebSocketService(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
-    }
-
-    public void sendMessageDashboard(DashboardResponse message) {
-        messagingTemplate.convertAndSend("/topic/dashboard", message);
-    }
-    public void sendMessageDipositivos(List<DispositivoResponse> message) {
-        messagingTemplate.convertAndSend("/topic/dispositivos", message);
-    }
+//    private final SimpMessagingTemplate messagingTemplate;
+//
+//    public WebSocketService(SimpMessagingTemplate messagingTemplate) {
+//        this.messagingTemplate = messagingTemplate;
+//    }
+//
+//    public void sendMessageDashboard(DashboardResponse message) {
+//        messagingTemplate.convertAndSend("/topic/dashboard", message);
+//    }
+//    public void sendMessageDipositivos(List<DispositivoResponse> message) {
+//        messagingTemplate.convertAndSend("/topic/dispositivos", message);
+//    }
 }
