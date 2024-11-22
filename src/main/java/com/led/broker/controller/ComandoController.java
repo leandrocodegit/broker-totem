@@ -67,4 +67,13 @@ public class ComandoController {
                         .timeout(Duration.ofSeconds(10))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
+
+    @GetMapping(value = "/teste/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> testar(@PathVariable String mac, @RequestParam("token") String token) {
+        return  Flux.concat(
+                Mono.just("ok"),
+                comandoService.enviardComandoTeste(mac)
+                        .timeout(Duration.ofSeconds(10))
+                        .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
+    }
  }
