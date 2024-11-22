@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.led.broker.model.Mensagem;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.Topico;
-import com.led.broker.service.ComandoService;
+//import com.led.broker.service.ComandoService;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
@@ -42,11 +42,11 @@ public class MqttMessageHandler implements MessageHandler {
                 Mensagem payload = objectMapper.readValue(bytes, Mensagem.class);
                 payload.setBrockerId(clientId.toString());
 
-                if(payload.getComando().equals(Comando.ACEITO)){
-                    if(ComandoService.streams.containsKey(payload.getId())){
-                        ComandoService.streams.remove(payload.getId()).success(payload.getComando().value() + " " + payload.getId());
-                    }
-                }
+//                if(payload.getComando().equals(Comando.ACEITO)){
+//                    if(ComandoService.streams.containsKey(payload.getId())){
+//                        ComandoService.streams.remove(payload.getId()).success(payload.getComando().value() + " " + payload.getId());
+//                    }
+//                }
 
             } catch (Exception erro) {
                 System.out.println("Erro ao capturar id");
