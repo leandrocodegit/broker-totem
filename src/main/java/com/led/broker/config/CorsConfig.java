@@ -13,6 +13,6 @@ public class CorsConfig implements WebFluxConfigurer {
                 .allowedOrigins("http://vps55601.publiccloud.com.br")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(false);
+                .allowCredentials(true);
     }
 }
