@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MqttService {
 
- //   private final MessageHandler mqttOutbound;
+    private final MessageHandler mqttOutbound;
 
     public void sendRetainedMessage(String topic, String message, boolean reter) {
         message = message.replaceAll("#", "");
@@ -23,7 +23,7 @@ public class MqttService {
                 .build();
 
         System.out.println("Comando enviado para: " + message);
-    //    mqttOutbound.handleMessage(mqttMessage);
+        mqttOutbound.handleMessage(mqttMessage);
     }
 
     public void sendRetainedMessage(String topic, ComandoRequest comandoRequest) {
@@ -35,7 +35,7 @@ public class MqttService {
                 .build();
 
         System.out.println("Comando enviado para: " + message);
- //       mqttOutbound.handleMessage(mqttMessage);
+        mqttOutbound.handleMessage(mqttMessage);
     }
 
     public void removeRetainedMessage(String topic) {
@@ -44,6 +44,6 @@ public class MqttService {
                 .setHeader(MqttHeaders.RETAINED, true) // Define a mensagem como retida
                 .build();
 
-    //    mqttOutbound.handleMessage(emptyMessage);
+        mqttOutbound.handleMessage(emptyMessage);
     }
 }

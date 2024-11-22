@@ -10,28 +10,28 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-@Controller
+//@Controller
 public class WebSocketController {
 
-    @Autowired
-    private MqttService mqttService;
-    private final SimpMessagingTemplate messagingTemplate;
-
-    public WebSocketController(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
-    }
-
-    @MessageMapping("/device/configuracao")
-    @SendTo("/topic/dashboard")
-    public String handleMessage(@Payload String message) {
-        return "Recebido: " + message;
-    }
-
-    @MessageMapping("/device")
-    public String handleMessageDevice(@Payload ConfiguracaoSendRequest request) {
-        request.setResponder(false);
-        if(request.getDevice() != null && !request.getDevice().isEmpty())
-            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + request.getDevice(),request);
-        return "Recebido: " + request;
-    }
+//    @Autowired
+//    private MqttService mqttService;
+//    private final SimpMessagingTemplate messagingTemplate;
+//
+//    public WebSocketController(SimpMessagingTemplate messagingTemplate) {
+//        this.messagingTemplate = messagingTemplate;
+//    }
+//
+//    @MessageMapping("/device/configuracao")
+//    @SendTo("/topic/dashboard")
+//    public String handleMessage(@Payload String message) {
+//        return "Recebido: " + message;
+//    }
+//
+//    @MessageMapping("/device")
+//    public String handleMessageDevice(@Payload ConfiguracaoSendRequest request) {
+//        request.setResponder(false);
+//        if(request.getDevice() != null && !request.getDevice().isEmpty())
+//            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + request.getDevice(),request);
+//        return "Recebido: " + request;
+//    }
 }
