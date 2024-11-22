@@ -12,6 +12,12 @@ services:
     container_name: broker-container
     networks:
       - totem-network
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 512m
 
 networks:
   totem-network:
