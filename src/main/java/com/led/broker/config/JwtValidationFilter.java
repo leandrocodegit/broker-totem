@@ -75,11 +75,11 @@ public class JwtValidationFilter extends OncePerRequestFilter {
             if (isWebSocket) {
                 System.out.println("Validando token socker");
                 System.err.println(token);
-                authService.validarwebSocker(token);
+              //  authService.validarwebSocker(token);
             } else {
                 System.out.println("Validando token access");
                 System.err.println(token);
-                authService.validarToken(token);
+               // authService.validarToken(token);
             }
             return true;
         } catch (Exception e) {

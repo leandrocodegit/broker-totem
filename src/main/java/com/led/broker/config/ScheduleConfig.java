@@ -94,7 +94,7 @@ public class ScheduleConfig {
         if(Boolean.TRUE.equals(enviarDashBoard)){
             System.out.println("Atualizando dashboard");
             DashboardResponse response = dashboardService.atualizarDashboard("");
-             webSocketService.sendMessageDashboard(response);
+           //  webSocketService.sendMessageDashboard(response);
             enviarDashBoard = false;
         }
     }
