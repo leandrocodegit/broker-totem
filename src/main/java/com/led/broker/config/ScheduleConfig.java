@@ -59,7 +59,7 @@ public class ScheduleConfig {
         });
     }
 
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = 5000)
     public void checkTimers() {
 
         List<String> devicesRemove = new ArrayList<>();

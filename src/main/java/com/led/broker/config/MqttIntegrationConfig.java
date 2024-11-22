@@ -14,8 +14,7 @@ import org.springframework.integration.mqtt.outbound.Mqttv5PahoMessageHandler;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
-@Configuration
-@EnableIntegration
+
 public class MqttIntegrationConfig {
 
     @Value("${mqtt.broker.url}")
