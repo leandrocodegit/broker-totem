@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+@Component
 public class MqttMessageHandler implements MessageHandler {
 
 
