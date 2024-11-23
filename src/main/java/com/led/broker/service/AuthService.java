@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface AuthService {
 
     @GetMapping("/auth/valid")
-    public void validarToken(@RequestHeader("Authorization") String authorization);
+    public Boolean validarToken(@RequestHeader("Authorization") String authorization);
     @GetMapping("/auth/ws")
-    public void validarwebSocker(@RequestHeader("Authorization") String authorization);
+    public Boolean validarwebSocker(@RequestHeader("Authorization") String authorization);
 
 }
