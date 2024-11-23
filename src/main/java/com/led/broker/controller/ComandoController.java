@@ -57,7 +57,7 @@ public class ComandoController {
 
     @GetMapping("/temporizar/{idCor}/{mac}")
     public Flux<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarwebSocker(token);
+        authService.validarToken(token);
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(idCor, mac, false)
