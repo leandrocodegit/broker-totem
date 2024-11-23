@@ -85,6 +85,7 @@ public class DispositivoService {
             if (cor != null) {
                 if (mensagem.getComando().equals(Comando.CONFIGURACAO) || mensagem.getComando().equals(Comando.CONCLUIDO)) {
                     dispositivo.setCor(cor);
+                    System.out.println("configuração");
                     comandoService.enviardComandoSincronizar(dispositivo.getMac(), false);
                 } else if (mensagem.getComando().equals(Comando.ONLINE) && mensagem.getEfeito() != null) {
                     if (!cor.getEfeito().equals(mensagem.getEfeito())) {
