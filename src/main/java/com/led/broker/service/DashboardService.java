@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-@FeignClient(value = "dashboard", url = "http://totem-container/totem")
+@FeignClient(value = "dashboard", url = "http://totem-container:8000/totem")
 public interface DashboardService {
     @GetMapping("/dashboard/gerar")
     public DashboardResponse atualizarDashboard(@RequestHeader("Authorization") String authorization);
