@@ -34,6 +34,7 @@ public class ScheduleConfig {
     @Scheduled(fixedRate = 5000)
     public void executarTarefaAgendada() {
         List<Agenda> agendas = agendaDeviceService.listaTodosAgendasPrevistaHoje();
+        System.out.println("Agendas #: " + agendas.size());
 
         if(!agendas.isEmpty()){
             agendas.forEach(agenda -> {
