@@ -27,14 +27,14 @@ public class ComandoController {
     @GetMapping(value = "/sincronizar/{responder}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizarTodos(@PathVariable boolean responder, @RequestParam("token") String token) {
         if(!responder) {
-            authService.validarwebSocker(token);
+            authService.validarToken(token);
             Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos());
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, false)
                             .then(Mono.just("Comando enviado para " + mac))
             );
         }else{
-            authService.validarwebSocker(token);
+            authService.validarToken(token);
             Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos());
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, true)
@@ -47,7 +47,7 @@ public class ComandoController {
 
     @GetMapping(value = "/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizar(@PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarwebSocker(token);
+        authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
                 comandoService.enviardComandoSincronizar(mac, true)
@@ -67,7 +67,7 @@ public class ComandoController {
 
     @GetMapping("/temporizar/{mac}")
     public Flux<String> cancelarTemporizar(@PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarwebSocker(token);
+        authService.validarToken(token);
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(null, mac, true)
@@ -77,7 +77,7 @@ public class ComandoController {
 
     @GetMapping(value = "/teste/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> testar(@PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarwebSocker(token);
+        authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
                 comandoService.enviardComandoTeste(mac)
