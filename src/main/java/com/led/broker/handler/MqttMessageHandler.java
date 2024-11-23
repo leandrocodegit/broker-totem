@@ -5,6 +5,8 @@ import com.led.broker.model.Mensagem;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.service.ComandoService;
+import com.led.broker.service.DispositivoService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
@@ -15,9 +17,11 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@RequiredArgsConstructor
 public class MqttMessageHandler implements MessageHandler {
 
 
+    private final DispositivoService dispositivoService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ConcurrentHashMap<String, String> clientMap = new ConcurrentHashMap<>();
 
@@ -37,10 +41,12 @@ public class MqttMessageHandler implements MessageHandler {
 
         if (topico.startsWith(Topico.DEVICE_SEND)) {
 
+
             try {
                 byte[] bytes = (byte[]) message.getPayload();
                 Mensagem payload = objectMapper.readValue(bytes, Mensagem.class);
                 payload.setBrockerId(clientId.toString());
+                dispositivoService.atualizarDispositivo(payload);
 
                 if(payload.getComando().equals(Comando.ACEITO)){
                     if(ComandoService.streams.containsKey(payload.getId())){

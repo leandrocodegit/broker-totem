@@ -1,7 +1,5 @@
 package com.led.broker.service;
 
-import com.led.broker.controller.response.DispositivoResponse;
-import com.led.broker.mapper.DispositivoMapper;
 import com.led.broker.model.*;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.StatusConexao;
@@ -24,7 +22,6 @@ import java.util.Optional;
 public class DispositivoService {
 
     private final DispositivoRepository dispositivoRepository;
-    private final DispositivoMapper dispositivoMapper;
     private final LogRepository logRepository;
     private final CorService configuracaoService;
     private final ComandoService comandoService;
@@ -129,10 +126,6 @@ public class DispositivoService {
             return agenda.getCor();
         }
         return dispositivo.getCor();
-    }
-
-    public Page<DispositivoResponse> buscarDispositivosAtivosComMaisDe5Minutos(Pageable pageable) {
-        return buscarDispositivosAtivosTempo(5, pageable).map(dispositivoMapper::toResponse);
     }
 
     public List<Dispositivo> buscarDispositivosAtivosTempo(long minutos) {
