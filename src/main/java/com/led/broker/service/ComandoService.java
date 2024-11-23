@@ -218,34 +218,39 @@ public class ComandoService {
 
     public void enviarComando(Agenda agenda) {
 
-        List<Dispositivo> dispositivos = Collections.EMPTY_LIST;
+        if(agenda.getCor() != null) {
+            List<Dispositivo> dispositivos = Collections.EMPTY_LIST;
 
-        if (agenda.isTodos()) {
-            dispositivos = agenda.getDispositivos();
-        } else {
-            dispositivos = agenda.getDispositivos().stream().filter(device -> device.isAtivo() && device.getConfiguracao() != null).collect(Collectors.toList());
-        }
+            if (agenda.isTodos()) {
+                dispositivos = agenda.getDispositivos();
+            } else {
+                dispositivos = agenda.getDispositivos()
+                        .stream()
+                        .filter(device -> device.isAtivo() && device.getConfiguracao() != null)
+                        .collect(Collectors.toList());
+            }
 
-        if (!dispositivos.isEmpty()) {
-            dispositivos.forEach(device -> {
+            if (!dispositivos.isEmpty()) {
+                dispositivos.forEach(device -> {
 
-                if (device.isAtivo() && device.getConfiguracao() != null) {
-                    if (Boolean.FALSE.equals(device.isIgnorarAgenda()) && !TimeUtil.isTime(device)) {
-                        //    ConfiguraçãoUtil.parametrizarConfiguracao(agenda.getConfiguracao(), device.getConfiguracao());
-                        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(),
-                                new Gson().toJson(device.getConfiguracao()), false);
+                    if (device.isAtivo() && device.getConfiguracao() != null) {
+                        if (Boolean.FALSE.equals(device.isIgnorarAgenda()) && !TimeUtil.isTime(device)) {
+                            device.setCor(agenda.getCor());
+                            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(),
+                                    new Gson().toJson(ConfiguracaoUtil.gerarComando(device)), false);
+                        }
                     }
-                }
-            });
-            logRepository.save(Log.builder()
-                    .data(LocalDateTime.now())
-                    .usuario(Comando.SISTEMA.value())
-                    .mensagem("Tarefa agenda executada")
-                    .cor(agenda.getCor())
-                    .comando(Comando.SISTEMA)
-                    .descricao("Tarefa agenda executada")
-                    .mac(agenda.getDispositivos().stream().map(mac -> mac.getMac()).collect(Collectors.toList()).toString())
-                    .build());
+                });
+                logRepository.save(Log.builder()
+                        .data(LocalDateTime.now())
+                        .usuario(Comando.SISTEMA.value())
+                        .mensagem("Tarefa agenda executada")
+                        .cor(agenda.getCor())
+                        .comando(Comando.SISTEMA)
+                        .descricao("Tarefa agenda executada")
+                        .mac(agenda.getDispositivos().stream().map(mac -> mac.getMac()).collect(Collectors.toList()).toString())
+                        .build());
+            }
         }
     }
 
