@@ -85,12 +85,12 @@ public class DispositivoService {
             if (cor != null) {
                 if (mensagem.getComando().equals(Comando.CONFIGURACAO) || mensagem.getComando().equals(Comando.CONCLUIDO)) {
                     dispositivo.setCor(cor);
-                    //comandoService.enviardComando(dispositivo, false);
+                    comandoService.enviardComandoSincronizar(dispositivo.getMac(), false);
                 } else if (mensagem.getComando().equals(Comando.ONLINE) && mensagem.getEfeito() != null) {
                     if (!cor.getEfeito().equals(mensagem.getEfeito())) {
                         System.out.println("Reparação de efeito");
                         dispositivo.setCor(cor);
-                     //   comandoService.enviardComando(dispositivo, false);
+                        comandoService.enviardComandoSincronizar(dispositivo.getMac(), false);
                     }
                 }
             }
