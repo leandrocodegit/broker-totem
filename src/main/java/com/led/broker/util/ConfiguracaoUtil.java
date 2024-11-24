@@ -72,29 +72,27 @@ public class ConfiguracaoUtil {
     }
 
     private static int [] getCor(int[] cores, TipoCor tipoCor){
+        if(cores.length < 6){
+            return cores;
+        }
+
         if(tipoCor.equals(TipoCor.RBG)){
             return new int[] {
                     cores[0],
-                    cores[1],
                     cores[2],
-                    cores[6],
-                    cores[7],
-                    cores[8],
+                    cores[1],
                     cores[3],
-                    cores[4],
-                    cores[5]
+                    cores[5],
+                    cores[4]
             };
         }else if(tipoCor.equals(TipoCor.GRB)){
             return new int[] {
-                    cores[3],
-                    cores[4],
-                    cores[5],
+                    cores[2],
                     cores[0],
                     cores[1],
-                    cores[2],
-                    cores[6],
-                    cores[7],
-                    cores[8]
+                    cores[5],
+                    cores[3],
+                    cores[4]
             };
         }
         return cores;
