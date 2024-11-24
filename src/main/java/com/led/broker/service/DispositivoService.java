@@ -26,6 +26,7 @@ public class DispositivoService {
     private final CorService configuracaoService;
     private final ComandoService comandoService;
     private final AgendaDeviceService agendaDeviceService;
+    private final DashboardService dashboardService;
 
     public void salvarDispositivoComoOffline(Dispositivo dispositivo) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(dispositivo.getMac());
@@ -108,6 +109,7 @@ public class DispositivoService {
                             .comando(Comando.ONLINE)
                             .build()
             );
+            dashboardService.atualizarDashboard("");
         }
     }
 
