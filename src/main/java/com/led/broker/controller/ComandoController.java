@@ -85,11 +85,6 @@ public class ComandoController {
                         .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
     }
 
-    @CrossOrigin(
-            origins = "http://totem-container:8081",
-            methods = {RequestMethod.GET},
-            allowCredentials = "true"
-    )
     @GetMapping(value = "/interno/sincronizar", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizarTodosInterno() {
         return Flux.concat(
@@ -98,11 +93,6 @@ public class ComandoController {
         );
     }
 
-    @CrossOrigin(
-            origins = "http://totem-container:8081",
-            methods = {RequestMethod.GET},
-            allowCredentials = "true"
-    )
     @GetMapping(value = "/interno/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizarInterno(@PathVariable String mac) {
         return  Flux.concat(
