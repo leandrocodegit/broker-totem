@@ -82,13 +82,13 @@ public class ConfiguracaoUtil {
                     cores[8],
                     cores[3],
                     cores[4],
-                    cores[6]
+                    cores[5]
             };
         }else if(tipoCor.equals(TipoCor.GRB)){
             return new int[] {
                     cores[3],
                     cores[4],
-                    cores[6],
+                    cores[5],
                     cores[0],
                     cores[1],
                     cores[2],
