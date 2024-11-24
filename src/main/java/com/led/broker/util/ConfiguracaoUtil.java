@@ -98,24 +98,20 @@ public class ConfiguracaoUtil {
         return cores;
     }
 
-    private static int [] getCorrecao(int[] cores, TipoCor tipoCor){
-        if(cores.length < 6){
-            return cores;
-        }
-
+    private static int [] getCorrecao(int[] correcao, TipoCor tipoCor){
         if(tipoCor.equals(TipoCor.RBG)){
             return new int[] {
-                    cores[0],
-                    cores[2],
-                    cores[1]
+                    correcao[0],
+                    correcao[2],
+                    correcao[1]
             };
         }else if(tipoCor.equals(TipoCor.GRB)){
             return new int[] {
-                    cores[2],
-                    cores[0],
-                    cores[1]
+                    correcao[2],
+                    correcao[0],
+                    correcao[1]
             };
         }
-        return cores;
+        return correcao;
     }
 }
