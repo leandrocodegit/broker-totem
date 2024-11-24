@@ -1,5 +1,6 @@
 package com.led.broker.model;
 
+import com.led.broker.model.constantes.TipoCor;
 import lombok.*;
 
 @Getter
@@ -12,5 +13,6 @@ public class Configuracao {
     private int leds;
     private int intensidade;
     private int faixa;
+    private TipoCor tipoCor;
 
 }

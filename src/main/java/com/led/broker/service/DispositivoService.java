@@ -3,6 +3,7 @@ package com.led.broker.service;
 import com.led.broker.model.*;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.StatusConexao;
+import com.led.broker.model.constantes.TipoCor;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
 import com.led.broker.util.TimeUtil;
@@ -107,6 +108,7 @@ public class DispositivoService {
                             .ativo(false)
                             .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
                             .comando(Comando.ONLINE)
+                            .configuracao(new Configuracao(1,255,2, TipoCor.RBG))
                             .build()
             );
             dashboardService.atualizarDashboard("");
