@@ -16,7 +16,7 @@ public class ConfiguracaoUtil {
         return ComandoRequest.builder()
                 .efeito(cor.getEfeito())
                 .cor(getCor(cor.getCor(), configuracao.getTipoCor()))
-                .correcao(cor.getCorrecao())
+                .correcao(getCorrecao(cor.getCorrecao(), configuracao.getTipoCor()))
                 .velocidade(cor.getVelocidade())
                 .responder(cor.isResponder())
                 .faixa(configuracao.getFaixa())
@@ -28,7 +28,7 @@ public class ConfiguracaoUtil {
         return ComandoRequest.builder()
                 .efeito(cor.getEfeito())
                 .cor(getCor(cor.getCor(), dispositivo.getConfiguracao().getTipoCor()))
-                .correcao(cor.getCorrecao())
+                .correcao(getCorrecao(cor.getCorrecao(), dispositivo.getConfiguracao().getTipoCor()))
                 .velocidade(cor.getVelocidade())
                 .responder(cor.isResponder())
                 .faixa(dispositivo.getConfiguracao().getFaixa())
@@ -40,7 +40,7 @@ public class ConfiguracaoUtil {
         return ComandoRequest.builder()
                 .efeito(dispositivo.getCor().getEfeito())
                 .cor(getCor(dispositivo.getCor().getCor(), dispositivo.getConfiguracao().getTipoCor()))
-                .correcao(dispositivo.getCor().getCorrecao())
+                .correcao(getCorrecao(dispositivo.getCor().getCorrecao(), dispositivo.getConfiguracao().getTipoCor()))
                 .velocidade(dispositivo.getCor().getVelocidade())
                 .responder(true)
                 .faixa(dispositivo.getConfiguracao().getFaixa())
@@ -51,7 +51,7 @@ public class ConfiguracaoUtil {
         return ComandoRequest.builder()
                 .efeito(dispositivo.getCor().getEfeito())
                 .cor(getCor(dispositivo.getCor().getCor(), dispositivo.getConfiguracao().getTipoCor()))
-                .correcao(dispositivo.getCor().getCorrecao())
+                .correcao(getCorrecao(dispositivo.getCor().getCorrecao(), dispositivo.getConfiguracao().getTipoCor()))
                 .velocidade(dispositivo.getCor().getVelocidade())
                 .responder(responder)
                 .faixa(dispositivo.getConfiguracao().getFaixa())
@@ -63,7 +63,7 @@ public class ConfiguracaoUtil {
         return ComandoRequest.builder()
                 .efeito(Efeito.TESTE)
                 .cor(new int[]{0,0,0,0,0,0})
-                .correcao(new int[]{255,255,255,255,255,255})
+                .correcao(new int[]{255,255,255})
                 .velocidade(100)
                 .responder(true)
                 .faixa(2)
@@ -93,6 +93,27 @@ public class ConfiguracaoUtil {
                     cores[5],
                     cores[3],
                     cores[4]
+            };
+        }
+        return cores;
+    }
+
+    private static int [] getCorrecao(int[] cores, TipoCor tipoCor){
+        if(cores.length < 6){
+            return cores;
+        }
+
+        if(tipoCor.equals(TipoCor.RBG)){
+            return new int[] {
+                    cores[0],
+                    cores[2],
+                    cores[1]
+            };
+        }else if(tipoCor.equals(TipoCor.GRB)){
+            return new int[] {
+                    cores[2],
+                    cores[0],
+                    cores[1]
             };
         }
         return cores;
