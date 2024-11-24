@@ -74,6 +74,7 @@ public class ComandoService {
         return mono;
     }
 
+
     public Mono<String> enviardComandoRapido(Dispositivo dispositivo, boolean cancelar, boolean interno) {
 
         Mono<String> mono = Mono.empty();
