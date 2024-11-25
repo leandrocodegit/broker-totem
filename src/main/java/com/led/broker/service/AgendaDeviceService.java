@@ -23,8 +23,10 @@ public class AgendaDeviceService {
     public Agenda buscarAgendaDipositivoPrevistaHoje(String mac) {
         List<Agenda> agendaList = agendaRepository.findFirstByDataAndDispositivo(LocalDateTime.now().minusHours(3).toLocalDate(), LocalDateTime.now().minusHours(3).toLocalDate(), mac, UUID.randomUUID());
         if(!agendaList.isEmpty()){
+            System.out.println("Com agenda");
             return agendaList.get(0);
         }
+        System.out.println("Sem agenda");
         return null;
     }
 
