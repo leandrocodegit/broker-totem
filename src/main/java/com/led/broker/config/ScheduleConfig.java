@@ -37,7 +37,10 @@ public class ScheduleConfig {
         System.out.println("Agendas #: " + agendas.size());
 
         if(!agendas.isEmpty()){
+
             agendas.forEach(agenda -> {
+                System.out.println(agenda.getInicio() + " : " + agenda.getTermino());
+                System.out.println("Execução: " + agenda.getExecucao());
                 comandoService.enviarComando(agenda);
                 agendaDeviceService.atualizarDataExecucao(agenda);
             });

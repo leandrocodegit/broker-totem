@@ -17,7 +17,7 @@ public class AgendaDeviceService {
     private final AgendaRepository agendaRepository;
 
     public List<Agenda> listaTodosAgendasPrevistaHoje() {
-        LocalDate data = LocalDateTime.now().plusHours(3).toLocalDate();
+        LocalDate data = LocalDateTime.now().minusHours(3).toLocalDate();
         return agendaRepository.findAgendasByDataDentroDoIntervalo(data);
     }
     public Agenda buscarAgendaDipositivoPrevistaHoje(String mac) {
@@ -33,7 +33,7 @@ public class AgendaDeviceService {
     }
 
     public void atualizarDataExecucao(Agenda agenda) {
-        agenda.setExecucao(LocalDate.now());
+        agenda.setExecucao(LocalDateTime.now().minusHours(3).toLocalDate());
         agendaRepository.save(agenda);
     }
 }
