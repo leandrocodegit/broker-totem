@@ -84,7 +84,7 @@ public class ComandoService {
         }
 
         if (cancelar) {
-            dispositivo.setCor(buscarPorMac(dispositivo.getMac()).getCor());
+            dispositivo.setCor(getCor(buscarPorMac(dispositivo.getMac())));
         }
 
         if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null && dispositivo.getCor() != null) {
