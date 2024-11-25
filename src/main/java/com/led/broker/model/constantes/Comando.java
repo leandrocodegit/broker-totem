@@ -16,7 +16,8 @@ public enum Comando {
     TIMER_CONCLUIDO("Timer finalizado para %S"),
     TIMER_CRIADO("Timer criado para %S"),
     UPDATE("Comando de atualização de firmware enviado para %S"),
-    FIRMWARE("Firmware atualizado para dispositivo %S");
+    FIRMWARE("Firmware atualizado para dispositivo %S"),
+    PARAMETRO("Parametrizando cores");
 
     private String value;
 
