@@ -229,7 +229,7 @@ public class ComandoService {
             List<Dispositivo> dispositivos = Collections.EMPTY_LIST;
 
             if (agenda.isTodos()) {
-                dispositivos = agenda.getDispositivos().stream().filter(device -> !device.isIgnorarAgenda()).toList();
+                dispositivos = dispositivoRepository.findAllByAtivoIgnorarAgenda(true, false);
             } else {
                 dispositivos = agenda.getDispositivos()
                         .stream()

@@ -16,6 +16,8 @@ public interface DispositivoRepository extends MongoRepository<Dispositivo, Stri
     List<Dispositivo> findAllByMacInAndAtivo(List<String> macs, boolean ativo);
     @Query("{ 'ativo': ?0, 'configuracao': { $ne: null } }")
     List<Dispositivo> findAllByAtivo(boolean ativo);
+    @Query("{ 'ativo': ?0, 'ignorarAgenda': ?0, 'configuracao': { $ne: null } }")
+    List<Dispositivo> findAllByAtivoIgnorarAgenda(boolean ativo, boolean ignorarAgenda);
     @Query("{ 'ativo': ?0, 'configuracao': { $ne: null } }")
     Page<Dispositivo> findAllByAtivo(boolean ativo, Pageable pageable);
     @Query("{ 'ativo': ?0 }")
