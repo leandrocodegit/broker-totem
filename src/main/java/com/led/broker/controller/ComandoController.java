@@ -47,7 +47,7 @@ public class ComandoController {
 
     @GetMapping(value = "/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizar(@PathVariable String mac, @RequestParam("token") String token) {
-  //      authService.validarToken(token);
+        authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
                 comandoService.enviardComandoSincronizar(mac, true)
@@ -57,7 +57,7 @@ public class ComandoController {
 
     @GetMapping("/temporizar/{idCor}/{mac}")
     public Flux<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarToken(token);
+        authService.validarTokenIntegracao(token);
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(idCor, mac, false)
@@ -67,7 +67,7 @@ public class ComandoController {
 
     @GetMapping("/temporizar/{mac}")
     public Flux<String> cancelarTemporizar(@PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarToken(token);
+        authService.validarTokenIntegracao(token);
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(null, mac, true)

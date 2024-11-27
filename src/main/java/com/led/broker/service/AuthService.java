@@ -10,5 +10,7 @@ public interface AuthService {
 
     @GetMapping("/auth/valid")
     public void validarToken(@RequestHeader("Authorization") String authorization);
+    @GetMapping("/auth/valid/integracao")
+    public void validarTokenIntegracao(@RequestHeader("Authorization") String authorization);
 
 }
