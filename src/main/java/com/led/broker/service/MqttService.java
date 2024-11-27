@@ -20,7 +20,7 @@ public class MqttService {
         message = message.replaceAll("#", "");
         Message<String> mqttMessage = MessageBuilder.withPayload(message)
                 .setHeader(MqttHeaders.TOPIC, topic)
-               // .setHeader(MqttHeaders.RETAINED, reter)
+                .setHeader(MqttHeaders.RETAINED, true)
                 .build();
 
         System.out.println("Comando enviado para: " + message);
@@ -32,7 +32,7 @@ public class MqttService {
        String message = new Gson().toJson(comandoRequest);
         Message<String> mqttMessage = MessageBuilder.withPayload(message)
                 .setHeader(MqttHeaders.TOPIC, topic)
-
+                .setHeader(MqttHeaders.RETAINED, true)
                 .build();
 
         System.out.println("Comando enviado para: " + message);
@@ -44,7 +44,7 @@ public class MqttService {
         String message = new Gson().toJson(dashboardResponse);
         Message<String> mqttMessage = MessageBuilder.withPayload(message)
                 .setHeader(MqttHeaders.TOPIC, "dashboard")
-
+                .setHeader(MqttHeaders.RETAINED, true)
                 .build();
 
         System.out.println("Atualizando dashboard: " + message);
