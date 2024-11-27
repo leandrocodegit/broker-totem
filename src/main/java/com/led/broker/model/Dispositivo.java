@@ -30,6 +30,7 @@ public class Dispositivo {
     private String latitude;
     private String longitude;
     private String brokerId;
+    private Endereco endereco;
     private String enderecoCompleto;
     private Temporizador temporizador;
     private Configuracao configuracao;
