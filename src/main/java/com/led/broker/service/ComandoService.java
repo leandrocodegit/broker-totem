@@ -65,9 +65,13 @@ public class ComandoService {
 
         if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null) {
             dispositivo.setCor(getCor(dispositivo));
-            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, responder));
-            if(!responder){
-               return mono.just("ok");
+            if(dispositivo.getCor() != null){
+                mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, responder));
+                if(!responder){
+                    return mono.just("ok");
+                }
+            }else{
+                return mono.just("não possui configuração de cor");
             }
 
         }
@@ -162,8 +166,10 @@ public class ComandoService {
                     if (!forcaTeste) {
                         device.setCor(getCor(device));
                     }
-                    mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ConfiguracaoUtil.gerarComando(device));
-                    System.out.println(new Gson().toJson(device.getConfiguracao()));
+                    if(device.getCor() != null){
+                        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ConfiguracaoUtil.gerarComando(device));
+                        System.out.println(new Gson().toJson(device.getConfiguracao()));
+                    }
                 }
 
                 if (forcaTeste) {
