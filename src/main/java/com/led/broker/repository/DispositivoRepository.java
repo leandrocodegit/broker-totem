@@ -29,7 +29,7 @@ public interface DispositivoRepository extends MongoRepository<Dispositivo, Stri
     List<Dispositivo> findAllAtivosComUltimaAtualizacaoAntes(Date dataLimite);
     @Query("{ 'ativo' : true, 'ultimaAtualizacao' : { $lt: ?0 }, 'configuracao': { $ne: null } }")
     Page<Dispositivo> findAllAtivosComUltimaAtualizacaoAntes(Date dataLimite, Pageable pageable);
-    @Query("{ 'ativo' : true, 'ultimaAtualizacao' : { $lt: ?0 }, 'status' : 'Online', 'configuracao': { $ne: null } }")
+    @Query("{ 'ultimaAtualizacao' : { $lt: ?0 }, 'status' : { $ne: 'Offline' } }")
     List<Dispositivo> findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(Date dataLimite);
 
     @Query("{ 'configuracao': null }")

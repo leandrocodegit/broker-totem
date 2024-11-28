@@ -56,6 +56,7 @@ public class DispositivoService {
             dispositivo.setIp(mensagem.getIp());
             dispositivo.setMemoria(mensagem.getMemoria());
             dispositivo.setComando(Comando.ONLINE);
+            dispositivo.setStatus(StatusConexao.Online);
             dispositivo.setVersao(mensagem.getVersao());
             dispositivo.setBrokerId(mensagem.getBrockerId());
 
@@ -100,6 +101,7 @@ public class DispositivoService {
                             .mac(mensagem.getId())
                             .versao("")
                             .ignorarAgenda(false)
+                            .status(StatusConexao.Online)
                             .memoria(0)
                             .ativo(false)
                             .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
