@@ -12,29 +12,6 @@ public class ConfiguracaoUtil {
 
     private ConfiguracaoUtil() {}
 
-    public static ComandoRequest gerarComando(Cor cor, Configuracao configuracao ){
-        return ComandoRequest.builder()
-                .efeito(cor.getEfeito())
-                .cor(getCor(cor.getCor(), configuracao.getTipoCor()))
-                .correcao(getCorrecao(cor.getCorrecao(), configuracao.getTipoCor()))
-                .velocidade(cor.getVelocidade())
-                .responder(cor.isResponder())
-                .faixa(configuracao.getFaixa())
-                .leds(configuracao.getLeds())
-                .intensidade(configuracao.getIntensidade()).build();
-    }
-
-    public static ComandoRequest gerarComando(Dispositivo dispositivo, Cor cor){
-        return ComandoRequest.builder()
-                .efeito(cor.getEfeito())
-                .cor(getCor(cor.getCor(), dispositivo.getConfiguracao().getTipoCor()))
-                .correcao(getCorrecao(cor.getCorrecao(), dispositivo.getConfiguracao().getTipoCor()))
-                .velocidade(cor.getVelocidade())
-                .responder(cor.isResponder())
-                .faixa(dispositivo.getConfiguracao().getFaixa())
-                .leds(dispositivo.getConfiguracao().getLeds())
-                .intensidade(dispositivo.getConfiguracao().getIntensidade()).build();
-    }
 
     public static ComandoRequest gerarComando(Dispositivo dispositivo){
         return ComandoRequest.builder()

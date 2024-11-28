@@ -38,26 +38,17 @@ public class MqttMessageHandler implements MessageHandler {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        if (topico.startsWith(Topico.DEVICE_SEND)) {
-
-
-            try {
-                byte[] bytes = (byte[]) message.getPayload();
-                Mensagem payload = objectMapper.readValue(bytes, Mensagem.class);
-                payload.setBrockerId(clientId.toString());
-                dispositivoService.atualizarDispositivo(payload);
-
-                if(payload.getComando().equals(Comando.ACEITO)){
-                    if(ComandoService.streams.containsKey(payload.getId())){
-                        ComandoService.streams.remove(payload.getId()).success(payload.getComando().value() + " " + payload.getId());
-                    }
-                }
-
-            } catch (Exception erro) {
-                System.out.println("Erro ao capturar id");
-                erro.printStackTrace();
+        try {
+            byte[] bytes = (byte[]) message.getPayload();
+            Mensagem payload = objectMapper.readValue(bytes, Mensagem.class);
+            if (payload.getComando().equals(Comando.ONLINE) || payload.getComando().equals(Comando.CONFIGURACAO) || payload.getComando().equals(Comando.CONCLUIDO)) {
+            payload.setBrockerId(clientId.toString());
+            dispositivoService.atualizarDispositivo(payload);
             }
+
+        } catch (Exception erro) {
+            System.out.println("Erro ao capturar id");
+            erro.printStackTrace();
         }
 
         System.out.println("Mensagem recebida do cliente " + clientId + ": " + message.getPayload().toString());

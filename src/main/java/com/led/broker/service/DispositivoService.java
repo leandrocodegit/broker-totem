@@ -38,7 +38,6 @@ public class DispositivoService {
         }
     }
 
-
     public void atualizarDispositivo(Mensagem mensagem) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mensagem.getId());
         if (dispositivoOptional.isPresent()) {
@@ -59,18 +58,7 @@ public class DispositivoService {
                         .build()
                 );
             }
-            if (dispositivo.getConfiguracao() != null && (mensagem.getComando().equals(Comando.CONFIGURACAO) || mensagem.getComando().equals(Comando.CONCLUIDO))) {
-                logRepository.save(Log.builder()
-                        .data(LocalDateTime.now())
-                        .usuario("Enviado pelo dipositivo")
-                        .mensagem(mensagem.getId())
-                        .cor(dispositivo.getCor())
-                        .comando(mensagem.getComando())
-                        .descricao(mensagem.getComando().equals(Comando.ONLINE) ? String.format(mensagem.getComando().value(), mensagem.getId()) : mensagem.getComando().value())
-                        .mac(dispositivo.getMac())
-                        .build());
-            }
-            if (mensagem.getComando().equals(Comando.ACEITO) || mensagem.getComando().equals(Comando.ONLINE)) {
+            if (mensagem.getComando().equals(Comando.ONLINE))
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
                         .usuario("Enviado pelo dispositivo")
@@ -80,7 +68,6 @@ public class DispositivoService {
                         .descricao(mensagem.getComando().equals(Comando.ONLINE) ? String.format(mensagem.getComando().value(), mensagem.getId()) : mensagem.getComando().value())
                         .mac(dispositivo.getMac())
                         .build());
-             }
 
             dispositivoRepository.save(dispositivo);
             Cor cor = getCor(dispositivo);
@@ -91,7 +78,7 @@ public class DispositivoService {
                     comandoService.enviardComandoSincronizar(dispositivo.getMac(), false);
                 } else if (mensagem.getComando().equals(Comando.ONLINE) && mensagem.getEfeito() != null) {
                     if (!cor.getEfeito().equals(mensagem.getEfeito())) {
-                        System.out.println("Reparação de efeito de " + cor.getEfeito() + " para " +  mensagem.getEfeito());
+                        System.out.println("Reparação de efeito de " + cor.getEfeito() + " para " + mensagem.getEfeito());
                         dispositivo.setCor(cor);
                         comandoService.enviardComandoSincronizar(dispositivo.getMac(), false);
                     }
@@ -108,7 +95,7 @@ public class DispositivoService {
                             .ativo(false)
                             .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
                             .comando(Comando.ONLINE)
-                            .configuracao(new Configuracao(1,255,2, TipoCor.RBG))
+                            .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
                             .build()
             );
             dashboardService.atualizarDashboard("");
@@ -131,35 +118,6 @@ public class DispositivoService {
             return agenda.getCor();
         }
         return dispositivo.getCor();
-    }
-
-    public List<Dispositivo> buscarDispositivosAtivosTempo(long minutos) {
-        LocalDateTime cincoMinutosAtras = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(minutos);
-        Date dataLimite = Date.from(cincoMinutosAtras.atZone(ZoneOffset.UTC).toInstant());
-        return dispositivoRepository.findAllAtivosComUltimaAtualizacaoAntes(dataLimite);
-    }
-
-    public Page<Dispositivo> buscarDispositivosAtivosTempo(long minutos, Pageable pageable) {
-        LocalDateTime cincoMinutosAtras = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(minutos);
-        Date dataLimite = Date.from(cincoMinutosAtras.atZone(ZoneOffset.UTC).toInstant());
-        return dispositivoRepository.findAllAtivosComUltimaAtualizacaoAntes(dataLimite, pageable);
-    }
-
-    public List<Dispositivo> buscarDispositivosAtivosComAgendaPesquisada() {
-        List<Dispositivo> dispositivos = dispositivoRepository.findAllByAtivo(true);
-        if (!dispositivos.isEmpty()) {
-            dispositivos.forEach(device -> {
-                Agenda agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(device.getMac());
-                if (agenda != null && agenda.getCor() != null) {
-                    device.setCor(agenda.getCor());
-                }
-            });
-        }
-        return dispositivos;
-    }
-
-    public List<String> listaTodosDispositivos() {
-       return dispositivoRepository.findAllByAtivo(true).stream().map(device -> device.getMac()).toList();
     }
 
     public List<Dispositivo> dispositivosQueFicaramOffilne() {

@@ -22,57 +22,9 @@ import java.util.UUID;
 public class CorService {
 
     private final CorRepository corRepository;
-    private final DispositivoRepository dispositivoRepository;
-    private final ComandoService comandoService;
-    private final LogRepository logRepository;
 
     public Optional<Cor> buscaCor(UUID id){
         return corRepository.findById(id);
-    }
-
-    public Mono<String> salvarCorTemporizada(UUID idCor, String mac, boolean cancelar) {
-
-        try{
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
-
-        if(cancelar && dispositivoOptional.isPresent()){
-            Dispositivo dispositivo = dispositivoOptional.get();
-            dispositivo.setTemporizador(Temporizador.builder()
-                    .idCor(idCor)
-                    .time(LocalDateTime.now().plusMinutes(-1))
-                    .build());
-
-            dispositivoRepository.save(dispositivo);
-           return  comandoService.enviardComandoRapido(dispositivo, true, false);
-        }
-        else{
-            Optional<Cor> corOptional = corRepository.findById(idCor);
-            if (dispositivoOptional.isPresent() && corOptional.isPresent()) {
-                Dispositivo dispositivo = dispositivoOptional.get();
-
-                dispositivo.setTemporizador(Temporizador.builder()
-                        .idCor(idCor)
-                        .time(LocalDateTime.now().plusMinutes(corOptional.get().getTime()))
-                        .build());
-
-                dispositivoRepository.save(dispositivo);
-                dispositivo.setCor(corOptional.get());
-                TimeUtil.timers.put(dispositivo.getMac(), dispositivo);
-                logRepository.save(Log.builder()
-                        .data(LocalDateTime.now())
-                        .usuario("Leandro")
-                        .mensagem(String.format(Comando.TIMER_CRIADO.value(), dispositivo.getMac()))
-                        .cor(null)
-                        .comando(Comando.TIMER_CRIADO)
-                        .descricao(String.format(Comando.TIMER_CRIADO.value(), dispositivo.getMac()))
-                        .mac(dispositivo.getMac())
-                        .build());
-                return   comandoService.enviardComandoRapido(dispositivo, false, false);
-            }
-        }}catch (Exception errr){
-            return Mono.just("Falha ao enviar comando");
-        }
-        return Mono.empty();
     }
 
 }
