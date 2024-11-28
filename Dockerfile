@@ -17,7 +17,7 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
 # Copia o JAR do estágio de build para o estágio de runtime
-COPY --from=builder /app/target/agenda-1.0.0.jar /app/agenda-1.0.0-SNAPSHOT.jar
+COPY --from=builder /app/target/agenda-1.0.0.jar /app/agenda-1.0.0.jar
 
 # Porta em que a aplicação irá rodar
 EXPOSE 8083
