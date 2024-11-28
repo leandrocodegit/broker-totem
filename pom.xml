@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.led</groupId>
-	<artifactId>broker</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>broker</name>
+	<artifactId>conexao</artifactId>
+	<version>1.0.0</version>
+	<name>conexao</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
