@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: comando:1.0.0
     ports:
       - "8080:8082"
     environment:
