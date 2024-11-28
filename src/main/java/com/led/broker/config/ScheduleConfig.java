@@ -1,7 +1,6 @@
 package com.led.broker.config;
 
 import com.led.broker.controller.response.DashboardResponse;
-import com.led.broker.model.Agenda;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.repository.LogRepository;
@@ -30,23 +29,6 @@ public class ScheduleConfig {
     private final LogRepository logRepository;
     private final DashboardService dashboardService;
     private Boolean enviarDashBoard = false;
-
-    @Scheduled(fixedRate = 360000)
-    public void checkarDipositivosOffline() {
-        dispositivoService.dispositivosQueFicaramOffilne().forEach(device -> {
-            logRepository.save(Log.builder()
-                    .data(LocalDateTime.now())
-                    .usuario("Sistema")
-                    .mensagem(device.getMac())
-                    .cor(null)
-                    .comando(Comando.OFFLINE)
-                    .descricao(String.format(Comando.OFFLINE.value(), device.getMac()))
-                    .mac(device.getMac())
-                    .build());
-            dispositivoService.salvarDispositivoComoOffline(device);
-            enviarDashBoard = true;
-        });
-    }
 
     @Scheduled(fixedRate = 5000)
     public void checkTimers() {
