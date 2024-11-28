@@ -35,7 +35,7 @@ public class DispositivoService {
         if (dispositivoOptional.isPresent()) {
             Dispositivo dispositivoDB = dispositivoOptional.get();
             dispositivoDB.setStatus(StatusConexao.Offline);
-            dispositivoRepository.save(dispositivo);
+            dispositivoRepository.save(dispositivoDB);
             logRepository.save(Log.builder()
                     .data(LocalDateTime.now())
                     .usuario("Enviado pelo sistema")
