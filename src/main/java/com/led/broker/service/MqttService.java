@@ -22,7 +22,6 @@ public class MqttService {
                 .setHeader(MqttHeaders.TOPIC, topic)
                 .setHeader(MqttHeaders.RETAINED, true)
                 .build();
-        if (!reter)
             System.out.println("Comando enviado para: " + message);
         mqttOutbound.handleMessage(mqttMessage);
     }
