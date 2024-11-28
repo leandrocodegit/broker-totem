@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: conexao:1.0.0
     ports:
       - "8084:8084"
     environment:
