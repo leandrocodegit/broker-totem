@@ -18,8 +18,6 @@ public class ScheduleConfig {
     private final AgendaDeviceService agendaDeviceService;
     private final ComandoService comandoService;
 
-    private Boolean enviarDashBoard = false;
-
     @Scheduled(fixedRate = 10000)
     public void executarTarefaAgendada() {
         List<Agenda> agendas = agendaDeviceService.listaTodosAgendasPrevistaHoje();
@@ -33,7 +31,6 @@ public class ScheduleConfig {
                 comandoService.enviarComando(agenda);
                 agendaDeviceService.atualizarDataExecucao(agenda);
             });
-            enviarDashBoard = true;
          }
     }
 }
