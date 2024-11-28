@@ -36,5 +36,5 @@ public class DispositivoDashResponse {
 //    private Temporizador temporizador;
 //    public boolean isTimer() {
 //        return TimeUtil.isTime(this);
-    }
+//    }
 }
