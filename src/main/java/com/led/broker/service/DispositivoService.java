@@ -42,7 +42,7 @@ public class DispositivoService {
                     .mensagem(dispositivo.getMac())
                     .cor(dispositivo.getCor())
                     .comando(Comando.OFFLINE)
-                    .descricao(Comando.OFFLINE.value())
+                    .descricao(String.format(Comando.OFFLINE.value(), dispositivo.getMac()))
                     .mac(dispositivo.getMac())
                     .build());
         }

@@ -47,11 +47,7 @@ public class ScheduleConfig {
     @Scheduled(fixedRate = 60000)
     public void atualizacaoDashboard() {
         if(Boolean.TRUE.equals(enviarDashBoard)){
-            DashboardResponse response = dashboardService.atualizarDashboard("");
-
-            Gson gson = new GsonBuilder()
-                    .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-                    .create();
+            dashboardService.atualizarDashboard("");
             mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard", false);
         }
     }
