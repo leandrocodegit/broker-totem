@@ -27,7 +27,7 @@ public class ScheduleConfig {
     private Boolean enviarDashBoard = false;
     private final MqttService mqttService;
 
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 600000)
     public void checkarDipositivosOffline() {
         dispositivoService.dispositivosQueFicaramOffilne().forEach(device -> {
             logRepository.save(Log.builder()
