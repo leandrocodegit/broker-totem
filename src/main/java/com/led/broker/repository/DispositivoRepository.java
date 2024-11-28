@@ -15,7 +15,7 @@ public interface DispositivoRepository extends MongoRepository<Dispositivo, Stri
 
 
 
-    Optional<Dispositivo> findByIdAndComando(String id, Comando comando);
+    Optional<Dispositivo> findByMacAndComando(String mac, Comando comando);
     List<Dispositivo> findAllByMacInAndAtivo(List<String> macs, boolean ativo);
     @Query("{ 'ativo': ?0, 'configuracao': { $ne: null } }")
     List<Dispositivo> findAllByAtivo(boolean ativo);

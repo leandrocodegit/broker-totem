@@ -30,7 +30,7 @@ public class DispositivoService {
     private final DashboardService dashboardService;
 
     public void salvarDispositivoComoOffline(Dispositivo dispositivo) {
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByIdAndComando(dispositivo.getMac(), Comando.ONLINE);
+        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByMacAndComando(dispositivo.getMac(), Comando.ONLINE);
         if (dispositivoOptional.isPresent()) {
             Dispositivo dispositivoDB = dispositivoOptional.get();
             dispositivoDB.setStatus(StatusConexao.Offline);
