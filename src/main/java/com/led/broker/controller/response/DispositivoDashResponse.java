@@ -32,9 +32,9 @@ public class DispositivoDashResponse {
     private String enderecoComplento;
     private String enderecoCompleto;
     private boolean isTimer;
-    @JsonIgnore
-    private Temporizador temporizador;
-    public boolean isTimer() {
-        return TimeUtil.isTime(this);
+//    @JsonIgnore
+//    private Temporizador temporizador;
+//    public boolean isTimer() {
+//        return TimeUtil.isTime(this);
     }
 }
