@@ -31,23 +31,6 @@ public class ScheduleConfig {
     private final DashboardService dashboardService;
     private Boolean enviarDashBoard = false;
 
-    @Scheduled(fixedRate = 5000)
-    public void executarTarefaAgendada() {
-        List<Agenda> agendas = agendaDeviceService.listaTodosAgendasPrevistaHoje();
-        System.out.println("Agendas #: " + agendas.size());
-
-        if(!agendas.isEmpty()){
-
-            agendas.forEach(agenda -> {
-                System.out.println(agenda.getInicio() + " : " + agenda.getTermino());
-                System.out.println("Execução: " + agenda.getExecucao());
-                comandoService.enviarComando(agenda);
-                agendaDeviceService.atualizarDataExecucao(agenda);
-            });
-            enviarDashBoard = true;
-         }
-    }
-
     @Scheduled(fixedRate = 360000)
     public void checkarDipositivosOffline() {
         dispositivoService.dispositivosQueFicaramOffilne().forEach(device -> {

@@ -20,7 +20,6 @@ import reactor.core.publisher.MonoSink;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -139,72 +138,6 @@ public class ComandoService {
         }
     }
 
-    public void enviarComando(List<String> macs, boolean forcaTeste, boolean sincronizar) {
-
-        List<Dispositivo> dispositivos = todosDispositivosAtivos(macs, true);
-
-        if (!dispositivos.isEmpty()) {
-
-            if (sincronizar) {
-                logRepository.save(Log.builder()
-                        .data(LocalDateTime.now())
-                        .usuario("Leandro")
-                        .mensagem(forcaTeste ? "Especifico" : "Todos")
-                        .cor(null)
-                        .comando(Comando.SINCRONIZAR)
-                        .descricao(Comando.SINCRONIZAR.value())
-                        .mac(macs.toString())
-                        .build());
-            }
-
-
-            dispositivos.forEach(device -> {
-
-                boolean salvarLog = true;
-
-                if (device.isAtivo() && device.getConfiguracao() != null) {
-                    if (!forcaTeste) {
-                        device.setCor(getCor(device));
-                    }
-                    if(device.getCor() != null){
-                        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ConfiguracaoUtil.gerarComando(device));
-                        System.out.println(new Gson().toJson(device.getConfiguracao()));
-                    }
-                }
-
-                if (forcaTeste) {
-                    logRepository.save(Log.builder()
-                            .data(LocalDateTime.now())
-                            .usuario("Leandro")
-                            .mensagem("Tesde configuração enviado")
-                            .cor(null)
-                            .comando(Comando.TESTE)
-                            .descricao(Comando.TESTE.value())
-                            .mac(device.getMac())
-                            .build());
-                }
-            });
-            logRepository.save(Log.builder()
-                    .data(LocalDateTime.now())
-                    .usuario("Leandro")
-                    .mensagem("Enviado para todos")
-                    .cor(null)
-                    .comando(Comando.ENVIAR)
-                    .mac(macs.toString())
-                    .descricao(Comando.ENVIAR.value())
-                    .build());
-        } else {
-            logRepository.save(Log.builder()
-                    .data(LocalDateTime.now())
-                    .usuario("Leandro")
-                    .cor(null)
-                    .mensagem(macs.toString())
-                    .comando(Comando.NENHUM_DEVICE)
-                    .descricao(Comando.NENHUM_DEVICE.value())
-                    .build());
-        }
-    }
-
     private Cor getCor(Dispositivo dispositivo) {
         Agenda agenda = null;
 
@@ -221,44 +154,6 @@ public class ComandoService {
             return agenda.getCor();
         }
         return dispositivo.getCor();
-    }
-
-    public void enviarComando(Agenda agenda) {
-
-        if(agenda.getCor() != null) {
-            List<Dispositivo> dispositivos = Collections.EMPTY_LIST;
-
-            if (agenda.isTodos()) {
-                dispositivos = dispositivoRepository.findAllByAtivoIgnorarAgenda(true, false);
-            } else {
-                dispositivos = agenda.getDispositivos()
-                        .stream()
-                        .filter(device -> device.isAtivo() && device.getConfiguracao() != null)
-                        .collect(Collectors.toList());
-            }
-
-            if (!dispositivos.isEmpty()) {
-                dispositivos.forEach(device -> {
-
-                    if (device.isAtivo() && device.getConfiguracao() != null) {
-                        if (Boolean.FALSE.equals(device.isIgnorarAgenda()) && !TimeUtil.isTime(device)) {
-                            device.setCor(agenda.getCor());
-                            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(),
-                                    new Gson().toJson(ConfiguracaoUtil.gerarComando(device)), false);
-                        }
-                    }
-                });
-                logRepository.save(Log.builder()
-                        .data(LocalDateTime.now())
-                        .usuario(Comando.SISTEMA.value())
-                        .mensagem("Tarefa agenda executada")
-                        .cor(agenda.getCor())
-                        .comando(Comando.SISTEMA)
-                        .descricao("Tarefa agenda executada")
-                        .mac(agenda.getDispositivos().stream().map(mac -> mac.getMac()).collect(Collectors.toList()).toString())
-                        .build());
-            }
-        }
     }
 
     public Optional<Cor> buscaCor(UUID id) {
