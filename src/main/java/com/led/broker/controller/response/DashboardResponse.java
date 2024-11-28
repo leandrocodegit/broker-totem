@@ -12,7 +12,7 @@ public class DashboardResponse {
 
     private long usuariosAtivos;
     private long usuariosInativos;
-    private List<DispositivoResponse> dispositivos;
+    private List<DispositivoDashResponse> dispositivos;
     private List<DispositivoPorCorResponse> agendas;
     private List<DispositivoPorCorResponse> agendasExecucao;
     private List<DispositivoPorCorResponse> cores;
