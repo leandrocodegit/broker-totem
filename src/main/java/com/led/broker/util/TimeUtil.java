@@ -1,6 +1,5 @@
 package com.led.broker.util;
 
-import com.led.broker.controller.response.DispositivoResponse;
 import com.led.broker.model.Dispositivo;
 
 import java.time.Duration;
