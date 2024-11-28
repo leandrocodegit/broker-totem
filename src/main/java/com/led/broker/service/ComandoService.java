@@ -40,16 +40,23 @@ public class ComandoService {
     public void enviardComandoSincronizar(String mac, boolean responder) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
 
-        if (!dispositivoOptional.isPresent()) {
-
-
+        if (dispositivoOptional.isPresent()) {
             Dispositivo dispositivo = dispositivoOptional.get();
-            Mono<String> mono = createMono(mac);
-
             if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null) {
                 dispositivo.setCor(getCor(dispositivo));
                 if (dispositivo.getCor() != null) {
                     mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, responder));
+                }
+            }
+        }
+    }
+
+    public void enviardComandoSincronizar(Dispositivo dispositivo) {
+
+        if (dispositivo != null) {
+            if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null) {
+                if (dispositivo.getCor() != null) {
+                    mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, false));
                 }
             }
         }

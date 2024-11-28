@@ -2,6 +2,7 @@ package com.led.broker.service;
 
 import com.led.broker.model.*;
 import com.led.broker.model.constantes.Comando;
+import com.led.broker.model.constantes.Efeito;
 import com.led.broker.model.constantes.StatusConexao;
 import com.led.broker.model.constantes.TipoCor;
 import com.led.broker.repository.DispositivoRepository;
@@ -55,7 +56,7 @@ public class DispositivoService {
             dispositivo.setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
             dispositivo.setIp(mensagem.getIp());
             dispositivo.setMemoria(mensagem.getMemoria());
-            dispositivo.setComando(Comando.ONLINE);
+            dispositivo.setComando(mensagem.getComando());
             dispositivo.setStatus(StatusConexao.Online);
             dispositivo.setVersao(mensagem.getVersao());
             dispositivo.setBrokerId(mensagem.getBrockerId());
@@ -90,7 +91,7 @@ public class DispositivoService {
                     if (!cor.getEfeito().equals(mensagem.getEfeito())) {
                         System.out.println("Reparação de efeito de " + cor.getEfeito() + " para " + mensagem.getEfeito());
                         dispositivo.setCor(cor);
-                        comandoService.enviardComandoSincronizar(dispositivo.getMac(), false);
+                        comandoService.enviardComandoSincronizar(dispositivo);
                     }
                 }
             }

@@ -38,10 +38,6 @@ public interface AgendaRepository extends MongoRepository<Agenda, UUID> {
             "     $and: [" +
             "       { $lte: [ { $dateToString: { format: '%m-%d', date: '$inicio' } }, { $dateToString: { format: '%m-%d', date: ?0 } } ] }," +
             "       { $gte: [ { $dateToString: { format: '%m-%d', date: '$termino' } }, { $dateToString: { format: '%m-%d', date: ?0 } } ] }," +
-            "       { $or: [" +
-            "           { $not: { $ifNull: ['$execucao', false] } }, " +
-            "           { $ne: [ { $dateToString: { format: '%m-%d', date: '$execucao' } }, { $dateToString: { format: '%m-%d', date: ?0 } } ] }" +
-            "       ] }" +
             "     ]" +
             "   }," +
             "   'ativo': true" +
