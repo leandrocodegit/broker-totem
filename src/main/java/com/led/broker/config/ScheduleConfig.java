@@ -1,11 +1,14 @@
 package com.led.broker.config;
 
+import com.google.gson.Gson;
 import com.led.broker.controller.response.DashboardResponse;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
+import com.led.broker.model.constantes.Topico;
 import com.led.broker.repository.LogRepository;
 import com.led.broker.service.DashboardService;
 import com.led.broker.service.DispositivoService;
+import com.led.broker.service.MqttService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -21,6 +24,7 @@ public class ScheduleConfig {
     private final LogRepository logRepository;
     private final DashboardService dashboardService;
     private Boolean enviarDashBoard = false;
+    private MqttService mqttService;
 
     @Scheduled(fixedRate = 300000)
     public void checkarDipositivosOffline() {
@@ -44,7 +48,7 @@ public class ScheduleConfig {
         if(Boolean.TRUE.equals(enviarDashBoard)){
             System.out.println("Atualizando dashboard");
             DashboardResponse response = dashboardService.atualizarDashboard("");
-           //  webSocketService.sendMessageDashboard(response);
+            mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, new Gson().toJson(response), false);
             enviarDashBoard = false;
         }
     }
