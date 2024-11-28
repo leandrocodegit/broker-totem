@@ -2,6 +2,7 @@ package com.led.broker.config;
 
 
 import com.led.broker.handler.MessageSmart;
+import com.led.broker.model.Mensagem;
 import com.led.broker.model.constantes.Topico;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.mqtt.inbound.Mqttv5PahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.outbound.Mqttv5PahoMessageHandler;
+import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
@@ -28,11 +30,13 @@ public class MqttIntegrationConfig {
     public Mqttv5PahoMessageDrivenChannelAdapter mqttInbound() {
 
         Mqttv5PahoMessageDrivenChannelAdapter adapter =
-                new Mqttv5PahoMessageDrivenChannelAdapter(connectionOptions(), clientId, Topico.DEVICE_CONFIRMACAO);
-        adapter.setMessageConverter(new MessageSmart());
+                new Mqttv5PahoMessageDrivenChannelAdapter(connectionOptions(), clientId, Topico.DEVICE_CONFIRMACAO + "#");
+    //    adapter.setMessageConverter(new MessageSmart());
         adapter.setQos(0);
+        adapter.setPayloadType(Mensagem.class);
         adapter.setCompletionTimeout(5000);
         adapter.setOutputChannel(mqttInputChannel());
+
 
         return adapter;
     }

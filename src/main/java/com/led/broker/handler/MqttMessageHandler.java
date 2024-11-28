@@ -28,5 +28,22 @@ public class MqttMessageHandler implements MessageHandler {
     @Override
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handleMessage(Message<?> message) {
+        String topico = (String) message.getHeaders().get("mqtt_receivedTopic");
+
+        if (topico.length() > Topico.DEVICE_CONFIRMACAO.length()) {
+            try {
+                String id = topico.replace(Topico.DEVICE_CONFIRMACAO, "");
+                ComandoService.streams.remove(id).success(Comando.ACEITO.value() + " " + id);
+            } catch (Exception erro) {
+                System.out.println("Erro ao capturar id");
+                erro.printStackTrace();
+            }
+        }
+
+    }
+
+    // Método para obter informações de um cliente
+    public String getClientInfo(String clientId) {
+        return clientMap.get(clientId);
     }
 }
