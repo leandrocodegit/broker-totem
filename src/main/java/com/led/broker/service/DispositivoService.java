@@ -30,11 +30,20 @@ public class DispositivoService {
     private final DashboardService dashboardService;
 
     public void salvarDispositivoComoOffline(Dispositivo dispositivo) {
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(dispositivo.getMac());
+        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByIdAndComando(dispositivo.getMac(), Comando.ONLINE);
         if (dispositivoOptional.isPresent()) {
             Dispositivo dispositivoDB = dispositivoOptional.get();
             dispositivoDB.setStatus(StatusConexao.Offline);
             dispositivoRepository.save(dispositivo);
+            logRepository.save(Log.builder()
+                    .data(LocalDateTime.now())
+                    .usuario("Enviado pelo sistema")
+                    .mensagem(dispositivo.getMac())
+                    .cor(dispositivo.getCor())
+                    .comando(Comando.OFFLINE)
+                    .descricao(Comando.OFFLINE.value())
+                    .mac(dispositivo.getMac())
+                    .build());
         }
     }
 
