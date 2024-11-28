@@ -57,11 +57,11 @@ public class ComandoService {
             List<Dispositivo> dispositivos = Collections.EMPTY_LIST;
 
             if (agenda.isTodos()) {
-                dispositivos = dispositivoRepository.findAllByAtivoIgnorarAgenda(true, false);
+                dispositivos = dispositivoRepository.findAllByAtivoIgnorarAgendaOnline(true, false, Comando.ONLINE);
             } else {
                 dispositivos = agenda.getDispositivos()
                         .stream()
-                        .filter(device -> device.isAtivo() && device.getConfiguracao() != null)
+                        .filter(device -> (device.isAtivo() && device.getComando().equals(Comando.ONLINE) && device.getConfiguracao() != null && !device.isIgnorarAgenda()))
                         .collect(Collectors.toList());
             }
 

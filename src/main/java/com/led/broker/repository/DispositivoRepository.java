@@ -1,6 +1,7 @@
 package com.led.broker.repository;
 
 import com.led.broker.model.Dispositivo;
+import com.led.broker.model.constantes.Comando;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -16,8 +17,8 @@ public interface DispositivoRepository extends MongoRepository<Dispositivo, Stri
     List<Dispositivo> findAllByMacInAndAtivo(List<String> macs, boolean ativo);
     @Query("{ 'ativo': ?0, 'configuracao': { $ne: null } }")
     List<Dispositivo> findAllByAtivo(boolean ativo);
-    @Query("{ 'ativo': ?0, 'ignorarAgenda': ?0, 'configuracao': { $ne: null } }")
-    List<Dispositivo> findAllByAtivoIgnorarAgenda(boolean ativo, boolean ignorarAgenda);
+    @Query("{ 'ativo': ?0, 'ignorarAgenda': ?1, 'comando': ?2, 'configuracao': { $ne: null } }")
+    List<Dispositivo> findAllByAtivoIgnorarAgendaOnline(boolean ativo, boolean ignorarAgenda, Comando comando);
     @Query("{ 'ativo': ?0, 'configuracao': { $ne: null } }")
     Page<Dispositivo> findAllByAtivo(boolean ativo, Pageable pageable);
     @Query("{ 'ativo': ?0 }")
