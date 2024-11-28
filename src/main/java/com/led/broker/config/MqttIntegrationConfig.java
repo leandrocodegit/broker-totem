@@ -28,7 +28,7 @@ public class MqttIntegrationConfig {
     public Mqttv5PahoMessageDrivenChannelAdapter mqttInbound() {
 
         Mqttv5PahoMessageDrivenChannelAdapter adapter =
-                new Mqttv5PahoMessageDrivenChannelAdapter(connectionOptions(), clientId, Topico.DEVICE_SEND + "#");
+                new Mqttv5PahoMessageDrivenChannelAdapter(connectionOptions(), clientId);
         adapter.setMessageConverter(new MessageSmart());
         adapter.setQos(0);
         adapter.setCompletionTimeout(5000);
