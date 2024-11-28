@@ -17,10 +17,10 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
 # Copia o JAR do estágio de build para o estágio de runtime
-COPY --from=builder /app/target/broker-0.0.1-SNAPSHOT.jar /app/broker-0.0.1-SNAPSHOT.jar
+COPY --from=builder /app/target/comando.1.0.0.jar /app/comando.1.0.0-SNAPSHOT.jar
 
 # Porta em que a aplicação irá rodar
 EXPOSE 8080
 
 # Comando para executar a aplicação
-CMD ["java", "-jar", "/app/broker-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "/app/comando.1.0.0.jar"]
