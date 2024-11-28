@@ -35,8 +35,8 @@ public class MqttMessageHandler implements MessageHandler {
                 String id = topico.replace(Topico.DEVICE_CONFIRMACAO, "");
                 ComandoService.streams.remove(id).success(Comando.ACEITO.value() + " " + id);
             } catch (Exception erro) {
-                System.out.println("Erro ao capturar id");
-                erro.printStackTrace();
+                if(message != null && message.getPayload() != null)
+                    System.out.println("Erro ao confirmar resposta" + message.getPayload().toString());
             }
         }
 
