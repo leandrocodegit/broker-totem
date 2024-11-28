@@ -1,6 +1,7 @@
 package com.led.broker.config;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.led.broker.controller.response.DashboardResponse;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
@@ -24,7 +25,7 @@ public class ScheduleConfig {
     private final LogRepository logRepository;
     private final DashboardService dashboardService;
     private Boolean enviarDashBoard = false;
-    private MqttService mqttService;
+    private final MqttService mqttService;
 
     @Scheduled(fixedRate = 300000)
     public void checkarDipositivosOffline() {
@@ -48,8 +49,11 @@ public class ScheduleConfig {
         if(Boolean.TRUE.equals(enviarDashBoard)){
             System.out.println("Atualizando dashboard");
             DashboardResponse response = dashboardService.atualizarDashboard("");
-            mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, new Gson().toJson(response), false);
-            enviarDashBoard = false;
+
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+                    .create();
+            mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, gson.toJson(response), false);
         }
     }
 }
