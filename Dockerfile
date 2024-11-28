@@ -2,7 +2,7 @@
 FROM maven:3.8.6-eclipse-temurin-17 AS builder
 
 # Define o diretório de trabalho no container
-WORKDIR /app
+WORKDIR /app-comando
 
 # Copia o código fonte para o container
 COPY . .
@@ -14,10 +14,10 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jdk
 
 # Define o diretório de trabalho para a aplicação
-WORKDIR /app
+WORKDIR /app-comando
 
 # Copia o JAR do estágio de build para o estágio de runtime
-COPY --from=builder /app/target/comando-1.0.0.jar /app/comando-1.0.0.jar
+COPY --from=builder /app-comando/target/comando-1.0.0.jar /app-comando/comando-1.0.0.jar
 
 # Porta em que a aplicação irá rodar
 EXPOSE 8080
