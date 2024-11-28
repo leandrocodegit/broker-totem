@@ -23,4 +23,4 @@ COPY --from=builder /app/target/agenda-1.0.0.jar /app/agenda-1.0.0.jar
 EXPOSE 8083
 
 # Comando para executar a aplicação
-CMD ["java", "-jar", "/app/broker-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "/app/agenda-1.0.0.jar"]
