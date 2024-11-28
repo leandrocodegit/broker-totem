@@ -64,6 +64,17 @@ public interface AgendaRepository extends MongoRepository<Agenda, UUID> {
     })
     List<Integer> findAllDoMes(boolean ativo);
 
+    @Query("{" +
+            "   $expr: {" +
+            "     $and: [" +
+            "       { $lte: [ { $dateToString: { format: '%m-%d', date: '$inicio' } }, { $dateToString: { format: '%m-%d', date: ?0 } } ] }," +
+            "       { $gte: [ { $dateToString: { format: '%m-%d', date: '$termino' } }, { $dateToString: { format: '%m-%d', date: ?0 } } ] }," +
+            "     ]" +
+            "   }," +
+            "   'ativo': true" +
+            "   'todos': ?1" +
+            "}")
+    List<Agenda> findAllAgendasByDataDentroDoIntervalo(LocalDate data, boolean todos);
     List<Agenda> findAllByAtivo(boolean ativo);
 
     @Query("{" +

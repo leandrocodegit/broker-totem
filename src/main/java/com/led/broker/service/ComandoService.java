@@ -149,6 +149,12 @@ public class ComandoService {
         }
         if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda())) {
             agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(dispositivo.getMac());
+            if(agenda == null){
+                List<Agenda> agendasParatodosHoje = agendaDeviceService.listaTodosAgendasPrevistaHoje(true);
+                if(!agendasParatodosHoje.isEmpty()){
+                    agenda = agendasParatodosHoje.stream().findFirst().get();
+                }
+            }
         }
         if (agenda != null && agenda.getCor() != null) {
             return agenda.getCor();
