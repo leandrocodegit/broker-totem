@@ -27,7 +27,7 @@ public class ScheduleConfig {
     private Boolean enviarDashBoard = false;
     private final MqttService mqttService;
 
-    @Scheduled(fixedRate = 600000)
+    @Scheduled(fixedRate = 300000)
     public void checkarDipositivosOffline() {
         dispositivoService.dispositivosQueFicaramOffilne().forEach(device -> {
             logRepository.save(Log.builder()
@@ -44,7 +44,7 @@ public class ScheduleConfig {
         });
     }
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 60000)
     public void atualizacaoDashboard() {
         if(Boolean.TRUE.equals(enviarDashBoard)){
             System.out.println("Atualizando dashboard");
@@ -53,7 +53,7 @@ public class ScheduleConfig {
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                     .create();
-            mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, gson.toJson(response), false);
+            mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, gson.toJson(response), true);
         }
     }
 }

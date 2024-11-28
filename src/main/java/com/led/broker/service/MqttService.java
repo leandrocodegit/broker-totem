@@ -22,14 +22,14 @@ public class MqttService {
                 .setHeader(MqttHeaders.TOPIC, topic)
                 .setHeader(MqttHeaders.RETAINED, true)
                 .build();
-
-        System.out.println("Comando enviado para: " + message);
+        if (!reter)
+            System.out.println("Comando enviado para: " + message);
         mqttOutbound.handleMessage(mqttMessage);
     }
 
     public void sendRetainedMessage(String topic, ComandoRequest comandoRequest) {
 
-       String message = new Gson().toJson(comandoRequest);
+        String message = new Gson().toJson(comandoRequest);
         Message<String> mqttMessage = MessageBuilder.withPayload(message)
                 .setHeader(MqttHeaders.TOPIC, topic)
                 .setHeader(MqttHeaders.RETAINED, true)
