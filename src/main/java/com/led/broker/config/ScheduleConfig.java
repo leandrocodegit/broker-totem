@@ -18,7 +18,7 @@ public class ScheduleConfig {
     private final AgendaDeviceService agendaDeviceService;
     private final ComandoService comandoService;
 
-    @Scheduled(fixedRate = 5 * 60 * 1000)
+    @Scheduled(fixedRate = 2 * 60 * 1000)
     public void executarTarefaAgendada() {
         List<Agenda> agendas = agendaDeviceService.listaTodosAgendasPrevistaHoje();
         System.out.println("Agendas #: " + agendas.size());
