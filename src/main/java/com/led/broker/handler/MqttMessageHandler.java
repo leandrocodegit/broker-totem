@@ -1,7 +1,6 @@
 package com.led.broker.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.led.broker.model.Mensagem;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.service.ComandoService;
@@ -12,8 +11,6 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component

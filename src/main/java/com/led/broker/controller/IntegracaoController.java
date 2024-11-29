@@ -5,6 +5,7 @@ import com.led.broker.service.ComandoService;
 import com.led.broker.service.CorService;
 import com.led.broker.service.DispositivoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -23,6 +24,8 @@ public class IntegracaoController {
     private final DispositivoService dispositivoService;
     private final CorService corService;
     private final AuthService authService;
+    @Value("${time-expiration}")
+    private long timeExpiratio;
 
     @GetMapping("/flux/temporizar/{idCor}/{mac}")
     public Flux<String> temporizarFlux(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
@@ -30,7 +33,7 @@ public class IntegracaoController {
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(idCor, mac, false)
-                        .timeout(Duration.ofSeconds(20))
+                        .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
 
@@ -40,7 +43,7 @@ public class IntegracaoController {
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(null, mac, true)
-                        .timeout(Duration.ofSeconds(20))
+                        .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
 
