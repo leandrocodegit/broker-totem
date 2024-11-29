@@ -23,4 +23,4 @@ COPY --from=builder /app/target/conexao-1.0.0.jar /app/conexao-1.0.0.jar
 EXPOSE 8080
 
 # Comando para executar a aplicação
-CMD ["java",, "-Xms1g", "-Xmx2g", "-jar", "/app/conexao-1.0.0.jar"]
+CMD ["java", "-Xms2g", "-Xmx4g", "-jar", "/app/conexao-1.0.0.jar"]
