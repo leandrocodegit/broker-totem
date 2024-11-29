@@ -26,7 +26,7 @@ public class DispositivoService {
 
     public List<String> listaTodosDispositivos(boolean apenasOnline) {
         if (apenasOnline)
-            return dispositivoRepository.findAllByAtivoEOnline(true).stream().map(device -> device.getMac()).toList();
+            return dispositivoRepository.findAllByAtivo(true).stream().filter(dispositivo -> dispositivo.getConexao().getStatus().equals(StatusConexao.Online)).map(device -> device.getMac()).toList();
         return dispositivoRepository.findAllByAtivo(true).stream().map(device -> device.getMac()).toList();
     }
 }

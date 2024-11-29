@@ -1,5 +1,6 @@
 package com.led.broker.controller.response;
 
+import com.led.broker.model.Conexao;
 import com.led.broker.model.Configuracao;
 import com.led.broker.model.Temporizador;
 import com.led.broker.model.constantes.Comando;
@@ -21,9 +22,8 @@ public class DispositivoResponse {
     private int memoria;
     private String versao;
     private boolean ignorarAgenda;
-    private LocalDateTime ultimaAtualizacao;
     private boolean ativo;
-    private StatusConexao conexao;
+    private Conexao conexao;
     private String latitude;
     private String longitude;
     private Comando comando;
