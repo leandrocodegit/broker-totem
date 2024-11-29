@@ -58,6 +58,7 @@ public class DispositivoService {
                 dispositivo.setConexao(Conexao.builder()
                                 .mac(dispositivo.getMac())
                         .build());
+                conexaoRepository.save(dispositivo.getConexao());
             }
 
             dispositivo.getConexao().setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
@@ -103,22 +104,30 @@ public class DispositivoService {
                 }
             }
         } else {
-            dispositivoRepository.save(
+
+         Dispositivo dispositivo = dispositivoRepository.save(
                     Dispositivo.builder()
                             .conexao(Conexao.builder()
-                                    .ultimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime())
-                                    .status(StatusConexao.Online)
                                     .build())
                             .mac(mensagem.getId())
                             .versao("")
+                            .conexao(Conexao.builder()
+                                    .mac(mensagem.getId())
+                                    .status(StatusConexao.Online)
+                                    .ultimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime())
+                                    .build())
                             .ignorarAgenda(false)
                             .memoria(0)
                             .ativo(false)
                             .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
                             .comando(Comando.ONLINE)
                             .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
-                            .build()
-            );
+                            .build();
+
+            dispositivo.setConexao(Conexao.builder()
+                    .mac(dispositivo.getMac())
+                    .build());
+            conexaoRepository.save(dispositivo.getConexao());
         }
     }
 
