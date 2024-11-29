@@ -1,13 +1,9 @@
 package com.led.broker.config;
 
-import com.led.broker.controller.response.DashboardResponse;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.repository.LogRepository;
-import com.led.broker.service.AgendaDeviceService;
 import com.led.broker.service.ComandoService;
-import com.led.broker.service.DashboardService;
-import com.led.broker.service.DispositivoService;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -22,13 +18,8 @@ import java.util.List;
 @EnableScheduling
 @RequiredArgsConstructor
 public class ScheduleConfig {
-
-    private final AgendaDeviceService agendaDeviceService;
-    private final ComandoService comandoService;
-    private final DispositivoService dispositivoService;
+     private final ComandoService comandoService;
     private final LogRepository logRepository;
-    private final DashboardService dashboardService;
-    private Boolean enviarDashBoard = false;
 
     @Scheduled(fixedRate = 5000)
     public void checkTimers() {
@@ -48,7 +39,6 @@ public class ScheduleConfig {
                         .build());
                 devicesRemove.add(device.getMac());
                 comandoService.enviardComandoRapido(device, true, true);
-                enviarDashBoard = true;
             }
         });
 
@@ -57,16 +47,6 @@ public class ScheduleConfig {
                 TimeUtil.timers.remove(dev);
             });
             devicesRemove.clear();
-        }
-    }
-
-    @Scheduled(fixedRate = 30000)
-    public void atualizacaoDashboard() {
-        if(Boolean.TRUE.equals(enviarDashBoard)){
-            System.out.println("Atualizando dashboard");
-            DashboardResponse response = dashboardService.atualizarDashboard("");
-           //  webSocketService.sendMessageDashboard(response);
-            enviarDashBoard = false;
         }
     }
 }
