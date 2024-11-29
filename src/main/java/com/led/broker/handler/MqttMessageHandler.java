@@ -49,7 +49,6 @@ public class MqttMessageHandler implements MessageHandler {
 
         } catch (Exception erro) {
             System.out.println("Erro ao capturar id");
-            erro.printStackTrace();
         }
 
         System.out.println("Mensagem recebida do cliente " + clientId + ": " + message.getPayload().toString());
