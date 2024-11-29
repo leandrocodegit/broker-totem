@@ -5,6 +5,7 @@ import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.Efeito;
 import com.led.broker.model.constantes.StatusConexao;
 import com.led.broker.model.constantes.TipoCor;
+import com.led.broker.repository.ConexaoRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
 import com.led.broker.util.TimeUtil;
@@ -29,23 +30,21 @@ public class DispositivoService {
     private final CorService configuracaoService;
     private final ComandoService comandoService;
     private final AgendaDeviceService agendaDeviceService;
-    private final DashboardService dashboardService;
+    private final ConexaoRepository conexaoRepository;
 
 
-    public void salvarDispositivoComoOffline(Dispositivo dispositivo) {
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByMacAndComando(dispositivo.getMac(), Comando.ONLINE);
-        if (dispositivoOptional.isPresent()) {
-            Dispositivo dispositivoDB = dispositivoOptional.get();
-            dispositivoDB.setStatus(StatusConexao.Offline);
-            dispositivoRepository.save(dispositivoDB);
+    public void salvarDispositivoComoOffline(List<Conexao> conexoes) {
+        if(conexoes != null && !conexoes.isEmpty()) {
+            conexaoRepository.saveAll(conexoes);
+
             logRepository.save(Log.builder()
                     .data(LocalDateTime.now())
                     .usuario("Enviado pelo sistema")
-                    .mensagem(dispositivo.getMac())
-                    .cor(dispositivo.getCor())
+                    .mensagem("Dispositivos offline")
+                    .cor(null)
                     .comando(Comando.OFFLINE)
-                    .descricao(String.format(Comando.OFFLINE.value(), dispositivo.getMac()))
-                    .mac(dispositivo.getMac())
+                    .descricao(String.format(Comando.OFFLINE.value(), "grupo"))
+                    .mac(conexoes.stream().map(device -> device.getMac()).toList().toString())
                     .build());
         }
     }
@@ -55,11 +54,13 @@ public class DispositivoService {
         if (dispositivoOptional.isPresent()) {
             Dispositivo dispositivo = dispositivoOptional.get();
 
-            dispositivo.setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
+            if(dispositivo.getConexao() == null)
+                dispositivo.setConexao(Conexao.builder().build());
+            dispositivo.getConexao().setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
+            dispositivo.getConexao().setStatus(StatusConexao.Online);
             dispositivo.setIp(mensagem.getIp());
             dispositivo.setMemoria(mensagem.getMemoria());
             dispositivo.setComando(mensagem.getComando());
-            dispositivo.setStatus(StatusConexao.Online);
             dispositivo.setVersao(mensagem.getVersao());
             dispositivo.setBrokerId(mensagem.getBrockerId());
 
@@ -71,7 +72,7 @@ public class DispositivoService {
                         .build()
                 );
             }
-            if (mensagem.getComando().equals(Comando.ONLINE))
+            if (mensagem.getComando().equals(Comando.ONLINE) && dispositivo.getConexao().getStatus().equals(StatusConexao.Offline))
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
                         .usuario("Enviado pelo dispositivo")
@@ -100,11 +101,13 @@ public class DispositivoService {
         } else {
             dispositivoRepository.save(
                     Dispositivo.builder()
-                            .ultimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime())
+                            .conexao(Conexao.builder()
+                                    .ultimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime())
+                                    .status(StatusConexao.Online)
+                                    .build())
                             .mac(mensagem.getId())
                             .versao("")
                             .ignorarAgenda(false)
-                            .status(StatusConexao.Online)
                             .memoria(0)
                             .ativo(false)
                             .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
@@ -139,9 +142,9 @@ public class DispositivoService {
         return dispositivo.getCor();
     }
 
-    public List<Dispositivo> dispositivosQueFicaramOffilne() {
+    public List<Conexao> dispositivosQueFicaramOffilne() {
         LocalDateTime cincoMinutosAtras = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(6);
         Date dataLimite = Date.from(cincoMinutosAtras.atZone(ZoneOffset.UTC).toInstant());
-        return dispositivoRepository.findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(dataLimite);
+        return conexaoRepository.findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(dataLimite);
     }
 }

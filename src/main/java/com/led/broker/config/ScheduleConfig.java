@@ -3,6 +3,8 @@ package com.led.broker.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.led.broker.controller.response.DashboardResponse;
+import com.led.broker.model.Conexao;
+import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.Topico;
@@ -16,6 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Configuration
 @EnableScheduling
@@ -26,27 +29,19 @@ public class ScheduleConfig {
     private final DashboardService dashboardService;
     private Boolean enviarDashBoard = false;
     private final MqttService mqttService;
+    private List<Conexao> conexoes;
 
     @Scheduled(fixedRate = 7 * 60 * 1000)
     public void checkarDipositivosOffline() {
-        dispositivoService.dispositivosQueFicaramOffilne().forEach(device -> {
-            logRepository.save(Log.builder()
-                    .data(LocalDateTime.now())
-                    .usuario("Tarefa do sistema")
-                    .mensagem(device.getMac())
-                    .cor(null)
-                    .comando(Comando.OFFLINE)
-                    .descricao(String.format(Comando.OFFLINE.value(), device.getMac()))
-                    .mac(device.getMac())
-                    .build());
-            dispositivoService.salvarDispositivoComoOffline(device);
-            enviarDashBoard = true;
-        });
+
+        conexoes = dispositivoService.dispositivosQueFicaramOffilne();
+        enviarDashBoard = true;
     }
 
     @Scheduled(fixedRate = 8 * 60 * 1000)
     public void atualizacaoDashboard() {
         if(Boolean.TRUE.equals(enviarDashBoard)){
+            dispositivoService.salvarDispositivoComoOffline(conexoes);
             dashboardService.atualizarDashboard("");
             mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard", false);
             enviarDashBoard = false;
