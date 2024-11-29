@@ -31,14 +31,14 @@ public class ComandoController {
     public Flux<String> sincronizarTodos(@PathVariable boolean responder, @RequestParam("token") String token) {
         if(!responder) {
             authService.validarToken(token);
-            Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos());
+            Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(responder));
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, false)
                             .then(Mono.just("Comando enviado para " + mac))
             );
         }else{
             authService.validarToken(token);
-            Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos());
+            Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(responder));
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, true)
                             .timeout(Duration.ofSeconds(timeExpiratio))

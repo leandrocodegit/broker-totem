@@ -16,32 +16,7 @@ public interface DispositivoRepository extends MongoRepository<Dispositivo, Stri
     List<Dispositivo> findAllByMacInAndAtivo(List<String> macs, boolean ativo);
     @Query("{ 'ativo': ?0, 'configuracao': { $ne: null } }")
     List<Dispositivo> findAllByAtivo(boolean ativo);
-    @Query("{ 'ativo': ?0, 'ignorarAgenda': ?0, 'configuracao': { $ne: null } }")
-    List<Dispositivo> findAllByAtivoIgnorarAgenda(boolean ativo, boolean ignorarAgenda);
-    @Query("{ 'ativo': ?0, 'configuracao': { $ne: null } }")
-    Page<Dispositivo> findAllByAtivo(boolean ativo, Pageable pageable);
-    @Query("{ 'ativo': ?0 }")
-    Page<Dispositivo> findAllByInativo(boolean ativo, Pageable pageable);
-    @Query("{ 'ativo' : true, 'ultimaAtualizacao' : { $lt: ?0 }, 'configuracao': { $ne: null } }")
-    List<Dispositivo> findAllAtivosComUltimaAtualizacaoAntes(Date dataLimite);
-    @Query("{ 'ativo' : true, 'ultimaAtualizacao' : { $lt: ?0 }, 'configuracao': { $ne: null } }")
-    Page<Dispositivo> findAllAtivosComUltimaAtualizacaoAntes(Date dataLimite, Pageable pageable);
-    @Query("{ 'ativo' : true, 'ultimaAtualizacao' : { $lt: ?0 }, 'status' : 'Online', 'configuracao': { $ne: null } }")
-    List<Dispositivo> findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(Date dataLimite);
-
-    @Query("{ 'configuracao': null }")
-    List<Dispositivo> findDispositivosSemConfiguracao();
-    @Query("{ 'configuracao': null }")
-    Page<Dispositivo> findDispositivosSemConfiguracao(Pageable pageable);
-
-    @Query("{" +
-            "   $or: [" +
-            "       { 'mac': ?0 }," +
-            "       { 'nome': { $regex: ?0, $options: 'i' } }," +
-            "       { 'enderecoCompleto': { $regex: ?0, $options: 'i' } }" +
-            "   ]," +
-//            "   'ativo': true" +
-            "}")
-    Page<Dispositivo> findByMacAndNomeContaining(String texto, Pageable pageable);
+    @Query("{ 'ativo': ?0, 'configuracao': { $ne: null }, , 'conexao.status' : 'Online', }")
+    List<Dispositivo> findAllByAtivoEOnline(boolean ativo);
 
 }

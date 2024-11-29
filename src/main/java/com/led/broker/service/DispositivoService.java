@@ -24,13 +24,9 @@ public class DispositivoService {
 
     private final DispositivoRepository dispositivoRepository;
 
-    public List<String> listaTodosDispositivos() {
-       return dispositivoRepository.findAllByAtivo(true).stream().map(device -> device.getMac()).toList();
-    }
-
-    public List<Dispositivo> dispositivosQueFicaramOffilne() {
-        LocalDateTime cincoMinutosAtras = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(6);
-        Date dataLimite = Date.from(cincoMinutosAtras.atZone(ZoneOffset.UTC).toInstant());
-        return dispositivoRepository.findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(dataLimite);
+    public List<String> listaTodosDispositivos(boolean apenasOnline) {
+        if (apenasOnline)
+            return dispositivoRepository.findAllByAtivoEOnline(true).stream().map(device -> device.getMac()).toList();
+        return dispositivoRepository.findAllByAtivo(true).stream().map(device -> device.getMac()).toList();
     }
 }
