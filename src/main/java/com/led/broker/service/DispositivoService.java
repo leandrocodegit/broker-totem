@@ -54,8 +54,12 @@ public class DispositivoService {
         if (dispositivoOptional.isPresent()) {
             Dispositivo dispositivo = dispositivoOptional.get();
 
-            if(dispositivo.getConexao() == null)
-                dispositivo.setConexao(Conexao.builder().build());
+            if(dispositivo.getConexao() == null){
+                dispositivo.setConexao(Conexao.builder()
+                                .mac(dispositivo.getMac())
+                        .build());
+            }
+
             dispositivo.getConexao().setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
             dispositivo.getConexao().setStatus(StatusConexao.Online);
             dispositivo.setIp(mensagem.getIp());
