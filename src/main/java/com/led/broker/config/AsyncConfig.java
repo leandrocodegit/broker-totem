@@ -17,8 +17,8 @@ public class AsyncConfig {
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(4);
-        executor.setMaxPoolSize(20);
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(3);
         executor.setQueueCapacity(1000);
         executor.setThreadNamePrefix("AsyncThread-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
