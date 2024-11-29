@@ -112,7 +112,6 @@ public class DispositivoService {
                             .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
                             .build()
             );
-            dashboardService.atualizarDashboard("");
         }
     }
 
