@@ -31,7 +31,7 @@ public class DispositivoService {
     private final AgendaDeviceService agendaDeviceService;
     private final DashboardService dashboardService;
 
-    @Async("taskExecutor")
+
     public void salvarDispositivoComoOffline(Dispositivo dispositivo) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByMacAndComando(dispositivo.getMac(), Comando.ONLINE);
         if (dispositivoOptional.isPresent()) {
@@ -49,7 +49,7 @@ public class DispositivoService {
                     .build());
         }
     }
-
+    @Async("taskExecutor")
     public void atualizarDispositivo(Mensagem mensagem) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mensagem.getId());
         if (dispositivoOptional.isPresent()) {
