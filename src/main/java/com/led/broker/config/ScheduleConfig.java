@@ -27,12 +27,12 @@ public class ScheduleConfig {
     private Boolean enviarDashBoard = false;
     private final MqttService mqttService;
 
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 7 * 60 * 1000)
     public void checkarDipositivosOffline() {
         dispositivoService.dispositivosQueFicaramOffilne().forEach(device -> {
             logRepository.save(Log.builder()
                     .data(LocalDateTime.now())
-                    .usuario("Sistema")
+                    .usuario("Tarefa do sistema")
                     .mensagem(device.getMac())
                     .cor(null)
                     .comando(Comando.OFFLINE)
@@ -44,7 +44,7 @@ public class ScheduleConfig {
         });
     }
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 8 * 60 * 1000)
     public void atualizacaoDashboard() {
         if(Boolean.TRUE.equals(enviarDashBoard)){
             dashboardService.atualizarDashboard("");
