@@ -58,11 +58,10 @@ public class DispositivoService {
                 dispositivo.setConexao(Conexao.builder()
                                 .mac(dispositivo.getMac())
                         .build());
-                conexaoRepository.save(dispositivo.getConexao());
             }
-
             dispositivo.getConexao().setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
             dispositivo.getConexao().setStatus(StatusConexao.Online);
+            conexaoRepository.save(dispositivo.getConexao());
             dispositivo.setIp(mensagem.getIp());
             dispositivo.setMemoria(mensagem.getMemoria());
             dispositivo.setComando(mensagem.getComando());
