@@ -11,6 +11,7 @@ import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ public class DispositivoService {
     private final AgendaDeviceService agendaDeviceService;
     private final DashboardService dashboardService;
 
+    @Async("taskExecutor")
     public void salvarDispositivoComoOffline(Dispositivo dispositivo) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByMacAndComando(dispositivo.getMac(), Comando.ONLINE);
         if (dispositivoOptional.isPresent()) {

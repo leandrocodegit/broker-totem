@@ -25,6 +25,7 @@ public class MqttMessageHandler implements MessageHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ConcurrentHashMap<String, String> clientMap = new ConcurrentHashMap<>();
 
+
     @Override
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handleMessage(Message<?> message) {
