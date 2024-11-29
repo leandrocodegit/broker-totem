@@ -10,6 +10,8 @@ public class BrokerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BrokerApplication.class, args);
+		int availableProcessors = Runtime.getRuntime().availableProcessors();
+		System.out.println("Número de núcleos disponíveis: " + availableProcessors);
 	}
 
 }
