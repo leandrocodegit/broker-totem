@@ -30,7 +30,7 @@ public class IntegracaoController {
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(idCor, mac, false)
-                        .timeout(Duration.ofSeconds(10))
+                        .timeout(Duration.ofSeconds(20))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
 
@@ -40,7 +40,7 @@ public class IntegracaoController {
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(null, mac, true)
-                        .timeout(Duration.ofSeconds(10))
+                        .timeout(Duration.ofSeconds(20))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
 

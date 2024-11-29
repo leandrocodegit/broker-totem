@@ -38,7 +38,7 @@ public class ComandoController {
             Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos());
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, true)
-                            .timeout(Duration.ofSeconds(10))
+                            .timeout(Duration.ofSeconds(20))
                             .doOnNext(response -> System.out.println("Resposta recebida: " + response))
                             .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu"))
             );
@@ -51,7 +51,7 @@ public class ComandoController {
         return  Flux.concat(
                 Mono.just("ok"),
                 comandoService.enviardComandoSincronizar(mac, true)
-                        .timeout(Duration.ofSeconds(10))
+                        .timeout(Duration.ofSeconds(20))
                         .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
     }
 
@@ -61,7 +61,7 @@ public class ComandoController {
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(idCor, mac, false)
-                        .timeout(Duration.ofSeconds(10))
+                        .timeout(Duration.ofSeconds(20))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
 
@@ -71,7 +71,7 @@ public class ComandoController {
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(null, mac, true)
-                        .timeout(Duration.ofSeconds(10))
+                        .timeout(Duration.ofSeconds(20))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
 
@@ -81,7 +81,7 @@ public class ComandoController {
         return  Flux.concat(
                 Mono.just("ok"),
                 comandoService.enviardComandoTeste(mac)
-                        .timeout(Duration.ofSeconds(10))
+                        .timeout(Duration.ofSeconds(20))
                         .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
     }
 
