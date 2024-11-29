@@ -32,7 +32,6 @@ public class ComandoService {
 
     public Mono<String> createMono(String mac) {
         return Mono.create(sink -> {
-            System.out.println(mac);
             streams.put(mac, sink);
         });
     }
