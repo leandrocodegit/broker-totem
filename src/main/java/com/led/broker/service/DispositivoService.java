@@ -122,7 +122,7 @@ public class DispositivoService {
                             .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
                             .comando(Comando.ONLINE)
                             .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
-                            .build();
+                            .build());
 
             dispositivo.setConexao(Conexao.builder()
                     .mac(dispositivo.getMac())
