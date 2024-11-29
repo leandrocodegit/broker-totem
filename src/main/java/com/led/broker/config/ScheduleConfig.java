@@ -49,6 +49,7 @@ public class ScheduleConfig {
         if(Boolean.TRUE.equals(enviarDashBoard)){
             dashboardService.atualizarDashboard("");
             mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard", false);
+            enviarDashBoard = false;
         }
     }
 }
