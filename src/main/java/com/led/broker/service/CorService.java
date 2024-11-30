@@ -42,6 +42,15 @@ public class CorService {
                     .time(LocalDateTime.now().plusMinutes(-1))
                     .build());
 
+            logRepository.save(Log.builder()
+                    .data(LocalDateTime.now())
+                    .usuario("")
+                    .mensagem(String.format(Comando.TIMER_CANCELADO.value(), dispositivo.getMac()))
+                    .cor(null)
+                    .comando(Comando.TIMER_CANCELADO)
+                    .descricao(String.format(Comando.TIMER_CANCELADO.value(), dispositivo.getMac()))
+                    .mac(dispositivo.getMac())
+                    .build());
             dispositivoRepository.save(dispositivo);
            return  comandoService.enviardComandoRapido(dispositivo, true, false);
         }
@@ -60,7 +69,7 @@ public class CorService {
                 TimeUtil.timers.put(dispositivo.getMac(), dispositivo);
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
-                        .usuario("Leandro")
+                        .usuario("")
                         .mensagem(String.format(Comando.TIMER_CRIADO.value(), dispositivo.getMac()))
                         .cor(null)
                         .comando(Comando.TIMER_CRIADO)
