@@ -77,6 +77,17 @@ public class ComandoService {
         return mono;
     }
 
+    public void enviardComandoRapido(Dispositivo dispositivo, boolean cancelar) {
+
+        if (cancelar) {
+            dispositivo.setCor(getCor(buscarPorMac(dispositivo.getMac())));
+        }
+
+        if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null && dispositivo.getCor() != null) {
+            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, true));
+        }
+
+    }
 
     public Mono<String> enviardComandoRapido(Dispositivo dispositivo, boolean cancelar, boolean interno) {
 

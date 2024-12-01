@@ -84,4 +84,61 @@ public class CorService {
         return Mono.empty();
     }
 
+
+    public void salvarCorTemporizadaReponse(UUID idCor, String mac, boolean cancelar, boolean retentar) {
+
+        try{
+            Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
+
+            if(cancelar && dispositivoOptional.isPresent()){
+                Dispositivo dispositivo = dispositivoOptional.get();
+                dispositivo.setTemporizador(Temporizador.builder()
+                        .idCor(idCor)
+                        .time(LocalDateTime.now().plusMinutes(-1))
+                        .build());
+                dispositivoRepository.save(dispositivo);
+                comandoService.enviardComandoRapido(dispositivo, true);
+                logRepository.save(Log.builder()
+                        .data(LocalDateTime.now())
+                        .usuario("")
+                        .mensagem(String.format(Comando.TIMER_CANCELADO.value(), dispositivo.getMac()))
+                        .cor(null)
+                        .comando(Comando.TIMER_CANCELADO)
+                        .descricao(String.format(Comando.TIMER_CANCELADO.value(), dispositivo.getMac()))
+                        .mac(dispositivo.getMac())
+                        .build());
+            }
+            else{
+                Optional<Cor> corOptional = corRepository.findById(idCor);
+                if (dispositivoOptional.isPresent() && corOptional.isPresent()) {
+                    Dispositivo dispositivo = dispositivoOptional.get();
+
+                    dispositivo.setTemporizador(Temporizador.builder()
+                            .idCor(idCor)
+                            .time(LocalDateTime.now().plusMinutes(corOptional.get().getTime()))
+                            .build());
+
+                    dispositivoRepository.save(dispositivo);
+                    dispositivo.setCor(corOptional.get());
+                    TimeUtil.timers.put(dispositivo.getMac(), dispositivo);
+                     comandoService.enviardComandoRapido(dispositivo, false);
+                    logRepository.save(Log.builder()
+                            .data(LocalDateTime.now())
+                            .usuario("")
+                            .mensagem(String.format(Comando.TIMER_CRIADO.value(), dispositivo.getMac()))
+                            .cor(null)
+                            .comando(Comando.TIMER_CRIADO)
+                            .descricao(String.format(Comando.TIMER_CRIADO.value(), dispositivo.getMac()))
+                            .mac(dispositivo.getMac())
+                            .build());
+                }
+            }}catch (Exception errr){
+            if(retentar){
+                System.err.println("Retentativa");
+                salvarCorTemporizadaReponse(idCor, mac, false, false);
+            }else{
+                throw new RuntimeException("Erro ao enviar comando");
+            }
+        }
+    }
 }

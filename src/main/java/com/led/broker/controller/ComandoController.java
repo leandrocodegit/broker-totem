@@ -7,6 +7,7 @@ import com.led.broker.service.DispositivoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -58,8 +59,8 @@ public class ComandoController {
                         .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
     }
 
-    @GetMapping("/temporizar/{idCor}/{mac}")
-    public Flux<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
+    @GetMapping("/flux/temporizar/{idCor}/{mac}")
+    public Flux<String> temporizarFlux(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
         authService.validarToken(token);
         return Flux.concat(
                 Mono.just("ok"),
@@ -68,8 +69,15 @@ public class ComandoController {
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
 
-    @GetMapping("/temporizar/{mac}")
-    public Flux<String> cancelarTemporizar(@PathVariable String mac, @RequestParam("token") String token) {
+    @GetMapping("/temporizar/{idCor}/{mac}")
+    public ResponseEntity<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
+        authService.validarToken(token);
+        corService.salvarCorTemporizadaReponse(idCor, mac, false, true);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/flux/temporizar/{mac}")
+    public Flux<String> cancelarTemporizarFlux(@PathVariable String mac, @RequestParam("token") String token) {
         authService.validarToken(token);
         return Flux.concat(
                 Mono.just("ok"),
@@ -87,6 +95,13 @@ public class ComandoController {
                         .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
     }
+
+    @GetMapping("/temporizar/{mac}")
+    public ResponseEntity<String> cancelarTemporizar(@PathVariable String mac, @RequestParam("token") String token) {
+        authService.validarToken(token);
+        return  ResponseEntity.ok(corService.salvarCorTemporizada(null, mac, true).just("Comando enviado com sucesso").block());
+    }
+
 
     @GetMapping(value = "/interno/sincronizar", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizarTodosInterno() {
