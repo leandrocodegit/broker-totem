@@ -15,7 +15,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessagingException;
 
-@Configuration
+
 public class MqttSubscriberConfig {
 
 
