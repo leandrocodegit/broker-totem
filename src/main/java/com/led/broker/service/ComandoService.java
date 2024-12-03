@@ -35,7 +35,6 @@ public class ComandoService {
 
     public Mono<String> createMono(String mac) {
         return Mono.create(sink -> {
-            System.out.println(mac);
             streams.put(mac, sink);
         });
     }
@@ -79,12 +78,16 @@ public class ComandoService {
 
     public void enviardComandoRapido(Dispositivo dispositivo, boolean cancelar) {
 
-        if (cancelar) {
-            dispositivo.setCor(getCor(buscarPorMac(dispositivo.getMac())));
-        }
+        try {
+            if (cancelar) {
+                dispositivo.setCor(getCor(buscarPorMac(dispositivo.getMac())));
+            }
 
-        if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null && dispositivo.getCor() != null) {
-            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, true));
+            if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null && dispositivo.getCor() != null) {
+                mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, true));
+            }
+        }catch (Exception err){
+            err.printStackTrace();
         }
 
     }

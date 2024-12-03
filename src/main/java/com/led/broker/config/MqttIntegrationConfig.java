@@ -1,18 +1,17 @@
 package com.led.broker.config;
 
 
-import com.led.broker.handler.MessageSmart;
-import com.led.broker.model.Mensagem;
 import com.led.broker.model.constantes.Topico;
-import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
-import org.springframework.integration.mqtt.inbound.Mqttv5PahoMessageDrivenChannelAdapter;
-import org.springframework.integration.mqtt.outbound.Mqttv5PahoMessageHandler;
-import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
+import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
+import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
+import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
@@ -27,47 +26,30 @@ public class MqttIntegrationConfig {
     private String clientId;
 
     @Bean
-    public Mqttv5PahoMessageDrivenChannelAdapter mqttInbound() {
-
-        Mqttv5PahoMessageDrivenChannelAdapter adapter =
-                new Mqttv5PahoMessageDrivenChannelAdapter(connectionOptions(), clientId, Topico.DEVICE_CONFIRMACAO + "#");
-    //    adapter.setMessageConverter(new MessageSmart());
-        adapter.setQos(2);
-        adapter.setPayloadType(Mensagem.class);
-        adapter.setCompletionTimeout(5000);
-        adapter.setOutputChannel(mqttInputChannel());
-
-
-        return adapter;
+    public MqttPahoClientFactory mqttClientFactory() {
+        DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setServerURIs(new String[] { brokerUrl });
+//        options.setUserName("username");
+//        options.setPassword("password".toCharArray());
+        options.setKeepAliveInterval(20);
+        options.setAutomaticReconnect(true);
+        factory.setConnectionOptions(options);
+        return factory;
     }
 
     @Bean
-    public MessageChannel mqttInputChannel() {
-        return new DirectChannel();
-    }
-
-    @Bean
+    @ServiceActivator(inputChannel = "mqttOutboundChannel")
     public MessageHandler mqttOutbound() {
-        Mqttv5PahoMessageHandler messageHandler =
-                new Mqttv5PahoMessageHandler(connectionOptions(), "mqttOutbound");
+        MqttPahoMessageHandler messageHandler =
+                new MqttPahoMessageHandler("testClient", mqttClientFactory());
         messageHandler.setAsync(true);
+        messageHandler.setDefaultTopic("testTopic");
         return messageHandler;
     }
 
     @Bean
-    public MessageChannel outputChannel() {
-        return new DirectChannel();  // Canal de saída
-    }
-
-    private MqttConnectionOptions connectionOptions() {
-        MqttConnectionOptions options = new MqttConnectionOptions();
-        options.setServerURIs(new String[]{brokerUrl});
-       // options.setUserName("broker");
-      //  options.setPassword("pass2020".getBytes());
-        options.setMaxReconnectDelay(5000);
-        options.setKeepAliveInterval(60);
-        options.setAutomaticReconnect(true);
-
-        return options;
+    public MessageChannel mqttOutboundChannel() {
+        return new DirectChannel();
     }
 }

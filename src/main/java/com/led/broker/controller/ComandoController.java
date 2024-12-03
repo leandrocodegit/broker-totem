@@ -71,7 +71,7 @@ public class ComandoController {
 
     @GetMapping("/temporizar/{idCor}/{mac}")
     public ResponseEntity<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarToken(token);
+        //authService.validarToken(token);
         corService.salvarCorTemporizadaReponse(idCor, mac, false, true);
         return ResponseEntity.ok().build();
     }
