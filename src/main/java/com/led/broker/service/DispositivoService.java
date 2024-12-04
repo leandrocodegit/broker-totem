@@ -8,6 +8,7 @@ import com.led.broker.model.constantes.TipoCor;
 import com.led.broker.repository.ConexaoRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
+import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +31,7 @@ public class DispositivoService {
     private final LogRepository logRepository;
     private final CorService configuracaoService;
     private final ComandoService comandoService;
-    private final AgendaDeviceService agendaDeviceService;
+    private final OperacaoRepository operacaoRepository;
     private final ConexaoRepository conexaoRepository;
 
 
@@ -118,6 +119,7 @@ public class DispositivoService {
                                        .build())
                                .ignorarAgenda(false)
                                .operacao(Operacao.builder()
+                                       .mac(mensagem.getId())
                                        .modoOperacao(ModoOperacao.DISPOSITIVO)
                                        .build())
                                .memoria(0)
@@ -131,6 +133,8 @@ public class DispositivoService {
                        .mac(dispositivo.getMac())
                        .build());
                conexaoRepository.save(dispositivo.getConexao());
+               operacaoRepository.save(dispositivo.getOperacao());
+
            }
         }
     }
