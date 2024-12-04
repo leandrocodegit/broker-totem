@@ -62,7 +62,7 @@ public class CorService {
                 Dispositivo dispositivo = dispositivoOptional.get();
 
                 dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
-                dispositivo.getOperacao().setTime(LocalDateTime.now().plusMinutes(-1));
+                dispositivo.getOperacao().setTime(LocalDateTime.now().plusMinutes(corOptional.get().getTime()));
                 dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
                 operacaoRepository.save(dispositivo.getOperacao());
                 dispositivoRepository.save(dispositivo);

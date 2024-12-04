@@ -21,7 +21,7 @@ public class ScheduleConfig {
      private final ComandoService comandoService;
     private final LogRepository logRepository;
 
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 10000)
     public void checkTimers() {
 
         List<String> devicesRemove = new ArrayList<>();
