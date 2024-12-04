@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -139,7 +140,6 @@ public class DispositivoService {
     }
 
     private Cor getCor(Dispositivo dispositivo) {
-        Agenda agenda = null;
 
         if(dispositivo.getOperacao().equals(ModoOperacao.TEMPORIZADOR)){
             if (TimeUtil.isTime(dispositivo)) {
@@ -149,12 +149,18 @@ public class DispositivoService {
             }
         }
 
-        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().equals(ModoOperacao.AGENDA)) {
-            agenda = dispositivo.getOperacao().getAgenda();
-            if(agenda == null){
+        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA)) {
+           Agenda agenda = dispositivo.getOperacao().getAgenda();
                 if (agenda != null && agenda.getCor() != null) {
-                    return agenda.getCor();
-                }
+                    LocalDate hoje = LocalDate.now();
+                    boolean isBetween = (hoje.isEqual(agenda.getInicio()) || hoje.isAfter(agenda.getInicio())) &&
+                            (hoje.isEqual(agenda.getTermino()) || hoje.isBefore(agenda.getTermino()));
+                    if(isBetween)
+                        return agenda.getCor();
+                    else{
+                        dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
+                        operacaoRepository.save(dispositivo.getOperacao());
+                    }
             }
         }
 
