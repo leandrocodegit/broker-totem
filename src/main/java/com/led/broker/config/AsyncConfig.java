@@ -1,5 +1,6 @@
 package com.led.broker.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -14,12 +15,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync
 public class AsyncConfig {
 
+
+    @Value("${quantidade-clientes}")
+    private int quantidadeClientes;
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
+        executor.setCorePoolSize(1);
         executor.setMaxPoolSize(3);
-        executor.setQueueCapacity(1000);
+        executor.setQueueCapacity(quantidadeClientes);
         executor.setThreadNamePrefix("AsyncThread-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
