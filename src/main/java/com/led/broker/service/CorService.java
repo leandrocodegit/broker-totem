@@ -9,7 +9,6 @@ import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
-import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,6 @@ public class CorService {
 
     private final CorRepository corRepository;
     private final DispositivoRepository dispositivoRepository;
-    private final OperacaoRepository operacaoRepository;
     private final ComandoService comandoService;
     private final LogRepository logRepository;
     private final AgendaDeviceService agendaDeviceService;
@@ -43,7 +41,6 @@ public class CorService {
         if(cancelar && dispositivoOptional.isPresent()){
             Dispositivo dispositivo = dispositivoOptional.get();
             setOperacao(dispositivo);
-            operacaoRepository.save(dispositivo.getOperacao());
 
             logRepository.save(Log.builder()
                     .data(LocalDateTime.now())
@@ -65,8 +62,6 @@ public class CorService {
                 dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
                 dispositivo.getOperacao().setTime(LocalDateTime.now().plusMinutes(-1));
                 dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
-
-                operacaoRepository.save(dispositivo.getOperacao());
                 dispositivoRepository.save(dispositivo);
                 dispositivo.setCor(corOptional.get());
                 TimeUtil.timers.put(dispositivo.getMac(), dispositivo);
@@ -118,8 +113,6 @@ public class CorService {
                     dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
                     dispositivo.getOperacao().setTime(LocalDateTime.now().plusMinutes(-1));
                     dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
-
-                    operacaoRepository.save(dispositivo.getOperacao());
                     dispositivoRepository.save(dispositivo);
                     dispositivo.setCor(corOptional.get());
                     TimeUtil.timers.put(dispositivo.getMac(), dispositivo);
