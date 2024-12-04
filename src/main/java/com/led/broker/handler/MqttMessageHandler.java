@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Component
 @RequiredArgsConstructor
@@ -23,6 +25,7 @@ public class MqttMessageHandler implements MessageHandler {
 
 
     private final DispositivoService dispositivoService;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
     private final ConcurrentHashMap<String, String> clientMap = new ConcurrentHashMap<>();
 
 
@@ -36,7 +39,14 @@ public class MqttMessageHandler implements MessageHandler {
             Mensagem payload = new Gson().fromJson(message.getPayload().toString(), Mensagem.class);
             if (payload.getComando().equals(Comando.ONLINE) || payload.getComando().equals(Comando.CONFIGURACAO) || payload.getComando().equals(Comando.CONCLUIDO)) {
             payload.setBrockerId(clientId.toString());
-            dispositivoService.atualizarDispositivo(payload);
+                executorService.submit(() -> {
+                    try {
+                        dispositivoService.atualizarDispositivo(payload);
+                    } catch (Exception e) {
+                        System.out.println("Erro ao tratar mensagem");
+                    }
+                });
+           // dispositivoService.atualizarDispositivo(payload);
             }
 
         } catch (Exception erro) {
