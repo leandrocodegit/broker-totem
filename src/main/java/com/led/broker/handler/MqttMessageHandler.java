@@ -1,6 +1,7 @@
 package com.led.broker.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.led.broker.model.Mensagem;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.Topico;
@@ -22,7 +23,6 @@ public class MqttMessageHandler implements MessageHandler {
 
 
     private final DispositivoService dispositivoService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final ConcurrentHashMap<String, String> clientMap = new ConcurrentHashMap<>();
 
 
@@ -30,18 +30,10 @@ public class MqttMessageHandler implements MessageHandler {
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handleMessage(Message<?> message) {
         UUID clientId = (UUID) message.getHeaders().get("id");
-        String topico = (String) message.getHeaders().get("mqtt_receivedTopic");
+        //String topico = (String) message.getHeaders().get("mqtt_receivedTopic");
 
-        byte[] bytess = (byte[]) message.getPayload();
-        Object payloads = null;
         try {
-            payloads = objectMapper.readValue(bytess, Object.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            byte[] bytes = (byte[]) message.getPayload();
-            Mensagem payload = objectMapper.readValue(bytes, Mensagem.class);
+            Mensagem payload = new Gson().fromJson(message.getPayload().toString(), Mensagem.class);
             if (payload.getComando().equals(Comando.ONLINE) || payload.getComando().equals(Comando.CONFIGURACAO) || payload.getComando().equals(Comando.CONCLUIDO)) {
             payload.setBrockerId(clientId.toString());
             dispositivoService.atualizarDispositivo(payload);
