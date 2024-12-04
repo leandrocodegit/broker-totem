@@ -7,6 +7,7 @@ import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
+import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
@@ -33,24 +34,6 @@ public class ComandoService {
     private final LogRepository logRepository;
     public static Map<String, MonoSink<String>> streams = new HashMap<>();
 
-    private Cor getCor(Dispositivo dispositivo) {
-        Agenda agenda = null;
-
-        if (TimeUtil.isTime(dispositivo)) {
-            Optional<Cor> corOptional = buscaCor(dispositivo.getTemporizador().getIdCor());
-            if (corOptional.isPresent()) {
-                return corOptional.get();
-            }
-        }
-        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda())) {
-            agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(dispositivo.getMac());
-        }
-        if (agenda != null && agenda.getCor() != null) {
-            return agenda.getCor();
-        }
-        return dispositivo.getCor();
-    }
-
     public void enviarComando(Agenda agenda) {
 
         if(agenda.getCor() != null) {
@@ -73,6 +56,7 @@ public class ComandoService {
                             device.setCor(agenda.getCor());
                             mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(),
                                     new Gson().toJson(ConfiguracaoUtil.gerarComando(device)), false);
+                            agendaDeviceService.atualizarOperacaoDispositivo(agenda, device);
                         }
                     }
                 });
