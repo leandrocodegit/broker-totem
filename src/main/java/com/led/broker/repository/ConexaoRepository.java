@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ConexaoRepository extends MongoRepository<Conexao, String> {
 
-    @Query("{ 'ultimaAtualizacao' : { $lt: ?0 }, 'conexao.status' : 'Online', 'ativo': true }")
+    @Query("{ 'ultimaAtualizacao' : { $lt: ?0 }, 'conexao.status' : 'Online', 'ativo' : true }")
     List<Conexao> findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(Date dataLimite);
 
 }
