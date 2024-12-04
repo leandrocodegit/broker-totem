@@ -1,13 +1,11 @@
 package com.led.broker.service;
 
 import com.led.broker.model.*;
-import com.led.broker.model.constantes.Comando;
-import com.led.broker.model.constantes.Efeito;
-import com.led.broker.model.constantes.StatusConexao;
-import com.led.broker.model.constantes.TipoCor;
+import com.led.broker.model.constantes.*;
 import com.led.broker.repository.ConexaoRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
+import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +32,7 @@ public class DispositivoService {
     private final ComandoService comandoService;
     private final AgendaDeviceService agendaDeviceService;
     private final ConexaoRepository conexaoRepository;
+    private final OperacaoRepository operacaoRepository;
 
 
     public void salvarDispositivoComoOffline(List<Conexao> conexoes) {
@@ -119,6 +118,10 @@ public class DispositivoService {
                                        .ultimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime())
                                        .build())
                                .ignorarAgenda(false)
+                               .operacao(Operacao.builder()
+                                       .mac(mensagem.getId())
+                                       .modoOperacao(ModoOperacao.DISPOSITIVO)
+                                       .build())
                                .memoria(0)
                                .ativo(false)
                                .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
@@ -130,6 +133,7 @@ public class DispositivoService {
                        .mac(dispositivo.getMac())
                        .build());
                conexaoRepository.save(dispositivo.getConexao());
+               operacaoRepository.save(dispositivo.getOperacao());
            }
         }
     }
@@ -137,24 +141,23 @@ public class DispositivoService {
     private Cor getCor(Dispositivo dispositivo) {
         Agenda agenda = null;
 
-        if (TimeUtil.isTime(dispositivo)) {
-            Optional<Cor> corOptional = configuracaoService.buscaCor(dispositivo.getTemporizador().getIdCor());
-            if (corOptional.isPresent()) {
-                return corOptional.get();
-            }
-        }
-        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda())) {
-            agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(dispositivo.getMac());
-            if(agenda == null){
-                List<Agenda> agendasParatodosHoje = agendaDeviceService.listaTodosAgendasPrevistaHoje();
-                if(!agendasParatodosHoje.isEmpty()){
-                    agenda = agendasParatodosHoje.stream().findFirst().get();
+        if(dispositivo.getOperacao().equals(ModoOperacao.TEMPORIZADOR)){
+            if (TimeUtil.isTime(dispositivo)) {
+                if (dispositivo.getOperacao().getCorTemporizador() != null) {
+                    return dispositivo.getOperacao().getCorTemporizador();
                 }
             }
         }
-        if (agenda != null && agenda.getCor() != null) {
-            return agenda.getCor();
+
+        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().equals(ModoOperacao.AGENDA)) {
+            agenda = dispositivo.getOperacao().getAgenda();
+            if(agenda == null){
+                if (agenda != null && agenda.getCor() != null) {
+                    return agenda.getCor();
+                }
+            }
         }
+
         return dispositivo.getCor();
     }
 
