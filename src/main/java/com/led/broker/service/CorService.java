@@ -81,7 +81,7 @@ public class CorService {
                         .build());
                 return   comandoService.enviardComandoRapido(dispositivo, false, false);
             }else{
-                return Mono.just("Falha cor não existe ou não encontrada");
+                return Mono.just("Falha, cor não existe ou não encontrada");
             }
         }}catch (Exception errr){
             return Mono.just("Falha ao enviar comando");
