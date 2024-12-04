@@ -16,16 +16,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class AsyncConfig {
 
 
-    @Value("${quantidade-clientes}")
-    private int quantidadeClientes;
-    @Value("${quantidade-cpu}")
-    private int quantidadeCpu;
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(quantidadeCpu);
-        executor.setMaxPoolSize(3);
-        executor.setQueueCapacity(quantidadeClientes);
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(50);
         executor.setThreadNamePrefix("AsyncThread-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
