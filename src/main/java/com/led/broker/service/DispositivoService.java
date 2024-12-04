@@ -142,6 +142,10 @@ public class DispositivoService {
 
     private Cor getCor(Dispositivo dispositivo) {
 
+        if(dispositivo.getOperacao().equals(ModoOperacao.DISPOSITIVO)){
+           return dispositivo.getCor();
+        }
+
         if(dispositivo.getOperacao().equals(ModoOperacao.TEMPORIZADOR)){
             if (TimeUtil.isTime(dispositivo)) {
                 if (dispositivo.getOperacao().getCorTemporizador() != null) {
