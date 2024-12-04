@@ -4,6 +4,7 @@ package com.led.broker.service;
 import com.led.broker.model.Agenda;
 import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
+import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
@@ -64,18 +65,23 @@ public class ComandoService {
     private Cor getCor(Dispositivo dispositivo) {
         Agenda agenda = null;
 
-        if (TimeUtil.isTime(dispositivo)) {
-            Optional<Cor> corOptional = buscaCor(dispositivo.getTemporizador().getIdCor());
-            if (corOptional.isPresent()) {
-                return corOptional.get();
+        if(dispositivo.getOperacao().equals(ModoOperacao.TEMPORIZADOR)){
+            if (TimeUtil.isTime(dispositivo)) {
+                if (dispositivo.getOperacao().getCorTemporizador() != null) {
+                    return dispositivo.getOperacao().getCorTemporizador();
+                }
             }
         }
-        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda())) {
-            agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(dispositivo.getMac());
+
+        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().equals(ModoOperacao.AGENDA)) {
+            agenda = dispositivo.getOperacao().getAgenda();
+            if(agenda == null){
+                if (agenda != null && agenda.getCor() != null) {
+                    return agenda.getCor();
+                }
+            }
         }
-        if (agenda != null && agenda.getCor() != null) {
-            return agenda.getCor();
-        }
+
         return dispositivo.getCor();
     }
     public Optional<Cor> buscaCor(UUID id) {
