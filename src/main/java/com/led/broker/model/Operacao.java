@@ -16,9 +16,7 @@ import java.time.LocalDateTime;
 public class Operacao {
 
     private ModoOperacao modoOperacao;
-    @DBRef
     private Agenda agenda;
-    @DBRef
     private Cor corTemporizador;
     private LocalDateTime time;
 }

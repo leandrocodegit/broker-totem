@@ -29,7 +29,6 @@ public class Dispositivo {
     private Endereco endereco;
     private String enderecoCompleto;
     private Configuracao configuracao;
-    @DBRef
     private Operacao operacao;
     @DBRef
     private Conexao conexao;
