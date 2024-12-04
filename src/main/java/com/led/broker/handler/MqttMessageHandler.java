@@ -25,7 +25,7 @@ public class MqttMessageHandler implements MessageHandler {
 
 
     private final DispositivoService dispositivoService;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(1);
     private final ConcurrentHashMap<String, String> clientMap = new ConcurrentHashMap<>();
 
 
@@ -43,6 +43,7 @@ public class MqttMessageHandler implements MessageHandler {
                     try {
                         dispositivoService.atualizarDispositivo(payload);
                     } catch (Exception e) {
+                        e.printStackTrace();
                         System.out.println("Erro ao tratar mensagem");
                     }
                 });
