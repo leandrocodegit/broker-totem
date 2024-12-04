@@ -1,7 +1,6 @@
 package com.led.broker.model;
 
 import com.led.broker.model.constantes.ModoOperacao;
-import com.led.broker.model.constantes.StatusConexao;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
