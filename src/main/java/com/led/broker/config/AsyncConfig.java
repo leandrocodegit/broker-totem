@@ -18,10 +18,12 @@ public class AsyncConfig {
 
     @Value("${quantidade-clientes}")
     private int quantidadeClientes;
+    @Value("${quantidade-cpu}")
+    private int quantidadeCpu;
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
+        executor.setCorePoolSize(quantidadeCpu);
         executor.setMaxPoolSize(3);
         executor.setQueueCapacity(quantidadeClientes);
         executor.setThreadNamePrefix("AsyncThread-");
