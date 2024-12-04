@@ -166,11 +166,12 @@ public class DispositivoService {
                     }
                     if(isBetween)
                         return agenda.getCor();
-                    else{
-                        dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
-                        operacaoRepository.save(dispositivo.getOperacao());
-                    }
             }
+        }
+
+        if(!dispositivo.getOperacao().equals(ModoOperacao.DISPOSITIVO)){
+            dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
+            operacaoRepository.save(dispositivo.getOperacao());
         }
 
         return dispositivo.getCor();
