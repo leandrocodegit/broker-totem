@@ -106,7 +106,7 @@ public class DispositivoService {
                 }
             }
         } else {
-           if(dispositivoRepository.countByAtivo(true) < quantidadeClientes) {
+           if(dispositivoRepository.countByAtivo(true) < quantidadeClientes && dispositivoRepository.countByAtivo(false) < quantidadeClientes + 100) {
                Dispositivo dispositivo = dispositivoRepository.save(
                        Dispositivo.builder()
                                .conexao(Conexao.builder()
