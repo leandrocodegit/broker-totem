@@ -154,8 +154,8 @@ public class DispositivoService {
            Agenda agenda = dispositivo.getOperacao().getAgenda();
                 if (agenda != null && agenda.getCor() != null) {
 
-                    MonthDay inicio = MonthDay.of(agenda.getInicio().getMonth(), agenda.getInicio().getDayOfMonth()); // 1º de novembro
-                    MonthDay fim = MonthDay.of(agenda.getTermino().getMonth(), agenda.getTermino().getDayOfMonth());  // 30 de novembro
+                    MonthDay inicio = MonthDay.from(agenda.getInicio()); // 1º de novembro
+                    MonthDay fim = MonthDay.from(agenda.getTermino());  // 30 de novembro
 
                     MonthDay hoje = MonthDay.from(LocalDate.now());
 
