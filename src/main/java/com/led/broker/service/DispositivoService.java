@@ -52,7 +52,7 @@ public class DispositivoService {
                     .build());
         }
     }
-    @Async("taskExecutor")
+
     public void atualizarDispositivo(Mensagem mensagem) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByIdAndAtivo(mensagem.getId(), true);
         if (dispositivoOptional.isPresent()) {
