@@ -10,6 +10,7 @@ import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -25,6 +26,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DispositivoService {
 
+    @Value("${quantidade-clientes}")
+    private int quantidadeClientes;
     private final DispositivoRepository dispositivoRepository;
     private final LogRepository logRepository;
     private final CorService configuracaoService;
@@ -103,30 +106,31 @@ public class DispositivoService {
                 }
             }
         } else {
+           if(dispositivoRepository.countByAtivo(true) < quantidadeClientes) {
+               Dispositivo dispositivo = dispositivoRepository.save(
+                       Dispositivo.builder()
+                               .conexao(Conexao.builder()
+                                       .build())
+                               .mac(mensagem.getId())
+                               .versao("")
+                               .conexao(Conexao.builder()
+                                       .mac(mensagem.getId())
+                                       .status(StatusConexao.Online)
+                                       .ultimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime())
+                                       .build())
+                               .ignorarAgenda(false)
+                               .memoria(0)
+                               .ativo(false)
+                               .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
+                               .comando(Comando.ONLINE)
+                               .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
+                               .build());
 
-         Dispositivo dispositivo = dispositivoRepository.save(
-                    Dispositivo.builder()
-                            .conexao(Conexao.builder()
-                                    .build())
-                            .mac(mensagem.getId())
-                            .versao("")
-                            .conexao(Conexao.builder()
-                                    .mac(mensagem.getId())
-                                    .status(StatusConexao.Online)
-                                    .ultimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime())
-                                    .build())
-                            .ignorarAgenda(false)
-                            .memoria(0)
-                            .ativo(false)
-                            .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
-                            .comando(Comando.ONLINE)
-                            .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
-                            .build());
-
-            dispositivo.setConexao(Conexao.builder()
-                    .mac(dispositivo.getMac())
-                    .build());
-            conexaoRepository.save(dispositivo.getConexao());
+               dispositivo.setConexao(Conexao.builder()
+                       .mac(dispositivo.getMac())
+                       .build());
+               conexaoRepository.save(dispositivo.getConexao());
+           }
         }
     }
 
