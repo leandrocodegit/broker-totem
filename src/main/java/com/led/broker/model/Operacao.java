@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@Document(collection = "operacoes")
 public class Operacao {
 
     @Id
