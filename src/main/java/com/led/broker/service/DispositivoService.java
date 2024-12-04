@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.MonthDay;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
@@ -152,9 +153,17 @@ public class DispositivoService {
         if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA)) {
            Agenda agenda = dispositivo.getOperacao().getAgenda();
                 if (agenda != null && agenda.getCor() != null) {
-                    LocalDate hoje = LocalDate.now();
-                    boolean isBetween = (hoje.isEqual(agenda.getInicio()) || hoje.isAfter(agenda.getInicio())) &&
-                            (hoje.isEqual(agenda.getTermino()) || hoje.isBefore(agenda.getTermino()));
+
+                    MonthDay inicio = MonthDay.of(agenda.getInicio().getMonth(), agenda.getInicio().getDayOfMonth()); // 1º de novembro
+                    MonthDay fim = MonthDay.of(agenda.getTermino().getMonth(), agenda.getTermino().getDayOfMonth());  // 30 de novembro
+
+                    MonthDay hoje = MonthDay.from(LocalDate.now());
+
+                    boolean isBetween = false;
+                    if (inicio.isBefore(fim) || inicio.equals(fim)) {
+                        isBetween = (hoje.equals(inicio) || hoje.isAfter(inicio)) &&
+                                (hoje.equals(fim) || hoje.isBefore(fim));
+                    }
                     if(isBetween)
                         return agenda.getCor();
                     else{
