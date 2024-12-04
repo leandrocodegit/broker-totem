@@ -1,19 +1,22 @@
 package com.led.broker.service;
 
+import com.led.broker.model.Agenda;
 import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
-import com.led.broker.model.Temporizador;
 import com.led.broker.model.constantes.Comando;
+import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
+import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,11 +26,13 @@ public class CorService {
 
     private final CorRepository corRepository;
     private final DispositivoRepository dispositivoRepository;
+    private final OperacaoRepository operacaoRepository;
     private final ComandoService comandoService;
     private final LogRepository logRepository;
+    private final AgendaDeviceService agendaDeviceService;
 
-    public Optional<Cor> buscaCor(UUID id){
-        return corRepository.findById(id);
+    public Cor buscaCor(UUID id){
+        return corRepository.findById(id).orElseThrow(() -> new RuntimeException("Cor inválida ou removida"));
     }
 
     public Mono<String> salvarCorTemporizada(UUID idCor, String mac, boolean cancelar) {
@@ -37,10 +42,8 @@ public class CorService {
 
         if(cancelar && dispositivoOptional.isPresent()){
             Dispositivo dispositivo = dispositivoOptional.get();
-            dispositivo.setTemporizador(Temporizador.builder()
-                    .idCor(idCor)
-                    .time(LocalDateTime.now().plusMinutes(-1))
-                    .build());
+            setOperacao(dispositivo);
+            operacaoRepository.save(dispositivo.getOperacao());
 
             logRepository.save(Log.builder()
                     .data(LocalDateTime.now())
@@ -59,11 +62,11 @@ public class CorService {
             if (dispositivoOptional.isPresent() && corOptional.isPresent()) {
                 Dispositivo dispositivo = dispositivoOptional.get();
 
-                dispositivo.setTemporizador(Temporizador.builder()
-                        .idCor(idCor)
-                        .time(LocalDateTime.now().plusMinutes(corOptional.get().getTime()))
-                        .build());
+                dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
+                dispositivo.getOperacao().setTime(LocalDateTime.now().plusMinutes(-1));
+                dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
 
+                operacaoRepository.save(dispositivo.getOperacao());
                 dispositivoRepository.save(dispositivo);
                 dispositivo.setCor(corOptional.get());
                 TimeUtil.timers.put(dispositivo.getMac(), dispositivo);
@@ -92,10 +95,8 @@ public class CorService {
 
             if(cancelar && dispositivoOptional.isPresent()){
                 Dispositivo dispositivo = dispositivoOptional.get();
-                dispositivo.setTemporizador(Temporizador.builder()
-                        .idCor(idCor)
-                        .time(LocalDateTime.now().plusMinutes(-1))
-                        .build());
+                setOperacao(dispositivo);
+
                 dispositivoRepository.save(dispositivo);
                 comandoService.enviardComandoRapido(dispositivo, true);
                 logRepository.save(Log.builder()
@@ -113,11 +114,11 @@ public class CorService {
                 if (dispositivoOptional.isPresent() && corOptional.isPresent()) {
                     Dispositivo dispositivo = dispositivoOptional.get();
 
-                    dispositivo.setTemporizador(Temporizador.builder()
-                            .idCor(idCor)
-                            .time(LocalDateTime.now().plusMinutes(corOptional.get().getTime()))
-                            .build());
+                    dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
+                    dispositivo.getOperacao().setTime(LocalDateTime.now().plusMinutes(-1));
+                    dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
 
+                    operacaoRepository.save(dispositivo.getOperacao());
                     dispositivoRepository.save(dispositivo);
                     dispositivo.setCor(corOptional.get());
                     TimeUtil.timers.put(dispositivo.getMac(), dispositivo);
@@ -138,6 +139,26 @@ public class CorService {
                 salvarCorTemporizadaReponse(idCor, mac, false, false);
             }else{
                 throw new RuntimeException("Erro ao enviar comando");
+            }
+        }
+    }
+
+    public void setOperacao(Dispositivo dispositivo) {
+        Agenda agenda = null;
+
+        dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
+
+        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda())) {
+            agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(dispositivo.getMac());
+            if(agenda == null){
+                List<Agenda> agendasParatodosHoje = agendaDeviceService.listaTodosAgendasPrevistaHoje(true);
+                if(!agendasParatodosHoje.isEmpty()){
+                    agenda = agendasParatodosHoje.stream().findFirst().get();
+                }
+            }
+            if (agenda != null && agenda.getCor() != null) {
+                dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
+                dispositivo.getOperacao().setAgenda(agenda);
             }
         }
     }

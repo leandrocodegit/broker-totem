@@ -31,7 +31,7 @@ public class ScheduleConfig {
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
                         .usuario("Sistema")
-                        .mensagem(String.format(Comando.TIMER_CRIADO.value(), device.getMac()))
+                        .mensagem(String.format(Comando.TIMER_CONCLUIDO.value(), device.getMac()))
                         .cor(null)
                         .comando(Comando.TIMER_CONCLUIDO)
                         .descricao(String.format(Comando.TIMER_CONCLUIDO.value(), device.getMac()))

@@ -7,6 +7,7 @@ import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
+import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
@@ -54,7 +55,7 @@ public class ComandoService {
     public Mono<String> enviardComandoSincronizar(String mac, boolean responder) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
 
-        if(!dispositivoOptional.isPresent()){
+        if (!dispositivoOptional.isPresent()) {
             return Mono.just(mac + " não encontrado ou inativo ");
         }
 
@@ -63,12 +64,12 @@ public class ComandoService {
 
         if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null) {
             dispositivo.setCor(getCor(dispositivo));
-            if(dispositivo.getCor() != null){
+            if (dispositivo.getCor() != null) {
                 mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, responder));
-                if(!responder){
+                if (!responder) {
                     return mono.just("ok");
                 }
-            }else{
+            } else {
                 return mono.just("não possui configuração de cor");
             }
 
@@ -86,7 +87,7 @@ public class ComandoService {
             if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null && dispositivo.getCor() != null) {
                 mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, true));
             }
-        }catch (Exception err){
+        } catch (Exception err) {
             err.printStackTrace();
         }
 
@@ -96,7 +97,7 @@ public class ComandoService {
 
         Mono<String> mono = Mono.empty();
 
-        if(!interno){
+        if (!interno) {
             mono = createMono(dispositivo.getMac());
         }
 
@@ -147,32 +148,28 @@ public class ComandoService {
                         .build());
             }
             return "Comando enviado para todos";
-        }catch (Exception erro){
+        } catch (Exception erro) {
             return "Sincronização não foi concluida";
         }
     }
 
     private Cor getCor(Dispositivo dispositivo) {
-        Agenda agenda = null;
 
-        if (TimeUtil.isTime(dispositivo)) {
-            Optional<Cor> corOptional = buscaCor(dispositivo.getTemporizador().getIdCor());
-            if (corOptional.isPresent()) {
-                return corOptional.get();
-            }
-        }
-        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda())) {
-            agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(dispositivo.getMac());
-            if(agenda == null){
-                List<Agenda> agendasParatodosHoje = agendaDeviceService.listaTodosAgendasPrevistaHoje(true);
-                if(!agendasParatodosHoje.isEmpty()){
-                    agenda = agendasParatodosHoje.stream().findFirst().get();
+        if (dispositivo.getOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
+            if (TimeUtil.isTime(dispositivo)) {
+                if (dispositivo.getOperacao().getCorTemporizador() != null) {
+                    return dispositivo.getOperacao().getCorTemporizador();
                 }
             }
         }
-        if (agenda != null && agenda.getCor() != null) {
-            return agenda.getCor();
+
+        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().equals(ModoOperacao.AGENDA)) {
+            Agenda agenda = dispositivo.getOperacao().getAgenda();
+            if (agenda != null && agenda.getCor() != null) {
+                return agenda.getCor();
+            }
         }
+
         return dispositivo.getCor();
     }
 
@@ -183,11 +180,10 @@ public class ComandoService {
     private Dispositivo buscarPorMac(String mac) {
 
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
-        if(dispositivoOptional.isPresent()){
+        if (dispositivoOptional.isPresent()) {
             return dispositivoOptional.get();
-        }
-        else if(ComandoService.streams.containsKey(mac)){
-            ComandoService.streams.remove(mac).success( mac + " não encontrado ou inativo ");
+        } else if (ComandoService.streams.containsKey(mac)) {
+            ComandoService.streams.remove(mac).success(mac + " não encontrado ou inativo ");
         }
         return null;
     }
@@ -196,24 +192,4 @@ public class ComandoService {
         return dispositivoRepository.findAllByAtivo(true);
     }
 
-    private List<Dispositivo> todosDispositivos(List<String> macs) {
-        return dispositivoRepository.findAllById(macs);
-    }
-
-    private List<Dispositivo> todosDispositivosAtivos(List<String> macs, boolean ativo) {
-        return dispositivoRepository.findAllByMacInAndAtivo(macs, ativo);
-    }
-
-    public List<Dispositivo> buscarDispositivosAtivosComAgendaPesquisada() {
-        List<Dispositivo> dispositivos = dispositivoRepository.findAllByAtivo(true);
-        if (!dispositivos.isEmpty()) {
-            dispositivos.forEach(device -> {
-                Agenda agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(device.getMac());
-                if (agenda != null && agenda.getCor() != null) {
-                    device.setCor(agenda.getCor());
-                }
-            });
-        }
-        return dispositivos;
-    }
 }

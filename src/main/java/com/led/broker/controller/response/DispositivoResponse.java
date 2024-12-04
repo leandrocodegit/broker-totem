@@ -2,14 +2,10 @@ package com.led.broker.controller.response;
 
 import com.led.broker.model.Conexao;
 import com.led.broker.model.Configuracao;
-import com.led.broker.model.Temporizador;
 import com.led.broker.model.constantes.Comando;
-import com.led.broker.model.constantes.StatusConexao;
 import com.led.broker.util.TimeUtil;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -32,7 +28,7 @@ public class DispositivoResponse {
     private String enderecoComplento;
     private String enderecoCompleto;
     private boolean isTimer;
-    private Temporizador temporizador;
+    private OperacaoResponse operacao;
     public boolean isTimer() {
         return TimeUtil.isTime(this);
     }
