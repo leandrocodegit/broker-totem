@@ -43,7 +43,7 @@ public class ScheduleConfig {
         if(Boolean.TRUE.equals(enviarDashBoard)){
             dispositivoService.salvarDispositivoComoOffline(conexoes);
             dashboardService.atualizarDashboard("");
-            mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard", false);
+            mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
             enviarDashBoard = false;
         }
     }
