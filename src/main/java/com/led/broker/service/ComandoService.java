@@ -73,6 +73,7 @@ public class ComandoService {
                             device.setCor(agenda.getCor());
                             mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(),
                                     new Gson().toJson(ConfiguracaoUtil.gerarComando(device)), false);
+                            agendaDeviceService.atualizarOperacaoDispositivo(agenda, device);
                         }
                     }
                 });

@@ -1,13 +1,17 @@
 package com.led.broker.service;
 
 import com.led.broker.model.Agenda;
+import com.led.broker.model.Dispositivo;
+import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.repository.AgendaRepository;
+import com.led.broker.repository.DispositivoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -15,6 +19,7 @@ import java.util.UUID;
 public class AgendaDeviceService {
 
     private final AgendaRepository agendaRepository;
+    private final DispositivoRepository dispositivoRepository;
 
     public List<Agenda> listaTodosAgendasPrevistaHoje() {
         LocalDate data = LocalDateTime.now().toLocalDate();
@@ -37,5 +42,11 @@ public class AgendaDeviceService {
     public void atualizarDataExecucao(Agenda agenda) {
         agenda.setExecucao(LocalDateTime.now().toLocalDate());
         agendaRepository.save(agenda);
+    }
+
+    public void atualizarOperacaoDispositivo(Agenda agenda, Dispositivo dispositivo){
+        dispositivo.getOperacao().setModoOperacao(ModoOperacao.AGENDA);
+        dispositivo.getOperacao().setAgenda(agenda);
+        dispositivoRepository.save(dispositivo);
     }
 }

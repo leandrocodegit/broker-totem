@@ -29,6 +29,7 @@ public class ScheduleConfig {
                 System.out.println("Execução: " + agenda.getExecucao());
                 comandoService.enviarComando(agenda);
                 agendaDeviceService.atualizarDataExecucao(agenda);
+
             });
          }
     }

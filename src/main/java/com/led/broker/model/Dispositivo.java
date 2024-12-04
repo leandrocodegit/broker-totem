@@ -31,9 +31,10 @@ public class Dispositivo {
     private String longitude;
     private String brokerId;
     private String enderecoCompleto;
-    private Temporizador temporizador;
     private Configuracao configuracao;
     private StatusConexao status;
+    @DBRef
+    private Operacao operacao;
     @DBRef
     private Cor cor;
     @DBRef

@@ -13,10 +13,10 @@ public class TimeUtil {
 
     public static Map<String, Dispositivo> timers = new HashMap<>();
     public static boolean isTime(Dispositivo dispositivo) {
-        if (dispositivo == null || dispositivo.getTemporizador() == null) {
+        if (dispositivo == null || dispositivo.getOperacao().getTime() == null) {
             return false;
         }
-        long differenceInMinutes = Duration.between(dispositivo.getTemporizador().getTime(), LocalDateTime.now()).toMinutes();
+        long differenceInMinutes = Duration.between(dispositivo.getOperacao().getTime(), LocalDateTime.now()).toMinutes();
         return differenceInMinutes <= 0;
     }
 
