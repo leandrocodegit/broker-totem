@@ -51,8 +51,8 @@ public class DispositivoService {
     }
     @Async("taskExecutor")
     public void atualizarDispositivo(Mensagem mensagem) {
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mensagem.getId());
-        if (dispositivoOptional.isPresent() && dispositivoOptional.get().isAtivo()) {
+        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByIdAndAtivo(mensagem.getId(), true);
+        if (dispositivoOptional.isPresent()) {
             Dispositivo dispositivo = dispositivoOptional.get();
 
             if(dispositivo.getConexao() == null){
