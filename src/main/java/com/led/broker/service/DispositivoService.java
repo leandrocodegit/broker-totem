@@ -134,7 +134,6 @@ public class DispositivoService {
                        .build());
                conexaoRepository.save(dispositivo.getConexao());
                operacaoRepository.save(dispositivo.getOperacao());
-
            }
         }
     }
