@@ -25,7 +25,7 @@ public class MqttMessageHandler implements MessageHandler {
 
 
     private final DispositivoService dispositivoService;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private final ConcurrentHashMap<String, String> clientMap = new ConcurrentHashMap<>();
 
 
