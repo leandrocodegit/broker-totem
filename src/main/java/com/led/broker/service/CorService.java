@@ -9,6 +9,7 @@ import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
+import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class CorService {
     private final ComandoService comandoService;
     private final LogRepository logRepository;
     private final AgendaDeviceService agendaDeviceService;
+    private final OperacaoRepository operacaoRepository;
 
     public Cor buscaCor(UUID id){
         return corRepository.findById(id).orElseThrow(() -> new RuntimeException("Cor inválida ou removida"));
@@ -41,7 +43,7 @@ public class CorService {
         if(cancelar && dispositivoOptional.isPresent()){
             Dispositivo dispositivo = dispositivoOptional.get();
             setOperacao(dispositivo);
-
+            operacaoRepository.save(dispositivo.getOperacao());
             logRepository.save(Log.builder()
                     .data(LocalDateTime.now())
                     .usuario("")
@@ -62,6 +64,7 @@ public class CorService {
                 dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
                 dispositivo.getOperacao().setTime(LocalDateTime.now().plusMinutes(-1));
                 dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
+                operacaoRepository.save(dispositivo.getOperacao());
                 dispositivoRepository.save(dispositivo);
                 dispositivo.setCor(corOptional.get());
                 TimeUtil.timers.put(dispositivo.getMac(), dispositivo);
@@ -140,7 +143,7 @@ public class CorService {
     public void setOperacao(Dispositivo dispositivo) {
         Agenda agenda = null;
 
-        dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
+        dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
 
         if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda())) {
             agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(dispositivo.getMac());

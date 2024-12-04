@@ -28,7 +28,6 @@ public class ComandoService {
 
     private final MqttService mqttService;
     private final DispositivoRepository dispositivoRepository;
-    private final AgendaDeviceService agendaDeviceService;
     private final CorRepository corRepository;
     private final LogRepository logRepository;
     public static Map<String, MonoSink<String>> streams = new HashMap<>();
