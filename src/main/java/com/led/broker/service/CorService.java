@@ -80,11 +80,12 @@ public class CorService {
                         .mac(dispositivo.getMac())
                         .build());
                 return   comandoService.enviardComandoRapido(dispositivo, false, false);
+            }else{
+                return Mono.just("Falha cor não existe ou não encontrada");
             }
         }}catch (Exception errr){
             return Mono.just("Falha ao enviar comando");
         }
-        return Mono.empty();
     }
 
 
