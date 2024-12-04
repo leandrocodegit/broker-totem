@@ -111,6 +111,7 @@ public class DispositivoService {
                Dispositivo dispositivo = dispositivoRepository.save(
                        Dispositivo.builder()
                                .conexao(Conexao.builder()
+                                       .mac(mensagem.getId())
                                        .status(StatusConexao.Online)
                                        .ultimaAtualizacao(LocalDateTime.now())
                                        .build())
