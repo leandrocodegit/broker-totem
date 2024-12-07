@@ -44,20 +44,20 @@ public class FirmwareController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-    @GetMapping(value = "/update/{mac}/{id}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> atualizarFirmware(@PathVariable String mac, @PathVariable String id) {
+    @GetMapping(value = "/update/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> atualizarFirmware(@PathVariable String mac) {
         //authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
-                comandoService.enviardComandoUpdateFirmware(mac, host + id)
+                comandoService.enviardComandoUpdateFirmware(mac, host)
                         .timeout(Duration.ofSeconds(60))
                         .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
     }
 
-    @PostMapping("/upload")
-    public Mono<ResponseEntity<Map<String, String>>> uploadFile(@RequestPart("file") Mono<FilePart> filePartMono) {
+    @PostMapping("/upload/{mac}")
+    public Mono<ResponseEntity<Map<String, String>>> uploadFile(@PathVariable String mac, @RequestPart("file") Mono<FilePart> filePartMono) {
         return filePartMono
-                .flatMap(filePart -> firmwareService.storeFile(Mono.just(filePart)))
+                .flatMap(filePart -> firmwareService.storeFile(mac, Mono.just(filePart)))
                 .map(newFileName -> {
                     Map<String, String> response = new HashMap<>();
                     response.put("message", "Arquivo salvo com sucesso");

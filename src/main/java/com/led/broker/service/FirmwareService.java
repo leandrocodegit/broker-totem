@@ -29,29 +29,14 @@ public class FirmwareService {
         Files.createDirectories(this.fileStorageLocation);
     }
 
-    public String storeFile(MultipartFile file) throws IOException {
-
-        String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-        if (originalFileName.contains("..")) {
-            throw new IOException("Invalid file path: " + originalFileName);
-        }
-
-        String id = UUID.randomUUID().toString();
-        Path targetLocation = this.fileStorageLocation.resolve(id);
-        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-        return id;
-    }
-
-    public Mono<String> storeFile(Mono<FilePart> filePartMono) {
+    public Mono<String> storeFile(String mac, Mono<FilePart> filePartMono) {
         System.out.println("Iniciando upload");
         return filePartMono.flatMap(filePart -> {
-            String originalFileName = filePart.filename();
 
-            String id = UUID.randomUUID().toString();
-            Path targetLocation = fileStorageLocation.resolve(id);
+            Path targetLocation = fileStorageLocation.resolve(mac);
 
             return filePart.transferTo(targetLocation)
-                    .then(Mono.just(id))
+                    .then(Mono.just(mac))
                     .onErrorMap(ex -> new RuntimeException("Erro ao salvar o arquivo", ex));
         });
     }
