@@ -76,6 +76,20 @@ public class ComandoService {
         return mono;
     }
 
+    public Mono<String> enviardComandoUpdateFirmware(String mac, String host) {
+        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
+
+        if (!dispositivoOptional.isPresent()) {
+            return Mono.just(mac + " não encontrado ou inativo ");
+        }
+
+        Dispositivo dispositivo = dispositivoOptional.get();
+        Mono<String> mono = createMono(mac);
+
+        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComandoFirmware(host));
+        return mono;
+    }
+
     public void enviardComandoRapido(Dispositivo dispositivo, boolean cancelar) {
 
         try {

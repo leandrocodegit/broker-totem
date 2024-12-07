@@ -18,7 +18,12 @@ public enum Comando {
     UPDATE("Comando de atualização de firmware enviado para %S"),
     FIRMWARE("Firmware atualizado para dispositivo %S"),
     PARAMETRO("Parametrizando cores"),
-    TIMER_CANCELADO("Timer cancelado para %S");
+    TIMER_CANCELADO("Timer cancelado para %S"),
+    SUCESSO("Atualização cocluida com sucesso"),
+    FALHA("Falha ao atualizar"),
+    DOWNLOAD("Fazendo download do arquivo"),
+    DOWNLOAD_OK("Download foi concluido"),
+    ATUALIZANDO_FIRMWARE("Atualizando firmware");
 
     private String value;
 

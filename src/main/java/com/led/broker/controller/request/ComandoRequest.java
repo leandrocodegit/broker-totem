@@ -20,4 +20,5 @@ public class ComandoRequest {
     private int[] correcao;
     private int velocidade;
     private boolean responder;
+    private String host;
 }
