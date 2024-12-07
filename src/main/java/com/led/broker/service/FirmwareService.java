@@ -43,6 +43,7 @@ public class FirmwareService {
     }
 
     public Mono<String> storeFile(Mono<FilePart> filePartMono) {
+        System.out.println("Iniciando upload");
         return filePartMono.flatMap(filePart -> {
             String originalFileName = filePart.filename();
 
