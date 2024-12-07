@@ -23,6 +23,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/firmware")
+@CrossOrigin("*")
 @RequiredArgsConstructor
 public class FirmwareController {
 
@@ -33,6 +34,16 @@ public class FirmwareController {
     private String host;
 
 
+    @PatchMapping
+    public ResponseEntity<?> downloadFileTeste() {
+        try {
+
+            return ResponseEntity.ok()
+                    .body("resource");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
     @GetMapping(value = "/update/{mac}/{id}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> atualizarFirmware(@PathVariable String mac, @PathVariable String id) {
         //authService.validarToken(token);
