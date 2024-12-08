@@ -1,6 +1,8 @@
 package com.led.broker.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.led.broker.model.Mensagem;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.service.ComandoService;
@@ -27,15 +29,16 @@ public class MqttMessageHandler implements MessageHandler {
     public void handleMessage(Message<?> message) {
         String topico = (String) message.getHeaders().get("mqtt_receivedTopic");
 
-        if (topico.length() > Topico.DEVICE_CONFIRMACAO.length()) {
+
             try {
-                String id = topico.replace(Topico.DEVICE_CONFIRMACAO, "");
-                ComandoService.streams.remove(id).success(Comando.ACEITO.value() + " " + id);
+                Mensagem payload = new Gson().fromJson(message.getPayload().toString(), Mensagem.class);
+                if (payload.getComando().equals(Comando.ACEITO) && ComandoService.streams.containsKey(payload.getId())) {
+                    ComandoService.streams.remove(payload.getId()).success(Comando.ACEITO.value() + " " + payload.getId());
+                }
             } catch (Exception erro) {
                 if(message != null && message.getPayload() != null)
                     System.out.println("Erro ao confirmar resposta" + message.getPayload().toString());
             }
-        }
 
     }
 
