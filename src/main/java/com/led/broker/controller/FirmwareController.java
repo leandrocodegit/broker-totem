@@ -45,8 +45,8 @@ public class FirmwareController {
         }
     }
     @GetMapping(value = "/update/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> atualizarFirmware(@PathVariable String mac) {
-        //authService.validarToken(token);
+    public Flux<String> atualizarFirmware(@PathVariable String mac, @RequestParam("token") String token) {
+     //   authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
                 comandoService.enviardComandoUpdateFirmware(mac, host)
@@ -55,9 +55,10 @@ public class FirmwareController {
     }
 
     @PostMapping("/upload/{mac}")
-    public Mono<ResponseEntity<Map<String, String>>> uploadFile(@PathVariable String mac, @RequestPart("file") Mono<FilePart> filePartMono) {
+    public Mono<ResponseEntity<Map<String, String>>> uploadFile(@PathVariable String mac, @RequestPart("file") Mono<FilePart> filePartMono, @RequestParam("token") String token) {
+       // authService.validarToken(token);
         return filePartMono
-                .flatMap(filePart -> firmwareService.storeFile(mac, Mono.just(filePart)))
+                .flatMap(filePart -> firmwareService.storeFile(mac.replaceAll(":","-"), Mono.just(filePart)))
                 .map(newFileName -> {
                     Map<String, String> response = new HashMap<>();
                     response.put("message", "Arquivo salvo com sucesso");
@@ -72,10 +73,10 @@ public class FirmwareController {
                 });
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable("id") String id) {
+    @GetMapping("/{mac}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable("mac") String mac) {
         try {
-            Resource resource = firmwareService.loadFileAsResource(id);
+            Resource resource = firmwareService.loadFileAsResource(mac.replaceAll(":","-"));
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                     .body(resource);

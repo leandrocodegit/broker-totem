@@ -23,7 +23,8 @@ public enum Comando {
     FALHA("Falha ao atualizar"),
     DOWNLOAD("Fazendo download do arquivo"),
     DOWNLOAD_OK("Download foi concluido"),
-    ATUALIZANDO_FIRMWARE("Atualizando firmware");
+    ATUALIZANDO_FIRMWARE("Atualizando firmware"),
+    ATUALIZADO_FIRMWARE("Firmware foi atualizado");
 
     private String value;
 
