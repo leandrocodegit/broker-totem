@@ -1,5 +1,6 @@
 package com.led.broker.repository;
 
+import com.led.broker.model.Conexao;
 import com.led.broker.model.Dispositivo;
 import com.led.broker.model.constantes.Comando;
 import org.springframework.data.domain.Page;
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -48,5 +50,9 @@ public interface DispositivoRepository extends MongoRepository<Dispositivo, Stri
 //            "   'ativo': true" +
             "}")
     Page<Dispositivo> findByMacAndNomeContaining(String texto, Pageable pageable);
+
+    @Query(value = "{ 'conexao.ultimaAtualizacao' : { $lt: ?0 }, 'conexao.status' : 'Online', 'ativo' : true }",
+            fields = "{ 'conexao' : 1, '_id' : 0 }")
+    List<Conexao> findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(LocalDateTime dataLimite);
 
 }
