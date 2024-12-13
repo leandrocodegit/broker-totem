@@ -41,6 +41,9 @@ public class DispositivoService {
 
     public void salvarDispositivoComoOffline(List<Conexao> conexoes) {
         if (conexoes != null && !conexoes.isEmpty()) {
+
+            conexoes.forEach(conexao -> conexao.setStatus(StatusConexao.Offline));
+
             conexaoRepository.saveAll(conexoes);
 
             logRepository.save(Log.builder()
