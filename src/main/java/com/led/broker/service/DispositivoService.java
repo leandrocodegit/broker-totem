@@ -12,13 +12,14 @@ import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.MonthDay;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -35,10 +36,11 @@ public class DispositivoService {
     private final ComandoService comandoService;
     private final OperacaoRepository operacaoRepository;
     private final ConexaoRepository conexaoRepository;
+    private final MongoTemplate mongoTemplate;
 
 
     public void salvarDispositivoComoOffline(List<Conexao> conexoes) {
-        if(conexoes != null && !conexoes.isEmpty()) {
+        if (conexoes != null && !conexoes.isEmpty()) {
             conexaoRepository.saveAll(conexoes);
 
             logRepository.save(Log.builder()
@@ -58,9 +60,9 @@ public class DispositivoService {
         if (dispositivoOptional.isPresent()) {
             Dispositivo dispositivo = dispositivoOptional.get();
 
-            if(dispositivo.getConexao() == null){
+            if (dispositivo.getConexao() == null) {
                 dispositivo.setConexao(Conexao.builder()
-                                .mac(dispositivo.getMac())
+                        .mac(dispositivo.getMac())
                         .build());
             }
             dispositivo.getConexao().setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
@@ -107,44 +109,44 @@ public class DispositivoService {
                 }
             }
         } else {
-           if(dispositivoRepository.countByAtivo(true) < quantidadeClientes && dispositivoRepository.countByAtivo(false) < quantidadeClientes + 100) {
-               Dispositivo dispositivo = dispositivoRepository.save(
-                       Dispositivo.builder()
-                               .conexao(Conexao.builder()
-                                       .mac(mensagem.getId())
-                                       .status(StatusConexao.Online)
-                                       .ultimaAtualizacao(LocalDateTime.now())
-                                       .build())
-                               .mac(mensagem.getId())
-                               .versao(mensagem.getVersao())
-                               .ignorarAgenda(false)
-                               .operacao(Operacao.builder()
-                                       .mac(mensagem.getId())
-                                       .modoOperacao(ModoOperacao.DISPOSITIVO)
-                                       .build())
-                               .memoria(0)
-                               .ativo(false)
-                               .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
-                               .comando(Comando.ONLINE)
-                               .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
-                               .build());
+            if (dispositivoRepository.countByAtivo(true) < quantidadeClientes && dispositivoRepository.countByAtivo(false) < quantidadeClientes + 100) {
+                Dispositivo dispositivo = dispositivoRepository.save(
+                        Dispositivo.builder()
+                                .conexao(Conexao.builder()
+                                        .mac(mensagem.getId())
+                                        .status(StatusConexao.Online)
+                                        .ultimaAtualizacao(LocalDateTime.now())
+                                        .build())
+                                .mac(mensagem.getId())
+                                .versao(mensagem.getVersao())
+                                .ignorarAgenda(false)
+                                .operacao(Operacao.builder()
+                                        .mac(mensagem.getId())
+                                        .modoOperacao(ModoOperacao.DISPOSITIVO)
+                                        .build())
+                                .memoria(0)
+                                .ativo(false)
+                                .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
+                                .comando(Comando.ONLINE)
+                                .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
+                                .build());
 
-               dispositivo.setConexao(Conexao.builder()
-                       .mac(dispositivo.getMac())
-                       .build());
-               conexaoRepository.save(dispositivo.getConexao());
-               operacaoRepository.save(dispositivo.getOperacao());
-           }
+                dispositivo.setConexao(Conexao.builder()
+                        .mac(dispositivo.getMac())
+                        .build());
+                conexaoRepository.save(dispositivo.getConexao());
+                operacaoRepository.save(dispositivo.getOperacao());
+            }
         }
     }
 
     private Cor getCor(Dispositivo dispositivo) {
 
-        if(dispositivo.getOperacao().equals(ModoOperacao.DISPOSITIVO)){
-           return dispositivo.getCor();
+        if (dispositivo.getOperacao().equals(ModoOperacao.DISPOSITIVO)) {
+            return dispositivo.getCor();
         }
 
-        if(dispositivo.getOperacao().equals(ModoOperacao.TEMPORIZADOR)){
+        if (dispositivo.getOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
             if (TimeUtil.isTime(dispositivo)) {
                 if (dispositivo.getOperacao().getCorTemporizador() != null) {
                     return dispositivo.getOperacao().getCorTemporizador();
@@ -153,25 +155,25 @@ public class DispositivoService {
         }
 
         if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA)) {
-           Agenda agenda = dispositivo.getOperacao().getAgenda();
-                if (agenda != null && agenda.getCor() != null) {
+            Agenda agenda = dispositivo.getOperacao().getAgenda();
+            if (agenda != null && agenda.getCor() != null) {
 
-                    MonthDay inicio = MonthDay.from(agenda.getInicio()); // 1º de novembro
-                    MonthDay fim = MonthDay.from(agenda.getTermino());  // 30 de novembro
+                MonthDay inicio = MonthDay.from(agenda.getInicio()); // 1º de novembro
+                MonthDay fim = MonthDay.from(agenda.getTermino());  // 30 de novembro
 
-                    MonthDay hoje = MonthDay.from(LocalDate.now());
+                MonthDay hoje = MonthDay.from(LocalDate.now());
 
-                    boolean isBetween = false;
-                    if (inicio.isBefore(fim) || inicio.equals(fim)) {
-                        isBetween = (hoje.equals(inicio) || hoje.isAfter(inicio)) &&
-                                (hoje.equals(fim) || hoje.isBefore(fim));
-                    }
-                    if(isBetween)
-                        return agenda.getCor();
+                boolean isBetween = false;
+                if (inicio.isBefore(fim) || inicio.equals(fim)) {
+                    isBetween = (hoje.equals(inicio) || hoje.isAfter(inicio)) &&
+                            (hoje.equals(fim) || hoje.isBefore(fim));
+                }
+                if (isBetween)
+                    return agenda.getCor();
             }
         }
 
-        if(!dispositivo.getOperacao().equals(ModoOperacao.DISPOSITIVO)){
+        if (!dispositivo.getOperacao().equals(ModoOperacao.DISPOSITIVO)) {
             dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
             operacaoRepository.save(dispositivo.getOperacao());
         }
@@ -180,8 +182,10 @@ public class DispositivoService {
     }
 
     public List<Conexao> dispositivosQueFicaramOffilne() {
-        LocalDateTime cincoMinutosAtras = LocalDateTime.now(ZoneOffset.UTC).plusHours(3).minusMinutes(6);
-        Date dataLimite = Date.from(cincoMinutosAtras.atZone(ZoneOffset.UTC).toInstant());
-        return dispositivoRepository.findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(dataLimite).stream().map(device -> device.getConexao()).toList();
+
+        Date cincoMinutosAtras = Date.from(Instant.now().minusSeconds(5 * 60));
+        Criteria criteria = Criteria.where("ultimaAtualizacao").lt(cincoMinutosAtras).and("status").is("Online");
+        Query query = new Query(criteria);
+        return mongoTemplate.find(query, Conexao.class);
     }
 }
