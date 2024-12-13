@@ -36,6 +36,7 @@ public class ScheduleConfig {
 
         conexoes = dispositivoService.dispositivosQueFicaramOffilne();
         enviarDashBoard = true;
+        dispositivoService.salvarDispositivoComoOffline(conexoes);
     }
 
     @Scheduled(fixedRate = 8 * 60 * 1000)
