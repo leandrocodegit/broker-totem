@@ -35,10 +35,8 @@ public class ScheduleConfig {
     public void checkarDipositivosOffline() {
 
         conexoes = dispositivoService.dispositivosQueFicaramOffilne();
-
-        dispositivoService.salvarDispositivoComoOffline(conexoes);
-        System.out.println("Conexoes: " + conexoes.size());
         if(!conexoes.isEmpty()){
+            dispositivoService.salvarDispositivoComoOffline(conexoes);
             enviarDashBoard = true;
         }
     }
@@ -46,7 +44,6 @@ public class ScheduleConfig {
     @Scheduled(fixedRate = 8 * 60 * 1000)
     public void atualizacaoDashboard() {
         if(Boolean.TRUE.equals(enviarDashBoard)){
-            dispositivoService.salvarDispositivoComoOffline(conexoes);
             dashboardService.atualizarDashboard("");
             mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
             enviarDashBoard = false;
