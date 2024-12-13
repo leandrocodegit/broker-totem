@@ -35,9 +35,12 @@ public class ScheduleConfig {
     public void checkarDipositivosOffline() {
 
         conexoes = dispositivoService.dispositivosQueFicaramOffilne();
-        enviarDashBoard = true;
+
         dispositivoService.salvarDispositivoComoOffline(conexoes);
         System.out.println("Conexoes: " + conexoes.size());
+        if(!conexoes.isEmpty()){
+            enviarDashBoard = true;
+        }
     }
 
     @Scheduled(fixedRate = 8 * 60 * 1000)
