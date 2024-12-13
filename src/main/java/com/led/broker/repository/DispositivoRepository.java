@@ -52,6 +52,6 @@ public interface DispositivoRepository extends MongoRepository<Dispositivo, Stri
     Page<Dispositivo> findByMacAndNomeContaining(String texto, Pageable pageable);
 
     @Query(value = "{ 'conexao: {ultimaAtualizacao' : { $lt: ?0 }}, 'conexao: {status' : 'Online'}, 'ativo' : true }")
-    List<Dispositivo> findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(LocalDateTime dataLimite);
+    List<Dispositivo> findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(Date dataLimite);
 
 }
