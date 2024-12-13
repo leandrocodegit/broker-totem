@@ -182,6 +182,6 @@ public class DispositivoService {
     public List<Conexao> dispositivosQueFicaramOffilne() {
         LocalDateTime cincoMinutosAtras = LocalDateTime.now(ZoneOffset.UTC).plusHours(3).minusMinutes(6);
         Date dataLimite = Date.from(cincoMinutosAtras.atZone(ZoneOffset.UTC).toInstant());
-        return dispositivoRepository.findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(6));
+        return dispositivoRepository.findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(6)).stream().map(device -> device.getConexao()).toList();
     }
 }
