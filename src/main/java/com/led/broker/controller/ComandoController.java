@@ -78,7 +78,9 @@ public class ComandoController {
 
     @GetMapping("/flux/temporizar/{mac}")
     public Flux<String> cancelarTemporizarFlux(@PathVariable String mac, @RequestParam("token") String token) {
+        System.out.println("Cancelando comando 2");
         authService.validarToken(token);
+        System.out.println("Cancelando comando 3");
         return Flux.concat(
                 Mono.just("ok"),
                 corService.salvarCorTemporizada(null, mac, true)

@@ -41,6 +41,7 @@ public class CorService {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
 
         if(cancelar && dispositivoOptional.isPresent()){
+            System.out.println("Cancelando comando 1");
             Dispositivo dispositivo = dispositivoOptional.get();
             setOperacao(dispositivo);
             operacaoRepository.save(dispositivo.getOperacao());
