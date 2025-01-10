@@ -20,4 +20,18 @@ public class CorsConfig implements WebFluxConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(false);
     }
+
+    @Bean
+    public CorsWebFilter  corsConfigurationSource() {
+        CorsConfiguration corsConfig = new CorsConfiguration();
+        corsConfig.addAllowedOrigin("http://sincroled.com.br");
+        corsConfig.addAllowedHeader("*");
+        corsConfig.addAllowedMethod("*");
+        corsConfig.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfig);
+        return new CorsWebFilter(source);
+    }
+}
 }
