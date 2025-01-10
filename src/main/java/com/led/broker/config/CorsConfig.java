@@ -18,6 +18,6 @@ public class CorsConfig implements WebFluxConfigurer {
                 .allowedOrigins("http://sincroled.com.br")
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(false);
     }
 }
