@@ -34,4 +34,3 @@ public class CorsConfig implements WebFluxConfigurer {
         return new CorsWebFilter(source);
     }
 }
-}
