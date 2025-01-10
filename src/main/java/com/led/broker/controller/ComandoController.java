@@ -71,7 +71,7 @@ public class ComandoController {
 
     @GetMapping("/temporizar/{idCor}/{mac}")
     public ResponseEntity<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarToken(token);
+        //authService.validarToken(token);
         corService.salvarCorTemporizadaReponse(idCor, mac, false, true);
         return ResponseEntity.ok().build();
     }
@@ -79,7 +79,7 @@ public class ComandoController {
     @GetMapping("/flux/temporizar/{mac}")
     public Flux<String> cancelarTemporizarFlux(@PathVariable String mac, @RequestParam("token") String token) {
         System.out.println("Cancelando comando 2");
-        authService.validarToken(token);
+       // authService.validarToken(token);
         System.out.println("Cancelando comando 3");
         return Flux.concat(
                 Mono.just("ok"),
