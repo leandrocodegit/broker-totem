@@ -17,7 +17,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/comando")
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class ComandoController {
 

@@ -16,7 +16,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/integracao")
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class IntegracaoController {
 
