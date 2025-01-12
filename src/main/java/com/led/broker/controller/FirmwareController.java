@@ -23,7 +23,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/firmware")
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class FirmwareController {
 
