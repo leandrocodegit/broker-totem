@@ -53,7 +53,7 @@ public class FirmwareController {
                         .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
     }
 
-    @PostMapping("/upload/{mac}")
+    @PostMapping(value = "/upload/{mac}", consumes = "multipart/form-data")
     public Mono<ResponseEntity<Map<String, String>>> uploadFile(@PathVariable String mac, @RequestPart("file") Mono<FilePart> filePartMono, @RequestParam("token") String token) {
        // authService.validarToken(token);
         return filePartMono
