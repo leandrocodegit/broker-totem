@@ -1,10 +1,7 @@
 package com.led.broker.service;
 
 import com.led.broker.model.*;
-import com.led.broker.model.constantes.Comando;
-import com.led.broker.model.constantes.ModoOperacao;
-import com.led.broker.model.constantes.StatusConexao;
-import com.led.broker.model.constantes.TipoCor;
+import com.led.broker.model.constantes.*;
 import com.led.broker.repository.ConexaoRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
@@ -37,6 +34,7 @@ public class DispositivoService {
     private final OperacaoRepository operacaoRepository;
     private final ConexaoRepository conexaoRepository;
     private final MongoTemplate mongoTemplate;
+    private final MqttService mqttService;
 
 
     public void salvarDispositivoComoOffline(List<Conexao> conexoes) {
@@ -88,6 +86,7 @@ public class DispositivoService {
             dispositivoRepository.save(dispositivo);
             if (mensagem.getComando().equals(Comando.ONLINE) && dispositivo.getConexao().getStatus().equals(StatusConexao.Offline)){
                 dashboardService.atualizarDashboard("", true);
+                mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
                         .usuario("Enviado pelo dispositivo")
@@ -141,6 +140,7 @@ public class DispositivoService {
                 conexaoRepository.save(dispositivo.getConexao());
                 operacaoRepository.save(dispositivo.getOperacao());
                 dashboardService.atualizarDashboard("", true);
+                mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
             }
         }
     }
