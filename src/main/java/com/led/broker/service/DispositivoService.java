@@ -60,6 +60,7 @@ public class DispositivoService {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByIdAndAtivo(mensagem.getId(), true);
         if (dispositivoOptional.isPresent()) {
             Dispositivo dispositivo = dispositivoOptional.get();
+            boolean gerarLog = mensagem.getComando().equals(Comando.ONLINE) && dispositivo.getConexao().getStatus().equals(StatusConexao.Offline);
 
             if (dispositivo.getConexao() == null) {
                 dispositivo.setConexao(Conexao.builder()
@@ -84,7 +85,7 @@ public class DispositivoService {
                 );
             }
             dispositivoRepository.save(dispositivo);
-            if (mensagem.getComando().equals(Comando.ONLINE) && dispositivo.getConexao().getStatus().equals(StatusConexao.Offline)){
+            if (gerarLog){
                 dashboardService.atualizarDashboard("", true);
                 mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
                 logRepository.save(Log.builder()
