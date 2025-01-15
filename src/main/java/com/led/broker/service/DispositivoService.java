@@ -87,10 +87,10 @@ public class DispositivoService {
             }
             dispositivoRepository.save(dispositivo);
 
-            if (gerarLog || atualizarDashboard){
+            if (gerarLog || atualizarDashboard) {
                 dashboardService.atualizarDashboard("", true);
                 mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
-
+            }
             if (gerarLog){
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
