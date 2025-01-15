@@ -44,7 +44,7 @@ public class ScheduleConfig {
     @Scheduled(fixedRate = 8 * 60 * 1000)
     public void atualizacaoDashboard() {
         if(Boolean.TRUE.equals(enviarDashBoard)){
-            dashboardService.atualizarDashboard("");
+            dashboardService.atualizarDashboard("", true);
             mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
             enviarDashBoard = false;
         }

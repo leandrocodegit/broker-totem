@@ -32,7 +32,7 @@ public class DispositivoService {
     private int quantidadeClientes;
     private final DispositivoRepository dispositivoRepository;
     private final LogRepository logRepository;
-    private final CorService configuracaoService;
+    private final DashboardService dashboardService;
     private final ComandoService comandoService;
     private final OperacaoRepository operacaoRepository;
     private final ConexaoRepository conexaoRepository;
@@ -85,7 +85,9 @@ public class DispositivoService {
                         .build()
                 );
             }
-            if (mensagem.getComando().equals(Comando.ONLINE) && dispositivo.getConexao().getStatus().equals(StatusConexao.Offline))
+            dispositivoRepository.save(dispositivo);
+            if (mensagem.getComando().equals(Comando.ONLINE) && dispositivo.getConexao().getStatus().equals(StatusConexao.Offline)){
+                dashboardService.atualizarDashboard("", true);
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
                         .usuario("Enviado pelo dispositivo")
@@ -95,8 +97,7 @@ public class DispositivoService {
                         .descricao(mensagem.getComando().equals(Comando.ONLINE) ? String.format(mensagem.getComando().value(), mensagem.getId()) : mensagem.getComando().value())
                         .mac(dispositivo.getMac())
                         .build());
-
-            dispositivoRepository.save(dispositivo);
+            }
             Cor cor = getCor(dispositivo);
             if (cor != null) {
                 if (mensagem.getComando().equals(Comando.CONFIGURACAO) || mensagem.getComando().equals(Comando.CONCLUIDO)) {
@@ -139,6 +140,7 @@ public class DispositivoService {
                         .build());
                 conexaoRepository.save(dispositivo.getConexao());
                 operacaoRepository.save(dispositivo.getOperacao());
+                dashboardService.atualizarDashboard("", true);
             }
         }
     }
