@@ -45,7 +45,7 @@ public class FirmwareController {
     }
     @GetMapping(value = "/update/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> atualizarFirmware(@PathVariable String mac, @RequestParam("token") String token) {
-     //   authService.validarToken(token);
+         authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
                 comandoService.enviardComandoUpdateFirmware(mac, host)
@@ -55,7 +55,7 @@ public class FirmwareController {
 
     @PostMapping(value = "/upload/{mac}", consumes = "multipart/form-data")
     public Mono<ResponseEntity<Map<String, String>>> uploadFile(@PathVariable String mac, @RequestPart("file") Mono<FilePart> filePartMono, @RequestParam("token") String token) {
-       // authService.validarToken(token);
+         authService.validarToken(token);
         return filePartMono
                 .flatMap(filePart -> firmwareService.storeFile(mac.replaceAll(":","-"), Mono.just(filePart)))
                 .map(newFileName -> {
