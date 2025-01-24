@@ -15,14 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ConexaoController {
 
-    @Value("${totem-url}")
-    private final String url;
     private final DashboardService dashboardService;
     private final MqttService mqttService;
 
     @GetMapping
     @CrossOrigin({"http://totem:8081"})
-    public void atualizarDashboar(){
+    public void atualizarDashboar() {
         dashboardService.atualizarDashboard("", true);
         mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
     }
