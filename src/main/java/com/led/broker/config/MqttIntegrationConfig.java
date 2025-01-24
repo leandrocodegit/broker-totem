@@ -45,16 +45,16 @@ public class MqttIntegrationConfig {
     @ServiceActivator(inputChannel = "mqttOutboundChannel")
     public MessageHandler mqttOutbound() {
         MqttPahoMessageHandler messageHandler =
-                new MqttPahoMessageHandler("testClient", mqttClientFactory());
+                new MqttPahoMessageHandler(clientId, mqttClientFactory());
         messageHandler.setAsync(true);
-        messageHandler.setDefaultTopic("testTopic");
+        messageHandler.setDefaultTopic("comando");
         return messageHandler;
     }
 
     @Bean
     public MessageProducer inbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(brokerUrl, clientId + "-subscribe", mqttClientFactory(), Topico.DEVICE_CONFIRMACAO + "#");
+                new MqttPahoMessageDrivenChannelAdapter(brokerUrl, clientId, mqttClientFactory(), Topico.DEVICE_CONFIRMACAO + "#");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(0);
