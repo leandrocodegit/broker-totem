@@ -21,6 +21,7 @@ public class ConexaoController {
     @GetMapping
     @CrossOrigin({"http://totem:8081"})
     public void atualizarDashboar() {
+        System.out.println("Atualizando");
         dashboardService.atualizarDashboard("", true);
         mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
     }
