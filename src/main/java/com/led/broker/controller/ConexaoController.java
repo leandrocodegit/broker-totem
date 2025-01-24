@@ -5,6 +5,7 @@ import com.led.broker.service.DashboardService;
 import com.led.broker.service.MqttService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,10 +20,11 @@ public class ConexaoController {
     private final MqttService mqttService;
 
     @GetMapping
-    @CrossOrigin({"http://totem:8081"})
-    public void atualizarDashboar() {
+    //@CrossOrigin({"http://totem:8081"})
+    public ResponseEntity<String> atualizarDashboar() {
         System.out.println("Atualizando");
         dashboardService.atualizarDashboard("", true);
         mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
+        return ResponseEntity.ok("atualizado com sucesso");
     }
 }
