@@ -17,3 +17,5 @@ services:
 networks:
   backend-toten_totem-network:
     external: true
+
+
