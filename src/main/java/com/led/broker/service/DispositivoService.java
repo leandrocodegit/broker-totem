@@ -139,9 +139,6 @@ public class DispositivoService {
                                 .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
                                 .build());
 
-                dispositivo.setConexao(Conexao.builder()
-                        .mac(dispositivo.getMac())
-                        .build());
                 conexaoRepository.save(dispositivo.getConexao());
                 operacaoRepository.save(dispositivo.getOperacao());
                 dashboardService.atualizarDashboard("", true);
