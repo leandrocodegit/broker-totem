@@ -38,7 +38,7 @@ public class ScheduleConfig {
                         .mac(device.getMac())
                         .build());
                 devicesRemove.add(device.getMac());
-                comandoService.enviardComandoRapido(device, true, true);
+               // comandoService.enviardComandoRapido(device, true, true);
             }
         });
 
