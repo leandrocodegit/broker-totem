@@ -149,11 +149,11 @@ public class DispositivoService {
 
     private Cor getCor(Dispositivo dispositivo) {
 
-        if (dispositivo.getOperacao().equals(ModoOperacao.DISPOSITIVO)) {
+        if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.DISPOSITIVO)) {
             return dispositivo.getCor();
         }
 
-        if (dispositivo.getOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
+        if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
             if (TimeUtil.isTime(dispositivo)) {
                 if (dispositivo.getOperacao().getCorTemporizador() != null) {
                     return dispositivo.getOperacao().getCorTemporizador();
@@ -180,7 +180,7 @@ public class DispositivoService {
             }
         }
 
-        if (!dispositivo.getOperacao().equals(ModoOperacao.DISPOSITIVO)) {
+        if (!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.DISPOSITIVO)) {
             dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
             operacaoRepository.save(dispositivo.getOperacao());
         }
