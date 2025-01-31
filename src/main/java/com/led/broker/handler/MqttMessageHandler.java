@@ -18,15 +18,19 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @RequiredArgsConstructor
 public class MqttMessageHandler implements MessageHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(MqttMessageHandler.class);
 
     private final DispositivoService dispositivoService;
     private final ExecutorService executorService = Executors.newFixedThreadPool(1);
-    private final ConcurrentHashMap<String, String> clientMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Future<?>> tasks = new ConcurrentHashMap<>();
 
 
     @Override
@@ -39,26 +43,28 @@ public class MqttMessageHandler implements MessageHandler {
             Mensagem payload = new Gson().fromJson(message.getPayload().toString(), Mensagem.class);
             if (payload.getComando().equals(Comando.ONLINE) || payload.getComando().equals(Comando.CONFIGURACAO) || payload.getComando().equals(Comando.CONCLUIDO)) {
             payload.setBrockerId(clientId.toString());
-                executorService.submit(() -> {
-                    try {
-                        dispositivoService.atualizarDispositivo(payload);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        System.out.println("Erro ao tratar mensagem");
-                    }
-                });
-           // dispositivoService.atualizarDispositivo(payload);
+                processarDispositivo(payload.getId(), payload);
             }
-
         } catch (Exception erro) {
-            System.out.println("Erro ao capturar id");
+            logger.error("Erro ao capturar id");
         }
-
-        System.out.println("Mensagem recebida do cliente " + clientId + ": " + message.getPayload().toString());
+        logger.warn("Mensagem recebida do cliente " + clientId + ": " + message.getPayload().toString());
     }
 
-    // Método para obter informações de um cliente
-    public String getClientInfo(String clientId) {
-        return clientMap.get(clientId);
+    private void processarDispositivo(String id, Mensagem payload) {
+        Future<?> existingTask = tasks.put(id, executorService.submit(() -> {
+            try {
+                dispositivoService.atualizarDispositivo(payload);
+            } catch (Exception e) {
+                logger.error("Erro ao atualizar dispositivo {}", id, e);
+            } finally {
+                tasks.remove(id);
+            }
+        }));
+
+        if (existingTask != null && !existingTask.isDone()) {
+            existingTask.cancel(true);
+        }
     }
+
 }
