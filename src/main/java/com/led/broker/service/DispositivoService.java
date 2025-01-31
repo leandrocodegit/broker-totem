@@ -1,5 +1,6 @@
 package com.led.broker.service;
 
+import com.led.broker.handler.MqttMessageHandler;
 import com.led.broker.model.*;
 import com.led.broker.model.constantes.*;
 import com.led.broker.repository.ConexaoRepository;
@@ -8,6 +9,8 @@ import com.led.broker.repository.LogRepository;
 import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -25,6 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DispositivoService {
 
+    private static final Logger logger = LoggerFactory.getLogger(MqttMessageHandler.class);
     @Value("${quantidade-clientes}")
     private int quantidadeClientes;
     private final DispositivoRepository dispositivoRepository;
@@ -59,6 +63,7 @@ public class DispositivoService {
     public void atualizarDispositivo(Mensagem mensagem) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByIdAndAtivo(mensagem.getId(), true);
         if (dispositivoOptional.isPresent()) {
+
             Dispositivo dispositivo = dispositivoOptional.get();
             boolean gerarLog = mensagem.getComando().equals(Comando.ONLINE) && dispositivo.getConexao().getStatus().equals(StatusConexao.Offline);
             boolean atualizarDashboard = mensagem.getComando().equals(Comando.CONFIGURACAO) && dispositivo.getConexao().getStatus().equals(StatusConexao.Offline);
@@ -71,6 +76,7 @@ public class DispositivoService {
             dispositivo.getConexao().setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
             dispositivo.getConexao().setStatus(StatusConexao.Online);
             conexaoRepository.save(dispositivo.getConexao());
+            logger.warn("Atualizado conexão:  " + dispositivo.getMac() + " : " +dispositivo.getConexao().getStatus());
             dispositivo.setIp(mensagem.getIp());
             dispositivo.setMemoria(mensagem.getMemoria());
             dispositivo.setComando(mensagem.getComando());
@@ -86,6 +92,7 @@ public class DispositivoService {
                 );
             }
             dispositivoRepository.save(dispositivo);
+            logger.warn("Atualizado dispositivo:  " + dispositivo.getMac());
 
             if (gerarLog || atualizarDashboard) {
                 dashboardService.atualizarDashboard("", true);
@@ -101,6 +108,7 @@ public class DispositivoService {
                         .descricao(mensagem.getComando().equals(Comando.ONLINE) ? String.format(mensagem.getComando().value(), mensagem.getId()) : mensagem.getComando().value())
                         .mac(dispositivo.getMac())
                         .build());
+                logger.warn("Criado log de tarefa");
             }
             Cor cor = getCor(dispositivo);
             if (cor != null) {
@@ -108,9 +116,10 @@ public class DispositivoService {
                     dispositivo.setCor(cor);
                     System.out.println(mensagem.getComando().value());
                     comandoService.enviardComandoSincronizar(dispositivo.getMac(), false);
+                    logger.warn("Tarefa de configuração executada");
                 } else if (mensagem.getComando().equals(Comando.ONLINE) && mensagem.getEfeito() != null) {
                     if (!cor.getEfeito().equals(mensagem.getEfeito())) {
-                        System.out.println("Reparação de efeito de " + cor.getEfeito() + " para " + mensagem.getEfeito());
+                        logger.warn("Reparação de efeito de " + cor.getEfeito() + " para " + mensagem.getEfeito());
                         dispositivo.setCor(cor);
                         comandoService.enviardComandoSincronizar(dispositivo);
                     }
