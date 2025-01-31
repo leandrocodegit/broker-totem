@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class MqttService {
 
-    private static final Logger logger = LoggerFactory.getLogger(MqttMessageHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MqttService.class);
     private final MqttGateway mqttGateway;
 
     public MqttService(MqttGateway mqttGateway) {

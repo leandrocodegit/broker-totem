@@ -28,7 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DispositivoService {
 
-    private static final Logger logger = LoggerFactory.getLogger(MqttMessageHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(DispositivoService.class);
     @Value("${quantidade-clientes}")
     private int quantidadeClientes;
     private final DispositivoRepository dispositivoRepository;
@@ -57,6 +57,7 @@ public class DispositivoService {
                     .descricao(String.format(Comando.OFFLINE.value(), "grupo"))
                     .mac(conexoes.stream().map(device -> device.getMac()).toList().toString())
                     .build());
+            logger.warn("Erro ao capturar id");
         }
     }
 
@@ -147,7 +148,7 @@ public class DispositivoService {
                                 .comando(Comando.ONLINE)
                                 .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
                                 .build());
-
+                logger.warn("Novo dispositivo adicionado " + dispositivo.getMac());
                 conexaoRepository.save(dispositivo.getConexao());
                 operacaoRepository.save(dispositivo.getOperacao());
                 dashboardService.atualizarDashboard("", true);
@@ -158,13 +159,16 @@ public class DispositivoService {
 
     private Cor getCor(Dispositivo dispositivo) {
 
+        logger.warn("Recuperando cor");
         if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.DISPOSITIVO)) {
+            logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
             return dispositivo.getCor();
         }
 
         if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
             if (TimeUtil.isTime(dispositivo)) {
                 if (dispositivo.getOperacao().getCorTemporizador() != null) {
+                    logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
                     return dispositivo.getOperacao().getCorTemporizador();
                 }
             }
@@ -184,16 +188,21 @@ public class DispositivoService {
                     isBetween = (hoje.equals(inicio) || hoje.isAfter(inicio)) &&
                             (hoje.equals(fim) || hoje.isBefore(fim));
                 }
-                if (isBetween)
+                if (isBetween){
+                    logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
                     return agenda.getCor();
+                }
+
             }
         }
 
         if (!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.DISPOSITIVO)) {
             dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
             operacaoRepository.save(dispositivo.getOperacao());
+            logger.warn("Rest modo operação: " + dispositivo.getOperacao().getModoOperacao());
         }
 
+        logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
         return dispositivo.getCor();
     }
 
