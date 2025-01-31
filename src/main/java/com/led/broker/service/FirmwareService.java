@@ -1,6 +1,8 @@
 package com.led.broker.service;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -21,6 +23,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class FirmwareService {
+
+    private static final Logger logger = LoggerFactory.getLogger(FirmwareService.class);
     private final Path fileStorageLocation;
 
     @Autowired
@@ -30,7 +34,7 @@ public class FirmwareService {
     }
 
     public Mono<String> storeFile(String mac, Mono<FilePart> filePartMono) {
-        System.out.println("Iniciando upload");
+        logger.warn("Salvando arquivo de firmware");
         return filePartMono.flatMap(filePart -> {
 
             Path targetLocation = fileStorageLocation.resolve(mac);

@@ -15,6 +15,8 @@ import com.led.broker.repository.LogRepository;
 import com.led.broker.util.ConfiguracaoUtil;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
@@ -26,6 +28,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ComandoService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ComandoService.class);
     private final MqttService mqttService;
     private final DispositivoRepository dispositivoRepository;
     private final CorRepository corRepository;
@@ -40,6 +43,8 @@ public class ComandoService {
     }
 
     public Mono<String> enviardComandoTeste(String mac) {
+
+        logger.warn("Comando de teste: " + mac);
         Dispositivo dispositivo = buscarPorMac(mac);
 
         Mono<String> mono = createMono(mac);
@@ -55,6 +60,7 @@ public class ComandoService {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
 
         if (!dispositivoOptional.isPresent()) {
+            logger.error(mac + " não encontrado ou inativo ");
             return Mono.just(mac + " não encontrado ou inativo ");
         }
 
@@ -69,6 +75,7 @@ public class ComandoService {
                     return mono.just("ok");
                 }
             } else {
+                logger.error(mac + " não possui configuração de cor");
                 return mono.just("não possui configuração de cor");
             }
 
@@ -80,6 +87,7 @@ public class ComandoService {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
 
         if (!dispositivoOptional.isPresent()) {
+            logger.error(mac + " não encontrado ou inativo ");
             return Mono.just(mac + " não encontrado ou inativo ");
         }
 
@@ -94,6 +102,7 @@ public class ComandoService {
 
         try {
             if (cancelar) {
+                logger.warn("Cancelar comando rápido: " + dispositivo.getMac());
                 dispositivo.setCor(getCor(buscarPorMac(dispositivo.getMac())));
             }
 
@@ -101,7 +110,7 @@ public class ComandoService {
                 mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, true));
             }
         } catch (Exception err) {
-            err.printStackTrace();
+            logger.error(err.getMessage());
         }
 
     }
@@ -115,6 +124,7 @@ public class ComandoService {
         }
 
         if (cancelar) {
+            logger.warn("Cancelar comando rápido: " + dispositivo.getMac());
             dispositivo.setCor(getCor(buscarPorMac(dispositivo.getMac())));
         }
 
@@ -122,7 +132,7 @@ public class ComandoService {
             mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, true));
         }
 
-
+        logger.warn("Comando rápido criado: " + dispositivo.getMac());
         return mono;
     }
 
@@ -130,6 +140,7 @@ public class ComandoService {
 
         try {
             List<Dispositivo> dispositivos = listaTodosDispositivos();
+            logger.warn("Comando enviado para todos: " + dispositivos.size());
 
             if (!dispositivos.isEmpty()) {
 
@@ -147,7 +158,6 @@ public class ComandoService {
                     if (device.isAtivo() && device.getConfiguracao() != null) {
                         device.setCor(getCor(device));
                         mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ConfiguracaoUtil.gerarComando(device));
-                        System.out.println(new Gson().toJson(device.getConfiguracao()));
                     }
                 });
             } else {
@@ -162,6 +172,7 @@ public class ComandoService {
             }
             return "Comando enviado para todos";
         } catch (Exception erro) {
+            logger.error("Erro ao sincronizar");
             return "Sincronização não foi concluida";
         }
     }

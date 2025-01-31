@@ -12,6 +12,8 @@ import com.led.broker.repository.LogRepository;
 import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -24,6 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CorService {
 
+    private static final Logger logger = LoggerFactory.getLogger(CorService.class);
     private final CorRepository corRepository;
     private final DispositivoRepository dispositivoRepository;
     private final ComandoService comandoService;
@@ -41,7 +44,7 @@ public class CorService {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
 
         if(cancelar && dispositivoOptional.isPresent()){
-            System.out.println("Cancelando comando 1");
+            logger.warn("Cancelando comando");
             Dispositivo dispositivo = dispositivoOptional.get();
             setOperacao(dispositivo);
             operacaoRepository.save(dispositivo.getOperacao());
@@ -78,11 +81,15 @@ public class CorService {
                         .descricao(String.format(Comando.TIMER_CRIADO.value(), dispositivo.getMac()))
                         .mac(dispositivo.getMac())
                         .build());
+                logger.warn("Temporizador criado para " + dispositivo.getMac());
+                logger.warn("Efeito " + dispositivo.getCor().getEfeito());
                 return   comandoService.enviardComandoRapido(dispositivo, false, false);
             }else{
+                logger.error("Falha, cor não existe ou não encontrada");
                 return Mono.just("Falha, cor não existe ou não encontrada");
             }
         }}catch (Exception errr){
+            logger.error(errr.getMessage());
             return Mono.just("Falha ao enviar comando");
         }
     }
