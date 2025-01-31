@@ -63,6 +63,7 @@ public class DispositivoService {
 
     public void atualizarDispositivo(Mensagem mensagem) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findByIdAndAtivo(mensagem.getId(), true);
+        logger.warn("Comando recebido: " + mensagem.getComando());
         if (dispositivoOptional.isPresent()) {
 
             Dispositivo dispositivo = dispositivoOptional.get();
@@ -77,7 +78,7 @@ public class DispositivoService {
             dispositivo.getConexao().setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
             dispositivo.getConexao().setStatus(StatusConexao.Online);
             conexaoRepository.save(dispositivo.getConexao());
-            logger.warn("Atualizado conexão:  " + dispositivo.getMac() + " : " +dispositivo.getConexao().getStatus());
+            logger.warn("Atualizado conexão:  " + dispositivo.getMac() + " : " + dispositivo.getConexao().getStatus());
             dispositivo.setIp(mensagem.getIp());
             dispositivo.setMemoria(mensagem.getMemoria());
             dispositivo.setComando(mensagem.getComando());
@@ -99,7 +100,7 @@ public class DispositivoService {
                 dashboardService.atualizarDashboard("", true);
                 mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
             }
-            if (gerarLog){
+            if (gerarLog) {
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
                         .usuario("Enviado pelo dispositivo")
@@ -111,19 +112,14 @@ public class DispositivoService {
                         .build());
                 logger.warn("Criado log de tarefa");
             }
-            Cor cor = getCor(dispositivo);
-            if (cor != null) {
-                if (mensagem.getComando().equals(Comando.CONFIGURACAO) || mensagem.getComando().equals(Comando.CONCLUIDO)) {
-                    dispositivo.setCor(cor);
-                    System.out.println(mensagem.getComando().value());
-                    comandoService.enviardComandoSincronizar(dispositivo.getMac(), false);
-                    logger.warn("Tarefa de configuração executada");
-                } else if (mensagem.getComando().equals(Comando.ONLINE) && mensagem.getEfeito() != null) {
-                    if (!cor.getEfeito().equals(mensagem.getEfeito())) {
-                        logger.warn("Reparação de efeito de " + cor.getEfeito() + " para " + mensagem.getEfeito());
-                        dispositivo.setCor(cor);
-                        comandoService.enviardComandoSincronizar(dispositivo);
-                    }
+            dispositivo.setCor(getCor(dispositivo));
+            if (mensagem.getComando().equals(Comando.CONFIGURACAO) || mensagem.getComando().equals(Comando.CONCLUIDO)) {
+                comandoService.enviardComandoSincronizar(dispositivo);
+                logger.warn("Tarefa de configuração executada");
+            } else if (mensagem.getComando().equals(Comando.ONLINE) && mensagem.getEfeito() != null) {
+                if (!dispositivo.getCor().getEfeito().equals(mensagem.getEfeito())) {
+                    logger.warn("Reparação de efeito de " + dispositivo.getCor().getEfeito() + " para " + mensagem.getEfeito());
+                    comandoService.enviardComandoSincronizar(dispositivo);
                 }
             }
         } else {
@@ -188,7 +184,7 @@ public class DispositivoService {
                     isBetween = (hoje.equals(inicio) || hoje.isAfter(inicio)) &&
                             (hoje.equals(fim) || hoje.isBefore(fim));
                 }
-                if (isBetween){
+                if (isBetween) {
                     logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
                     return agenda.getCor();
                 }
