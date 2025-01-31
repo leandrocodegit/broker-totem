@@ -20,10 +20,9 @@ public class Mensagem {
     private int[] parametros;
     private String brockerId;
 
-
     @Override
     public String toString() {
-        return "Mensagem{" +
+        return "{" +
                 "id='" + id + '\'' +
                 ", ip='" + ip + '\'' +
                 ", versao='" + versao + '\'' +
