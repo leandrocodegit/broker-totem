@@ -25,6 +25,7 @@ public class Dispositivo {
     private String versao;
     private boolean ignorarAgenda;
     private boolean ativo;
+    private boolean permiteComando;
     private Comando comando;
     private String latitude;
     private String longitude;

@@ -140,6 +140,7 @@ public class DispositivoService {
                                         .build())
                                 .memoria(0)
                                 .ativo(false)
+                                .permiteComando(true)
                                 .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
                                 .comando(Comando.ONLINE)
                                 .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
@@ -161,7 +162,7 @@ public class DispositivoService {
             return dispositivo.getCor();
         }
 
-        if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
+        if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR) && dispositivo.isPermiteComando()) {
             if (TimeUtil.isTime(dispositivo)) {
                 if (dispositivo.getOperacao().getCorTemporizador() != null) {
                     logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
