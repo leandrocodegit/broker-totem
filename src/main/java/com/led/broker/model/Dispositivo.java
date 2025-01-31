@@ -21,6 +21,7 @@ public class Dispositivo {
     private Integer memoria;
     private String versao;
     private boolean ignorarAgenda;
+    private boolean permiteComando;
     private boolean ativo;
     private Comando comando;
     private String latitude;
