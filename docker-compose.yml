@@ -9,6 +9,7 @@ services:
       - "8083:8083"
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=prod
+      - TZ=America/Sao_Paulo
     container_name: agenda
     networks:
       - backend-toten_totem-network
