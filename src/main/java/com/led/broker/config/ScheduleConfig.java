@@ -1,8 +1,10 @@
 package com.led.broker.config;
 
 import com.led.broker.model.Agenda;
+import com.led.broker.model.constantes.Topico;
 import com.led.broker.service.AgendaDeviceService;
 import com.led.broker.service.ComandoService;
+import com.led.broker.service.MqttService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -17,6 +19,7 @@ public class ScheduleConfig {
 
     private final AgendaDeviceService agendaDeviceService;
     private final ComandoService comandoService;
+    private final MqttService mqttService;
 
     @Scheduled(fixedRate = 2 * 60 * 1000)
     public void executarTarefaAgendada() {
@@ -31,6 +34,7 @@ public class ScheduleConfig {
                 agendaDeviceService.atualizarDataExecucao(agenda);
 
             });
+            mqttService.sendRetainedMessage(Topico.DASHBOARD, "Atualizar dashboard agenda", false);
          }
     }
 }
