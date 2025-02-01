@@ -6,6 +6,7 @@ import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.ModoOperacao;
+import com.led.broker.model.constantes.Topico;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
@@ -33,6 +34,7 @@ public class CorService {
     private final LogRepository logRepository;
     private final AgendaDeviceService agendaDeviceService;
     private final OperacaoRepository operacaoRepository;
+    private final MqttService mqttService;
 
     public Cor buscaCor(UUID id) {
         return corRepository.findById(id).orElseThrow(() -> new RuntimeException("Cor inválida ou removida"));
@@ -58,6 +60,7 @@ public class CorService {
                             .mac(dispositivo.getMac())
                             .build());
                     dispositivoRepository.save(dispositivo);
+                    mqttService.sendRetainedMessage(Topico.MAPA, "Atualizar mapa");
                     return comandoService.enviardComandoRapido(dispositivo, true, false);
                 } else {
                     Optional<Cor> corOptional = corRepository.findById(idCor);
@@ -82,6 +85,7 @@ public class CorService {
                                 .build());
                         logger.warn("Temporizador criado para " + dispositivo.getMac());
                         logger.warn("Efeito " + dispositivo.getCor().getEfeito());
+                        mqttService.sendRetainedMessage(Topico.MAPA, "Atualizar mapa");
                         return comandoService.enviardComandoRapido(dispositivo, false, false);
                     } else {
                         logger.error("Falha, cor não existe ou não encontrada");
@@ -108,6 +112,7 @@ public class CorService {
 
                     dispositivoRepository.save(dispositivo);
                     comandoService.enviardComandoRapido(dispositivo, true);
+                    mqttService.sendRetainedMessage(Topico.MAPA, "Atualizar mapa");
                     logRepository.save(Log.builder()
                             .data(LocalDateTime.now())
                             .usuario("")
@@ -129,6 +134,7 @@ public class CorService {
                         dispositivo.setCor(corOptional.get());
                         TimeUtil.timers.put(dispositivo.getMac(), dispositivo);
                         comandoService.enviardComandoRapido(dispositivo, false);
+                        mqttService.sendRetainedMessage(Topico.MAPA, "Atualizar mapa");
                         logRepository.save(Log.builder()
                                 .data(LocalDateTime.now())
                                 .usuario("")

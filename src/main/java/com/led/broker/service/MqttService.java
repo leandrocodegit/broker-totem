@@ -22,4 +22,10 @@ public class MqttService {
         mqttGateway.sendToMqtt(message, topic);
         logger.warn("Mensagem: " + message);
     }
+
+    synchronized public void sendRetainedMessage(String topic, String message) {
+        logger.warn("Comando enviado para: " + topic);
+        mqttGateway.sendToMqtt(message, topic);
+        logger.warn("Mensagem: " + message);
+    }
 }
