@@ -50,7 +50,7 @@ public class ComandoController {
 
     @GetMapping(value = "/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizar(@PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarToken(token);
+        var user = authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
                 comandoService.enviardComandoSincronizar(mac, true)
@@ -103,18 +103,18 @@ public class ComandoController {
 
 
     @GetMapping(value = "/interno/sincronizar", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizarTodosInterno() {
+    public Flux<String> sincronizarTodosInterno(@RequestParam String user) {
         return Flux.concat(
                 Flux.just("ok"),
-                Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(false)))
+                Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(false, user)))
         );
     }
 
     @GetMapping(value = "/interno/sincronizar/{responder}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizarTodosInterno(@PathVariable boolean responder) {
+    public Flux<String> sincronizarTodosInterno(@PathVariable boolean responder, @RequestParam String user) {
         return Flux.concat(
                 Flux.just("ok"),
-                Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(responder)))
+                Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(responder, user)))
         );
     }
 

@@ -144,7 +144,7 @@ public class ComandoService {
         return mono;
     }
 
-    public String enviarComandoTodos(boolean responder) {
+    public String enviarComandoTodos(boolean responder,  String user) {
 
         try {
             List<Dispositivo> dispositivos = listaTodosDispositivos();
@@ -154,7 +154,7 @@ public class ComandoService {
 
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
-                        .usuario("request.getUsuario()")
+                        .usuario(user)
                         .mensagem("Todos")
                         .cor(null)
                         .comando(Comando.SINCRONIZAR)
