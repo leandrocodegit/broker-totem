@@ -185,6 +185,8 @@ public class ComandoService {
         if (dispositivo.getOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
             if (TimeUtil.isTime(dispositivo)) {
                 if (dispositivo.getOperacao().getCorTemporizador() != null) {
+                    dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
+                    operacaoRepository.save(dispositivo.getOperacao());
                     return dispositivo.getOperacao().getCorTemporizador();
                 }
             }
@@ -193,6 +195,8 @@ public class ComandoService {
         if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().equals(ModoOperacao.AGENDA)) {
             Agenda agenda = dispositivo.getOperacao().getAgenda();
             if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && agenda.getDispositivos().contains(dispositivo.getMac())) {
+                dispositivo.getOperacao().setModoOperacao(ModoOperacao.AGENDA);
+                operacaoRepository.save(dispositivo.getOperacao());
                 return agenda.getCor();
             }
         }
