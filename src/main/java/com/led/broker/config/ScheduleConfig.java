@@ -21,7 +21,7 @@ public class ScheduleConfig {
     private final ComandoService comandoService;
     private final MqttService mqttService;
 
-    @Scheduled(fixedRate = 2 * 60 * 1000)
+    @Scheduled(fixedRate = 1000)
     public void executarTarefaAgendada() {
         List<Agenda> agendas = agendaDeviceService.listaTodosAgendasPrevistaHoje();
         System.out.println("Agendas #: " + agendas.size());
