@@ -97,7 +97,7 @@ public class DispositivoService {
             logger.warn("Atualizado dispositivo:  " + dispositivo.getMac());
 
             if (gerarLog || atualizarDashboard) {
-                dashboardService.atualizarDashboard("", true);
+                dashboardService.atualizarDashboard("");
                 mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
             }
             if (gerarLog) {
@@ -148,7 +148,7 @@ public class DispositivoService {
                 logger.warn("Novo dispositivo adicionado " + dispositivo.getMac());
                 conexaoRepository.save(dispositivo.getConexao());
                 operacaoRepository.save(dispositivo.getOperacao());
-                dashboardService.atualizarDashboard("", true);
+                dashboardService.atualizarDashboard("");
                 mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
             }
         }

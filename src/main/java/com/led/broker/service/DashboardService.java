@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(value = "dashboard", url = "${totem-url}", configuration = FeignConfig.class)
 public interface DashboardService {
-    @GetMapping("/totem/dashboard/gerar/{apenasConexao}")
-    public void atualizarDashboard(@RequestHeader("Authorization") String authorization, @PathVariable boolean apenasConexao);
+    @GetMapping("/totem/dashboard/atualizar/conexoes")
+    public void atualizarDashboard(@RequestHeader("Authorization") String authorization);
 
 }

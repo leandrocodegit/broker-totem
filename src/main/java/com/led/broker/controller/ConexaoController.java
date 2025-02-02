@@ -27,7 +27,7 @@ public class ConexaoController {
     //@CrossOrigin({"http://totem:8081"})
     public ResponseEntity<String> atualizarDashboar() {
         logger.warn("Atualizando dashboard");
-        dashboardService.atualizarDashboard("", true);
+        dashboardService.atualizarDashboard("");
         mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
         logger.warn("Atualizado com sucesso");
         return ResponseEntity.ok("atualizado com sucesso");
