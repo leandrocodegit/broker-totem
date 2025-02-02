@@ -138,7 +138,7 @@ public class ComandoService {
         return mono;
     }
 
-    public String enviarComandoTodos() {
+    public String enviarComandoTodos(boolean responder) {
 
         try {
             List<Dispositivo> dispositivos = listaTodosDispositivos();
@@ -159,7 +159,7 @@ public class ComandoService {
                 dispositivos.forEach(device -> {
                     if (device.isAtivo() && device.getConfiguracao() != null) {
                         device.setCor(getCor(device));
-                        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ConfiguracaoUtil.gerarComando(device));
+                        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ConfiguracaoUtil.gerarComando(device, responder));
                     }
                 });
                 mqttService.sendRetainedMessage(Topico.DASHBOARD, "Atualizando dashboard todos");
