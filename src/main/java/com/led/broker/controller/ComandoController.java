@@ -30,14 +30,14 @@ public class ComandoController {
     @GetMapping(value = "/sincronizar/{responder}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizarTodos(@PathVariable boolean responder, @RequestParam("token") String token) {
         if(!responder) {
-            authService.validarToken(token);
+    //        authService.validarToken(token);
             Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(responder));
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, false)
                             .then(Mono.just("Comando enviado para " + mac))
             );
         }else{
-            authService.validarToken(token);
+       //     authService.validarToken(token);
             Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(responder));
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, true)

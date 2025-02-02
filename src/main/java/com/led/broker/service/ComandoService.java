@@ -182,7 +182,7 @@ public class ComandoService {
 
     private Cor getCor(Dispositivo dispositivo) {
 
-        if (dispositivo.getOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
+        if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
             if (TimeUtil.isTime(dispositivo)) {
                 if (dispositivo.getOperacao().getCorTemporizador() != null) {
                     dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
@@ -192,7 +192,7 @@ public class ComandoService {
             }
         }
 
-        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().equals(ModoOperacao.AGENDA)) {
+        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA)) {
             Agenda agenda = dispositivo.getOperacao().getAgenda();
             if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && agenda.getDispositivos().contains(dispositivo.getMac())) {
                 dispositivo.getOperacao().setModoOperacao(ModoOperacao.AGENDA);
@@ -200,6 +200,8 @@ public class ComandoService {
                 return agenda.getCor();
             }
         }
+
+
 
         dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
         operacaoRepository.save(dispositivo.getOperacao());
