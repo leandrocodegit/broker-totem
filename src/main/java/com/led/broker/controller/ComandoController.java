@@ -125,16 +125,16 @@ public class ComandoController {
     }
 
 
-    @GetMapping(value = "/interno/sincronizar", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizarTodosInterno(@RequestParam String user) {
+    @GetMapping(value = "/interno/sincronizar/{user}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> sincronizarTodosInterno(@PathVariable String user) {
         return Flux.concat(
                 Flux.just("ok"),
                 Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(false, user)))
         );
     }
 
-    @GetMapping(value = "/interno/sincronizar/{responder}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizarTodosInterno(@PathVariable boolean responder, @RequestParam String user) {
+    @GetMapping(value = "/interno/sincronizar/{user}/{responder}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> sincronizarTodosInterno(@PathVariable boolean responder, @PathVariable String user) {
         return Flux.concat(
                 Flux.just("ok"),
                 Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(responder, user)))
