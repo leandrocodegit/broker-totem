@@ -28,6 +28,6 @@ public class Agenda {
     @DBRef
     private Cor cor;
     @DBRef
-    private List<Dispositivo> dispositivos;
+    private List<String> dispositivos;
     private boolean todos;
 }
