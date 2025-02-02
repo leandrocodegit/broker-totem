@@ -160,6 +160,7 @@ public class ComandoService {
                         mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ConfiguracaoUtil.gerarComando(device));
                     }
                 });
+                mqttService.sendRetainedMessage(Topico.DASHBOARD, "Atualizando dashboard todos");
             } else {
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
