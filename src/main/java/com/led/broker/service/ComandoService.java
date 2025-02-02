@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -193,13 +194,27 @@ public class ComandoService {
         if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA)) {
             Agenda agenda = dispositivo.getOperacao().getAgenda();
             if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && agenda.getDispositivos().contains(dispositivo.getMac())) {
-                return agenda.getCor();
+                if(verificaSeAgendaValida(agenda, dispositivo.getMac()))
+                    return agenda.getCor();
             }
         }
 
         dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
         operacaoRepository.save(dispositivo.getOperacao());
         return dispositivo.getCor();
+    }
+
+    public boolean verificaSeAgendaValida(Agenda agenda, String mac){
+
+        if(!agenda.isAtivo() || agenda.getDispositivos() == null || agenda.getDispositivos().isEmpty())
+            return false;
+        var bool = agenda.getInicio().equals(LocalDate.now()) || agenda.getInicio().isBefore(LocalDate.now());
+        if(bool)
+            bool = agenda.getTermino().equals(LocalDate.now()) || agenda.getTermino().isAfter(LocalDate.now());;
+        if(bool){
+            return agenda.getDispositivos().contains(mac);
+        }
+        return false;
     }
 
     public Optional<Cor> buscaCor(UUID id) {
