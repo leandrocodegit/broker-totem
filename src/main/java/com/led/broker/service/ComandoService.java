@@ -12,6 +12,7 @@ import com.led.broker.model.constantes.Topico;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
+import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.ConfiguracaoUtil;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class ComandoService {
     private final DispositivoRepository dispositivoRepository;
     private final CorRepository corRepository;
     private final LogRepository logRepository;
+    private final OperacaoRepository operacaoRepository;
     public static Map<String, MonoSink<String>> streams = new HashMap<>();
 
 
@@ -195,6 +197,8 @@ public class ComandoService {
             }
         }
 
+        dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
+        operacaoRepository.save(dispositivo.getOperacao());
         return dispositivo.getCor();
     }
 
