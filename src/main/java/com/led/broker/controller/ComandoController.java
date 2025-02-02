@@ -1,5 +1,8 @@
 package com.led.broker.controller;
 
+import com.led.broker.model.Log;
+import com.led.broker.model.constantes.Comando;
+import com.led.broker.repository.LogRepository;
 import com.led.broker.service.AuthService;
 import com.led.broker.service.ComandoService;
 import com.led.broker.service.CorService;
@@ -13,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
@@ -24,21 +28,40 @@ public class ComandoController {
     private final DispositivoService dispositivoService;
     private final CorService corService;
     private final AuthService authService;
+    private final LogRepository logRepository;
     @Value("${time-expiration}")
     private long timeExpiratio;
 
     @GetMapping(value = "/sincronizar/{responder}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizarTodos(@PathVariable boolean responder, @RequestParam("token") String token) {
         if(!responder) {
-            authService.validarToken(token);
+            var user = authService.validarToken(token);
             Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(responder));
+            logRepository.save(Log.builder()
+                    .data(LocalDateTime.now())
+                    .usuario(user)
+                    .mensagem("Todos")
+                    .cor(null)
+                    .comando(Comando.SINCRONIZAR)
+                    .descricao(Comando.SINCRONIZAR.value())
+                    .mac("Todos ativos")
+                    .build());
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, false)
                             .then(Mono.just("Comando enviado para " + mac))
             );
         }else{
-            authService.validarToken(token);
+           var user = authService.validarToken(token);
             Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(false));
+            logRepository.save(Log.builder()
+                    .data(LocalDateTime.now())
+                    .usuario(user)
+                    .mensagem("Todos")
+                    .cor(null)
+                    .comando(Comando.SINCRONIZAR)
+                    .descricao(Comando.SINCRONIZAR.value())
+                    .mac("Todos ativos")
+                    .build());
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, true)
                             .timeout(Duration.ofSeconds(timeExpiratio))
