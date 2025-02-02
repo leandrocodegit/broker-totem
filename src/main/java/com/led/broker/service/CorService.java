@@ -40,7 +40,7 @@ public class CorService {
         return corRepository.findById(id).orElseThrow(() -> new RuntimeException("Cor inválida ou removida"));
     }
 
-    public Mono<String> salvarCorTemporizada(UUID idCor, String mac, boolean cancelar) {
+    public Mono<String> salvarCorTemporizada(UUID idCor, String mac, boolean cancelar, String user) {
 
         try {
             Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
@@ -52,7 +52,7 @@ public class CorService {
                     operacaoRepository.save(dispositivo.getOperacao());
                     logRepository.save(Log.builder()
                             .data(LocalDateTime.now())
-                            .usuario("")
+                            .usuario(user)
                             .mensagem(String.format(Comando.TIMER_CANCELADO.value(), dispositivo.getMac()))
                             .cor(null)
                             .comando(Comando.TIMER_CANCELADO)
@@ -76,7 +76,7 @@ public class CorService {
                         TimeUtil.timers.put(dispositivo.getMac(), dispositivo);
                         logRepository.save(Log.builder()
                                 .data(LocalDateTime.now())
-                                .usuario("")
+                                .usuario(user)
                                 .mensagem(String.format(Comando.TIMER_CRIADO.value(), dispositivo.getMac()))
                                 .cor(null)
                                 .comando(Comando.TIMER_CRIADO)
@@ -101,7 +101,7 @@ public class CorService {
     }
 
 
-    public void salvarCorTemporizadaReponse(UUID idCor, String mac, boolean cancelar, boolean retentar) {
+    public void salvarCorTemporizadaReponse(UUID idCor, String mac, boolean cancelar, boolean retentar, String user) {
 
         try {
             Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
@@ -115,7 +115,7 @@ public class CorService {
                     mqttService.sendRetainedMessage(Topico.MAPA, "Atualizar mapa");
                     logRepository.save(Log.builder()
                             .data(LocalDateTime.now())
-                            .usuario("")
+                            .usuario(user)
                             .mensagem(String.format(Comando.TIMER_CANCELADO.value(), dispositivo.getMac()))
                             .cor(null)
                             .comando(Comando.TIMER_CANCELADO)
@@ -137,7 +137,7 @@ public class CorService {
                         mqttService.sendRetainedMessage(Topico.MAPA, "Atualizar mapa");
                         logRepository.save(Log.builder()
                                 .data(LocalDateTime.now())
-                                .usuario("")
+                                .usuario(user)
                                 .mensagem(String.format(Comando.TIMER_CRIADO.value(), dispositivo.getMac()))
                                 .cor(null)
                                 .comando(Comando.TIMER_CRIADO)
@@ -150,7 +150,7 @@ public class CorService {
         } catch (Exception errr) {
             logger.error(errr.getMessage());
             if (retentar) {
-                salvarCorTemporizadaReponse(idCor, mac, false, false);
+                salvarCorTemporizadaReponse(idCor, mac, false, false, user);
             } else {
                 throw new RuntimeException("Erro ao enviar comando");
             }

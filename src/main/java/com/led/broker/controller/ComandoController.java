@@ -60,27 +60,27 @@ public class ComandoController {
 
     @GetMapping("/flux/temporizar/{idCor}/{mac}")
     public Flux<String> temporizarFlux(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarToken(token);
+        var user = authService.validarToken(token);
         return Flux.concat(
                 Mono.just("ok"),
-                corService.salvarCorTemporizada(idCor, mac, false)
+                corService.salvarCorTemporizada(idCor, mac, false, user.getBody())
                         .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
 
     @GetMapping("/temporizar/{idCor}/{mac}")
     public ResponseEntity<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarToken(token);
-        corService.salvarCorTemporizadaReponse(idCor, mac, false, true);
+        var user = authService.validarToken(token);
+        corService.salvarCorTemporizadaReponse(idCor, mac, false, true, user.getBody());
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/flux/temporizar/{mac}")
     public Flux<String> cancelarTemporizarFlux(@PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarToken(token);
+        var user = authService.validarToken(token);
         return Flux.concat(
                 Mono.just("ok"),
-                corService.salvarCorTemporizada(null, mac, true)
+                corService.salvarCorTemporizada(null, mac, true, user.getBody())
                         .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
@@ -97,8 +97,8 @@ public class ComandoController {
 
     @GetMapping("/temporizar/{mac}")
     public ResponseEntity<String> cancelarTemporizar(@PathVariable String mac, @RequestParam("token") String token) {
-        authService.validarToken(token);
-        return  ResponseEntity.ok(corService.salvarCorTemporizada(null, mac, true).just("Comando enviado com sucesso").block());
+        var user = authService.validarToken(token);
+        return  ResponseEntity.ok(corService.salvarCorTemporizada(null, mac, true, user.getBody()).just("Comando enviado com sucesso").block());
     }
 
 
