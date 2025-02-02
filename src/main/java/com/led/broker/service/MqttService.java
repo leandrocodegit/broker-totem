@@ -17,7 +17,7 @@ public class MqttService {
         message = message.replaceAll("#", "");
         Message<String> mqttMessage = MessageBuilder.withPayload(message)
                 .setHeader(MqttHeaders.TOPIC, topic)
-                .setHeader(MqttHeaders.RETAINED, reter)
+                .setHeader(MqttHeaders.RETAINED, false)
                 .build();
 
         System.out.println("Comando enviado para: " + message);
