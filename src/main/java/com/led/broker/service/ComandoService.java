@@ -69,7 +69,7 @@ public class ComandoService {
         }
 
         if(dispositivoOptional.get().getConexao().getStatus().equals(StatusConexao.Offline)){
-            return Mono.just(mac + " dispositivo offline ");
+            return Mono.just( "Dispositivo " + mac +  " offline ");
         }
 
         Dispositivo dispositivo = dispositivoOptional.get();
