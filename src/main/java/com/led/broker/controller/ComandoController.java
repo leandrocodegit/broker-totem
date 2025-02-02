@@ -38,7 +38,7 @@ public class ComandoController {
             );
         }else{
             authService.validarToken(token);
-            Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(responder));
+            Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(false));
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, true)
                             .timeout(Duration.ofSeconds(timeExpiratio))

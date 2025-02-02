@@ -8,6 +8,7 @@ import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.ModoOperacao;
+import com.led.broker.model.constantes.StatusConexao;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
@@ -65,6 +66,10 @@ public class ComandoService {
         if (!dispositivoOptional.isPresent()) {
             logger.error(mac + " não encontrado ou inativo ");
             return Mono.just(mac + " não encontrado ou inativo ");
+        }
+
+        if(dispositivoOptional.get().getConexao().getStatus().equals(StatusConexao.Offline)){
+            return Mono.just(mac + " dispositivo offline ");
         }
 
         Dispositivo dispositivo = dispositivoOptional.get();
