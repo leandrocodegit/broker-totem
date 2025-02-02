@@ -111,10 +111,10 @@ public class ComandoController {
     }
 
     @GetMapping(value = "/interno/sincronizar/{responder}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizarTodosInterno(@PathVariable boolean responser) {
+    public Flux<String> sincronizarTodosInterno(@PathVariable boolean responder) {
         return Flux.concat(
                 Flux.just("ok"),
-                Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(responser)))
+                Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(responder)))
         );
     }
 
