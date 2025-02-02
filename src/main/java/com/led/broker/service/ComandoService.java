@@ -189,7 +189,7 @@ public class ComandoService {
 
         if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().equals(ModoOperacao.AGENDA)) {
             Agenda agenda = dispositivo.getOperacao().getAgenda();
-            if (agenda != null && agenda.getCor() != null) {
+            if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && agenda.getDispositivos().contains(dispositivo.getMac())) {
                 return agenda.getCor();
             }
         }
