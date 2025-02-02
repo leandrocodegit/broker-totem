@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface AuthService {
 
     @GetMapping("/auth/valid")
-    public ResponseEntity<String> validarToken(@RequestHeader("Authorization") String authorization);
+    public String validarToken(@RequestHeader("Authorization") String authorization);
     @GetMapping("/auth/valid/integracao")
-    public ResponseEntity<String> validarTokenIntegracao(@RequestHeader("Authorization") String authorization);
+    public String validarTokenIntegracao(@RequestHeader("Authorization") String authorization);
 
 }

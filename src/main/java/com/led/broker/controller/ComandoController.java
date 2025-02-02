@@ -63,7 +63,7 @@ public class ComandoController {
         var user = authService.validarToken(token);
         return Flux.concat(
                 Mono.just("ok"),
-                corService.salvarCorTemporizada(idCor, mac, false, user.getBody())
+                corService.salvarCorTemporizada(idCor, mac, false, user)
                         .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
@@ -71,7 +71,7 @@ public class ComandoController {
     @GetMapping("/temporizar/{idCor}/{mac}")
     public ResponseEntity<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
         var user = authService.validarToken(token);
-        corService.salvarCorTemporizadaReponse(idCor, mac, false, true, user.getBody());
+        corService.salvarCorTemporizadaReponse(idCor, mac, false, true, user);
         return ResponseEntity.ok().build();
     }
 
@@ -80,7 +80,7 @@ public class ComandoController {
         var user = authService.validarToken(token);
         return Flux.concat(
                 Mono.just("ok"),
-                corService.salvarCorTemporizada(null, mac, true, user.getBody())
+                corService.salvarCorTemporizada(null, mac, true, user)
                         .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
@@ -98,7 +98,7 @@ public class ComandoController {
     @GetMapping("/temporizar/{mac}")
     public ResponseEntity<String> cancelarTemporizar(@PathVariable String mac, @RequestParam("token") String token) {
         var user = authService.validarToken(token);
-        return  ResponseEntity.ok(corService.salvarCorTemporizada(null, mac, true, user.getBody()).just("Comando enviado com sucesso").block());
+        return  ResponseEntity.ok(corService.salvarCorTemporizada(null, mac, true, user).just("Comando enviado com sucesso").block());
     }
 
 
