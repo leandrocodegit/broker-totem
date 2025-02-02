@@ -24,21 +24,18 @@ public class Dispositivo {
     private Integer memoria;
     private String versao;
     private boolean ignorarAgenda;
-    private LocalDateTime ultimaAtualizacao;
     private boolean ativo;
+    private boolean permiteComando;
     private Comando comando;
     private String latitude;
     private String longitude;
     private String brokerId;
     private String enderecoCompleto;
     private Configuracao configuracao;
-    private StatusConexao status;
     @DBRef
     private Operacao operacao;
     @DBRef
-    private Cor cor;
+    private Conexao conexao;
     @DBRef
-    private Agenda agenda;
-
-
+    private Cor cor;
 }

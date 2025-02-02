@@ -8,6 +8,7 @@ import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.ModoOperacao;
+import com.led.broker.model.constantes.StatusConexao;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
@@ -42,16 +43,13 @@ public class ComandoService {
             if (agenda.isTodos()) {
                 dispositivos = dispositivoRepository.findAllByAtivoIgnorarAgendaOnline(true, false, Comando.ONLINE);
             } else {
-                dispositivos = agenda.getDispositivos()
-                        .stream()
-                        .filter(device -> (device.isAtivo() && device.getComando().equals(Comando.ONLINE) && device.getConfiguracao() != null && !device.isIgnorarAgenda()))
-                        .collect(Collectors.toList());
+                dispositivos = dispositivoRepository.findAllById(agenda.getDispositivos());
             }
 
             if (!dispositivos.isEmpty()) {
                 dispositivos.forEach(device -> {
 
-                    if (device.isAtivo() && device.getConfiguracao() != null) {
+                    if (device.isAtivo() && device.getConexao().getStatus().equals(StatusConexao.Online) && device.getConfiguracao() != null) {
                         if (Boolean.FALSE.equals(device.isIgnorarAgenda()) && !TimeUtil.isTime(device)) {
                             device.setCor(agenda.getCor());
                             mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(),
@@ -67,7 +65,7 @@ public class ComandoService {
                         .cor(agenda.getCor())
                         .comando(Comando.SISTEMA)
                         .descricao("Tarefa agenda executada")
-                        .mac(agenda.getDispositivos().stream().map(mac -> mac.getMac()).collect(Collectors.toList()).toString())
+                        .mac(agenda.getDispositivos().toString())
                         .build());
             }
         }
