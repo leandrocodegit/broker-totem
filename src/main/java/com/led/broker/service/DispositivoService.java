@@ -154,15 +154,15 @@ public class DispositivoService {
     }
 
     public void sincronizar(Dispositivo dispositivo, Mensagem mensagem){
-        dispositivo.setCor(getCor(dispositivo));
+        var cor = getCor(dispositivo);
         logger.info("Nova mensagem " + mensagem.getComando().value());
         if (Stream.of(CONCLUIDO, CONFIGURACAO).anyMatch(cmd -> cmd.equals(mensagem.getComando()))) {
-            comandoService.enviardComandoSincronizar(dispositivo);
+            comandoService.sincronizar(dispositivo.getMac());
             logger.warn("Tarefa de configuração executada");
         } else if (mensagem.getComando().equals(ONLINE) && mensagem.getEfeito() != null) {
-            if (!dispositivo.getCor().getEfeito().equals(mensagem.getEfeito())) {
-                logger.warn("Reparação de efeito de " + dispositivo.getCor().getEfeito() + " para " + mensagem.getEfeito());
-                comandoService.enviardComandoSincronizar(dispositivo);
+            if (cor.getParametros().stream().noneMatch(efeito -> efeito.getEfeito().equals(mensagem.getEfeito()))) {
+                logger.warn("Reparação de efeito de " + cor.getParametros().get(0).getEfeito() + " para " + mensagem.getEfeito());
+                comandoService.sincronizar(dispositivo.getMac());
             }
         }
     }
