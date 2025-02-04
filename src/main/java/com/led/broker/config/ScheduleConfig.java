@@ -3,7 +3,7 @@ package com.led.broker.config;
 import com.led.broker.model.Agenda;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.service.AgendaDeviceService;
-import com.led.broker.service.ComandoService;
+import com.led.broker.service.AgendaService;
 import com.led.broker.service.MqttService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import java.util.List;
 public class ScheduleConfig {
 
     private final AgendaDeviceService agendaDeviceService;
-    private final ComandoService comandoService;
+    private final AgendaService agendaService;
     private final MqttService mqttService;
 
     @Scheduled(fixedRate = 2 * 60 * 1000)
@@ -30,7 +30,7 @@ public class ScheduleConfig {
             agendas.forEach(agenda -> {
                 System.out.println(agenda.getInicio() + " : " + agenda.getTermino());
                 System.out.println("Execução: " + agenda.getExecucao());
-                comandoService.enviarComando(agenda);
+                agendaService.enviarComando(agenda);
                 agendaDeviceService.atualizarDataExecucao(agenda);
 
             });

@@ -13,7 +13,7 @@ public class MqttService {
 
     private final MessageHandler mqttOutbound;
 
-    public void sendRetainedMessage(String topic, String message, boolean reter) {
+    public void sendRetainedMessage(String topic, String message) {
         message = message.replaceAll("#", "");
         Message<String> mqttMessage = MessageBuilder.withPayload(message)
                 .setHeader(MqttHeaders.TOPIC, topic)

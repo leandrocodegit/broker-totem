@@ -2,12 +2,12 @@ package com.led.broker.service;
 
 
 import com.google.gson.Gson;
+import com.led.broker.controller.request.ComandoRequest;
 import com.led.broker.model.Agenda;
 import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
-import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.model.constantes.StatusConexao;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.repository.CorRepository;
@@ -17,16 +17,14 @@ import com.led.broker.util.ConfiguracaoUtil;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ComandoService {
+public class AgendaService {
 
     private final MqttService mqttService;
     private final DispositivoRepository dispositivoRepository;
@@ -48,14 +46,9 @@ public class ComandoService {
 
             if (!dispositivos.isEmpty()) {
                 dispositivos.forEach(device -> {
-
-                    if (device.isAtivo() && device.getConexao().getStatus().equals(StatusConexao.Online) && device.getConfiguracao() != null) {
-                        if (Boolean.FALSE.equals(device.isIgnorarAgenda()) && !TimeUtil.isTime(device)) {
-                            device.setCor(agenda.getCor());
-                            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(),
-                                    new Gson().toJson(ConfiguracaoUtil.gerarComando(device)), false);
-                            agendaDeviceService.atualizarOperacaoDispositivo(agenda, device);
-                        }
+                    if (device.isAtivo() && !device.isIgnorarAgenda() && device.getConexao().getStatus().equals(StatusConexao.Online) && device.getConfiguracao() != null) {
+                        agendaDeviceService.atualizarOperacaoDispositivo(agenda, device);
+                        mqttService.sendRetainedMessage(Topico.SINCRONIZAR, "{\"id\": \" " + device.getMac() + "\"}");
                     }
                 });
                 logRepository.save(Log.builder()
@@ -64,15 +57,10 @@ public class ComandoService {
                         .mensagem("Tarefa agenda executada")
                         .cor(agenda.getCor())
                         .comando(Comando.SISTEMA)
-                        .descricao("Tarefa agenda executada")
+                        .descricao(agenda.getNome())
                         .mac(agenda.getDispositivos().toString())
                         .build());
             }
         }
     }
-
-    public Optional<Cor> buscaCor(UUID id) {
-        return corRepository.findById(id);
-    }
-
 }

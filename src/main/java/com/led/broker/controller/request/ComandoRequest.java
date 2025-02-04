@@ -6,11 +6,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import java.util.UUID;
+
 @Setter
 @Getter
 @SuperBuilder
 public class ComandoRequest {
 
+    private String mac;
     private Efeito efeito;
     private Comando comando;
     private int[] cor;
