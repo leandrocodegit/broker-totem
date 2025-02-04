@@ -76,7 +76,7 @@ public class ComandoService {
         Mono<String> mono = createMono(mac);
 
         if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null) {
-            dispositivo.setCor(getCor(dispositivo));
+            dispositivo.setCor(repararCor(dispositivo));
             if (dispositivo.getCor() != null) {
                 mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, responder));
                 if (!responder) {
@@ -111,7 +111,7 @@ public class ComandoService {
         try {
             if (cancelar) {
                 logger.warn("Cancelar comando rápido: " + dispositivo.getMac());
-                dispositivo.setCor(getCor(buscarPorMac(dispositivo.getMac())));
+                dispositivo.setCor(repararCor(buscarPorMac(dispositivo.getMac())));
             }
 
             if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null && dispositivo.getCor() != null) {
@@ -133,7 +133,7 @@ public class ComandoService {
 
         if (cancelar) {
             logger.warn("Cancelar comando rápido: " + dispositivo.getMac());
-            dispositivo.setCor(getCor(buscarPorMac(dispositivo.getMac())));
+            dispositivo.setCor(repararCor(buscarPorMac(dispositivo.getMac())));
         }
 
         if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null && dispositivo.getCor() != null) {
@@ -164,7 +164,7 @@ public class ComandoService {
 
                 dispositivos.forEach(device -> {
                     if (device.isAtivo() && device.getConfiguracao() != null) {
-                        device.setCor(getCor(device));
+                        device.setCor(repararCor(device));
                         mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ConfiguracaoUtil.gerarComando(device, responder));
                     }
                 });
@@ -186,7 +186,7 @@ public class ComandoService {
         }
     }
 
-    private Cor getCor(Dispositivo dispositivo) {
+    private Cor repararCor(Dispositivo dispositivo) {
 
         if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
             if (TimeUtil.isTime(dispositivo)) {
