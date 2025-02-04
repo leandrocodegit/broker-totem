@@ -154,31 +154,33 @@ public class DispositivoService {
     }
 
     public void sincronizar(Dispositivo dispositivo, Mensagem mensagem){
-        var cor = getCor(dispositivo);
+        var cor = repararCor(dispositivo);
         logger.info("Nova mensagem " + mensagem.getComando().value());
-        if (Stream.of(CONCLUIDO, CONFIGURACAO).anyMatch(cmd -> cmd.equals(mensagem.getComando()))) {
+        if(cor == null) {
+            logger.warn("Sem cor definina");
+        }
+        else if (Stream.of(CONCLUIDO, CONFIGURACAO).anyMatch(cmd -> cmd.equals(mensagem.getComando()))) {
             comandoService.sincronizar(dispositivo.getMac());
             logger.warn("Tarefa de configuração executada");
-        } else if (mensagem.getComando().equals(ONLINE) && mensagem.getEfeito() != null) {
-            if (cor.getParametros().stream().noneMatch(efeito -> efeito.getEfeito().equals(mensagem.getEfeito()))) {
-                logger.warn("Reparação de efeito de " + cor.getParametros().get(0).getEfeito() + " para " + mensagem.getEfeito());
+        } else if (mensagem.getCor() != null || (mensagem.getComando().equals(ONLINE)   && mensagem.getCor().equals(cor.getId().toString()))) {
+                 logger.warn("Reparação de efeito de " + cor.getParametros().get(0).getEfeito() + " para " + mensagem.getEfeito());
                 comandoService.sincronizar(dispositivo.getMac());
             }
         }
     }
 
-    private Cor getCor(Dispositivo dispositivo) {
+    private Cor repararCor(Dispositivo dispositivo) {
 
         logger.warn("Recuperando cor");
         if (dispositivo.getOperacao().getModoOperacao().equals(DISPOSITIVO)) {
-            logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
+            logger.info("Tipo: " + dispositivo.getOperacao().getModoOperacao());
             return dispositivo.getCor();
         }
 
         if (dispositivo.getOperacao().getModoOperacao().equals(TEMPORIZADOR) && dispositivo.isPermiteComando()) {
             if (TimeUtil.isTime(dispositivo)) {
                 if (dispositivo.getOperacao().getCorTemporizador() != null) {
-                    logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
+                    logger.info("Tipo: " + dispositivo.getOperacao().getModoOperacao());
                     return dispositivo.getOperacao().getCorTemporizador();
                 }
             }
@@ -187,9 +189,8 @@ public class DispositivoService {
         if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().getModoOperacao().equals(AGENDA)) {
             Agenda agenda = dispositivo.getOperacao().getAgenda();
             if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && agenda.getDispositivos().contains(dispositivo.getMac())) {
-
-                MonthDay inicio = MonthDay.from(agenda.getInicio()); // 1º de novembro
-                MonthDay fim = MonthDay.from(agenda.getTermino());  // 30 de novembro
+                MonthDay inicio = MonthDay.from(agenda.getInicio());
+                MonthDay fim = MonthDay.from(agenda.getTermino());
 
                 MonthDay hoje = MonthDay.from(LocalDate.now());
 
@@ -199,7 +200,7 @@ public class DispositivoService {
                             (hoje.equals(fim) || hoje.isBefore(fim));
                 }
                 if (isBetween) {
-                    logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
+                    logger.info("Tipo: " + dispositivo.getOperacao().getModoOperacao());
                     return agenda.getCor();
                 }
             }
@@ -208,10 +209,10 @@ public class DispositivoService {
         if (!dispositivo.getOperacao().getModoOperacao().equals(DISPOSITIVO)) {
             dispositivo.getOperacao().setModoOperacao(DISPOSITIVO);
             operacaoRepository.save(dispositivo.getOperacao());
-            logger.warn("Rest modo operação: " + dispositivo.getOperacao().getModoOperacao());
+            logger.warn("Reset modo operação: " + dispositivo.getOperacao().getModoOperacao());
         }
 
-        logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
+        logger.info("Tipo: " + dispositivo.getOperacao().getModoOperacao());
         return dispositivo.getCor();
     }
 

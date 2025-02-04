@@ -12,6 +12,7 @@ public class Mensagem {
     private String id;
     private String ip;
     private String versao;
+    private String cor;
     private int memoria;
     private Comando comando;
     private Efeito efeito;
