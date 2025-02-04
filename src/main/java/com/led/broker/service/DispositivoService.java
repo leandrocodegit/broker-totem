@@ -1,8 +1,11 @@
 package com.led.broker.service;
 
-import com.led.broker.handler.MqttMessageHandler;
 import com.led.broker.model.*;
-import com.led.broker.model.constantes.*;
+import static com.led.broker.model.constantes.Comando.*;
+import static com.led.broker.model.constantes.StatusConexao.*;
+import static com.led.broker.model.constantes.Topico.*;
+import static com.led.broker.model.constantes.ModoOperacao.*;
+import static com.led.broker.model.constantes.TipoCor.*;
 import com.led.broker.repository.ConexaoRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
@@ -15,14 +18,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +46,7 @@ public class DispositivoService {
     public void salvarDispositivoComoOffline(List<Conexao> conexoes) {
         if (conexoes != null && !conexoes.isEmpty()) {
 
-            conexoes.forEach(conexao -> conexao.setStatus(StatusConexao.Offline));
+            conexoes.forEach(conexao -> conexao.setStatus(Offline));
 
             conexaoRepository.saveAll(conexoes);
 
@@ -53,8 +55,8 @@ public class DispositivoService {
                     .usuario("Enviado pelo sistema")
                     .mensagem("Dispositivos offline")
                     .cor(null)
-                    .comando(Comando.OFFLINE)
-                    .descricao(String.format(Comando.OFFLINE.value(), "grupo"))
+                    .comando(OFFLINE)
+                    .descricao(String.format(OFFLINE.value(), "grupo"))
                     .mac(conexoes.stream().map(device -> device.getMac()).toList().toString())
                     .build());
             logger.warn("Erro ao capturar id");
@@ -67,8 +69,8 @@ public class DispositivoService {
         if (dispositivoOptional.isPresent()) {
 
             Dispositivo dispositivo = dispositivoOptional.get();
-            boolean gerarLog = mensagem.getComando().equals(Comando.ONLINE) && dispositivo.getConexao().getStatus().equals(StatusConexao.Offline);
-            boolean atualizarDashboard = mensagem.getComando().equals(Comando.CONFIGURACAO) && dispositivo.getConexao().getStatus().equals(StatusConexao.Offline);
+            boolean gerarLog = mensagem.getComando().equals(ONLINE) && dispositivo.getConexao().getStatus().equals(Offline);
+            boolean atualizarDashboard = mensagem.getComando().equals(CONFIGURACAO) && dispositivo.getConexao().getStatus().equals(Offline);
 
             if (dispositivo.getConexao() == null) {
                 dispositivo.setConexao(Conexao.builder()
@@ -76,7 +78,7 @@ public class DispositivoService {
                         .build());
             }
             dispositivo.getConexao().setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
-            dispositivo.getConexao().setStatus(StatusConexao.Online);
+            dispositivo.getConexao().setStatus(Online);
             conexaoRepository.save(dispositivo.getConexao());
             logger.warn("Atualizado conexão:  " + dispositivo.getMac() + " : " + dispositivo.getConexao().getStatus());
             dispositivo.setIp(mensagem.getIp());
@@ -98,7 +100,7 @@ public class DispositivoService {
 
             if (gerarLog || atualizarDashboard) {
                 dashboardService.atualizarDashboard("");
-                mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
+                mqttService.sendRetainedMessage(TOPICO_DASHBOARD, "Atualizando dashboard");
             }
             if (gerarLog) {
                 logRepository.save(Log.builder()
@@ -107,28 +109,19 @@ public class DispositivoService {
                         .mensagem(mensagem.getId())
                         .cor(dispositivo.getCor())
                         .comando(mensagem.getComando())
-                        .descricao(mensagem.getComando().equals(Comando.ONLINE) ? String.format(mensagem.getComando().value(), mensagem.getId()) : mensagem.getComando().value())
+                        .descricao(mensagem.getComando().equals(ONLINE) ? String.format(mensagem.getComando().value(), mensagem.getId()) : mensagem.getComando().value())
                         .mac(dispositivo.getMac())
                         .build());
                 logger.warn("Criado log de tarefa");
             }
-            dispositivo.setCor(getCor(dispositivo));
-            if (mensagem.getComando().equals(Comando.CONFIGURACAO) || mensagem.getComando().equals(Comando.CONCLUIDO)) {
-                comandoService.enviardComandoSincronizar(dispositivo);
-                logger.warn("Tarefa de configuração executada");
-            } else if (mensagem.getComando().equals(Comando.ONLINE) && mensagem.getEfeito() != null) {
-                if (!dispositivo.getCor().getEfeito().equals(mensagem.getEfeito())) {
-                    logger.warn("Reparação de efeito de " + dispositivo.getCor().getEfeito() + " para " + mensagem.getEfeito());
-                    comandoService.enviardComandoSincronizar(dispositivo);
-                }
-            }
+            sincronizar(dispositivo, mensagem);
         } else {
             if (dispositivoRepository.countByAtivo(true) < quantidadeClientes && dispositivoRepository.countByAtivo(false) < quantidadeClientes + 100) {
                 Dispositivo dispositivo = dispositivoRepository.save(
                         Dispositivo.builder()
                                 .conexao(Conexao.builder()
                                         .mac(mensagem.getId())
-                                        .status(StatusConexao.Online)
+                                        .status(Online)
                                         .ultimaAtualizacao(LocalDateTime.now())
                                         .build())
                                 .mac(mensagem.getId())
@@ -136,20 +129,40 @@ public class DispositivoService {
                                 .ignorarAgenda(false)
                                 .operacao(Operacao.builder()
                                         .mac(mensagem.getId())
-                                        .modoOperacao(ModoOperacao.DISPOSITIVO)
+                                        .modoOperacao(DISPOSITIVO)
                                         .build())
                                 .memoria(0)
                                 .ativo(false)
                                 .permiteComando(true)
                                 .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
-                                .comando(Comando.ONLINE)
-                                .configuracao(new Configuracao(1, 255, 2, TipoCor.RBG))
+                                .comando(ONLINE)
+                                .configuracao(new Configuracao(1, 255, 2, RBG))
                                 .build());
                 logger.warn("Novo dispositivo adicionado " + dispositivo.getMac());
                 conexaoRepository.save(dispositivo.getConexao());
                 operacaoRepository.save(dispositivo.getOperacao());
                 dashboardService.atualizarDashboard("");
-                mqttService.sendRetainedMessage(Topico.TOPICO_DASHBOARD, "Atualizando dashboard");
+                mqttService.sendRetainedMessage(TOPICO_DASHBOARD, "Atualizando dashboard");
+            }
+        }
+    }
+
+    public void sincronizar(Mensagem mensagem){
+        logger.warn("Executando sincronizar: " + mensagem.getId());
+        mensagem.setComando(CONFIGURACAO);
+        dispositivoRepository.findByIdAndAtivo(mensagem.getId(), true).ifPresent(device -> sincronizar(device, mensagem));
+    }
+
+    public void sincronizar(Dispositivo dispositivo, Mensagem mensagem){
+        dispositivo.setCor(getCor(dispositivo));
+        logger.info("Nova mensagem " + mensagem.getComando().value());
+        if (Stream.of(CONCLUIDO, CONFIGURACAO).anyMatch(cmd -> cmd.equals(mensagem.getComando()))) {
+            comandoService.enviardComandoSincronizar(dispositivo);
+            logger.warn("Tarefa de configuração executada");
+        } else if (mensagem.getComando().equals(ONLINE) && mensagem.getEfeito() != null) {
+            if (!dispositivo.getCor().getEfeito().equals(mensagem.getEfeito())) {
+                logger.warn("Reparação de efeito de " + dispositivo.getCor().getEfeito() + " para " + mensagem.getEfeito());
+                comandoService.enviardComandoSincronizar(dispositivo);
             }
         }
     }
@@ -157,12 +170,12 @@ public class DispositivoService {
     private Cor getCor(Dispositivo dispositivo) {
 
         logger.warn("Recuperando cor");
-        if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.DISPOSITIVO)) {
+        if (dispositivo.getOperacao().getModoOperacao().equals(DISPOSITIVO)) {
             logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
             return dispositivo.getCor();
         }
 
-        if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR) && dispositivo.isPermiteComando()) {
+        if (dispositivo.getOperacao().getModoOperacao().equals(TEMPORIZADOR) && dispositivo.isPermiteComando()) {
             if (TimeUtil.isTime(dispositivo)) {
                 if (dispositivo.getOperacao().getCorTemporizador() != null) {
                     logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
@@ -171,7 +184,7 @@ public class DispositivoService {
             }
         }
 
-        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA)) {
+        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().getModoOperacao().equals(AGENDA)) {
             Agenda agenda = dispositivo.getOperacao().getAgenda();
             if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && agenda.getDispositivos().contains(dispositivo.getMac())) {
 
@@ -189,12 +202,11 @@ public class DispositivoService {
                     logger.warn("Tipo: " + dispositivo.getOperacao().getModoOperacao());
                     return agenda.getCor();
                 }
-
             }
         }
 
-        if (!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.DISPOSITIVO)) {
-            dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
+        if (!dispositivo.getOperacao().getModoOperacao().equals(DISPOSITIVO)) {
+            dispositivo.getOperacao().setModoOperacao(DISPOSITIVO);
             operacaoRepository.save(dispositivo.getOperacao());
             logger.warn("Rest modo operação: " + dispositivo.getOperacao().getModoOperacao());
         }

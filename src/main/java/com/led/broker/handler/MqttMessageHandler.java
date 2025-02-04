@@ -1,26 +1,24 @@
 package com.led.broker.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.led.broker.model.Mensagem;
-import com.led.broker.model.constantes.Comando;
+import static com.led.broker.model.constantes.Comando.*;
 import com.led.broker.model.constantes.Topico;
-import com.led.broker.service.ComandoService;
 import com.led.broker.service.DispositivoService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -37,25 +35,28 @@ public class MqttMessageHandler implements MessageHandler {
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handleMessage(Message<?> message) {
         UUID clientId = (UUID) message.getHeaders().get("id");
-        //String topico = (String) message.getHeaders().get("mqtt_receivedTopic");
+        String topico = (String) message.getHeaders().get("mqtt_receivedTopic");
 
         try {
             Mensagem payload = new Gson().fromJson(message.getPayload().toString(), Mensagem.class);
-            if (payload.getComando().equals(Comando.ONLINE) || payload.getComando().equals(Comando.CONFIGURACAO) || payload.getComando().equals(Comando.CONCLUIDO)) {
-            payload.setBrockerId(clientId.toString());
-                processarDispositivo(payload.getId(), payload);
+            if (Stream.of(CONCLUIDO, CONFIGURACAO).anyMatch(cmd -> cmd.equals(payload.getComando()))) {
+                payload.setBrockerId(clientId.toString());
+            var sincronizar = topico.equals(Topico.SINCRONIZAR);
+                processarDispositivo(payload.getId(), payload, sincronizar);
             }
         } catch (Exception erro) {
             logger.error("Erro ao capturar id");
         }
-        logger.warn("Mensagem recebida do cliente " + clientId );
-        logger.warn("Mensagem: " + message.getPayload().toString());
+        logger.info("Mensagem recebida do cliente " + clientId );
+        logger.info("Mensagem: " + message.getPayload().toString());
     }
 
-    private void processarDispositivo(String id, Mensagem payload) {
+    private void processarDispositivo(String id, Mensagem payload, boolean apenasSincronizar) {
         Future<?> existingTask = tasks.put(id, executorService.submit(() -> {
             try {
-                dispositivoService.atualizarDispositivo(payload);
+                if(apenasSincronizar)
+                    dispositivoService.sincronizar(payload);
+                else dispositivoService.atualizarDispositivo(payload);
             } catch (Exception e) {
                 logger.error("Erro ao atualizar dispositivo {}", id, e);
             } finally {
