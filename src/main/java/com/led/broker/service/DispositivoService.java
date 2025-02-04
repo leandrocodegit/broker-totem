@@ -1,11 +1,13 @@
 package com.led.broker.service;
 
 import com.led.broker.model.*;
+
 import static com.led.broker.model.constantes.Comando.*;
 import static com.led.broker.model.constantes.StatusConexao.*;
 import static com.led.broker.model.constantes.Topico.*;
 import static com.led.broker.model.constantes.ModoOperacao.*;
 import static com.led.broker.model.constantes.TipoCor.*;
+
 import com.led.broker.repository.ConexaoRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
@@ -147,25 +149,23 @@ public class DispositivoService {
         }
     }
 
-    public void sincronizar(Mensagem mensagem){
+    public void sincronizar(Mensagem mensagem) {
         logger.warn("Executando sincronizar: " + mensagem.getId());
         mensagem.setComando(CONFIGURACAO);
         dispositivoRepository.findByIdAndAtivo(mensagem.getId(), true).ifPresent(device -> sincronizar(device, mensagem));
     }
 
-    public void sincronizar(Dispositivo dispositivo, Mensagem mensagem){
+    public void sincronizar(Dispositivo dispositivo, Mensagem mensagem) {
         var cor = repararCor(dispositivo);
         logger.info("Nova mensagem " + mensagem.getComando().value());
-        if(cor == null) {
+        if (cor == null) {
             logger.warn("Sem cor definina");
-        }
-        else if (Stream.of(CONCLUIDO, CONFIGURACAO).anyMatch(cmd -> cmd.equals(mensagem.getComando()))) {
+        } else if (Stream.of(CONCLUIDO, CONFIGURACAO).anyMatch(cmd -> cmd.equals(mensagem.getComando()))) {
             comandoService.sincronizar(dispositivo.getMac());
             logger.warn("Tarefa de configuração executada");
-        } else if (mensagem.getCor() != null || (mensagem.getComando().equals(ONLINE)   && mensagem.getCor().equals(cor.getId().toString()))) {
-                 logger.warn("Reparação de efeito de " + cor.getParametros().get(0).getEfeito() + " para " + mensagem.getEfeito());
-                comandoService.sincronizar(dispositivo.getMac());
-            }
+        } else if (mensagem.getCor() != null || (mensagem.getComando().equals(ONLINE) && mensagem.getCor().equals(cor.getId().toString()))) {
+            logger.warn("Reparação de efeito de " + cor.getParametros().get(0).getEfeito() + " para " + mensagem.getEfeito());
+            comandoService.sincronizar(dispositivo.getMac());
         }
     }
 
