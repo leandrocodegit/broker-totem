@@ -120,7 +120,7 @@ public class ComandoController {
 
     @GetMapping("/temporizar/{mac}")
     public ResponseEntity<String> cancelarTemporizar(@PathVariable String mac, @RequestParam("token") String token) {
-        var user = authService.validarToken(token);
+        var user = authService.validarToken(token.replace("Bearer ", ""));
         return  ResponseEntity.ok(corService.salvarCorTemporizada(null, mac, true, user).just("Comando enviado com sucesso").block());
     }
 
