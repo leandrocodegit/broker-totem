@@ -29,7 +29,6 @@ public class Dispositivo {
     private String brokerId;
     private Endereco endereco;
     private String enderecoCompleto;
-    private Configuracao configuracao;
     @DBRef
     private Operacao operacao;
     @DBRef
