@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class Conexao {
 
     @Id
-    private String mac;
+    private long id;
     private LocalDateTime ultimaAtualizacao;
     private StatusConexao status;
 

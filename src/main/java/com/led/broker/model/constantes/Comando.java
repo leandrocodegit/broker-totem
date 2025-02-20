@@ -1,31 +1,44 @@
 package com.led.broker.model.constantes;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public enum Comando {
 
-    ACEITO("Comando aceito pelo dispositivo"),
-    ENVIADO("Comando enviado"),
-    ENVIAR("Comando pendente"),
-    SISTEMA("Comando enviado pelo sistema"),
-    NENHUM_DEVICE("Comando não enviado, dispositivo inválido"),
-    ONLINE("Dispositivo %s online"),
-    OFFLINE("Dispositivo %s offline"),
-    SINCRONIZAR("Sincronização enviada"),
-    CONFIGURACAO("Solicitação de paramentros configuração"),
-    TESTE("Teste de cor"),
-    CONCLUIDO("Teste concluido"),
-    TIMER_CONCLUIDO("Timer finalizado para %s"),
-    TIMER_CRIADO("Timer criado para %s"),
-    UPDATE("Comando de atualização de firmware enviado para %s"),
-    FIRMWARE("Firmware atualizado para dispositivo %S"),
-    PARAMETRO("Parametrizando cores");
+    ONLINE(0,"Dispositivo %s online"),
+    CONFIGURACAO(1,"Solicitação de paramentros configuração"),
+    CONCLUIDO(2,"Teste concluido"),
+    ACEITO(3, "Comando aceito pelo dispositivo"),
+    FIRMWARE(4,"Firmware atualizado para dispositivo %S"),
+    ENVIADO(5,"Comando enviado"),
+    ENVIAR(6,"Comando pendente"),
+    SISTEMA(7,"Comando enviado pelo sistema"),
+    NENHUM_DEVICE(8,"Comando não enviado, dispositivo inválido"),
+    OFFLINE(9,"Dispositivo %s offline"),
+    SINCRONIZAR(10,"Sincronização enviada"),
+    TESTE(11,"Teste de cor"),
+    TIMER_CONCLUIDO(12,"Timer finalizado para %s"),
+    TIMER_CRIADO(13,"Timer criado para %s"),
+    UPDATE(14, "Comando de atualização de firmware enviado para %s"),
+    PARAMETRO(15,"Parametrizando cores");
 
-    private String value;
+    public String value;
+    public int codigo;
 
-    Comando(String value) {
+
+    Comando( int codigo,String value) {
         this.value = value;
+        this.codigo = codigo;
     }
 
-    public String value() {
-        return value;
+    @JsonCreator
+    public static Comando fromDescricao(int codigo) {
+        for (Comando tipo : values()) {
+            if (tipo.codigo == codigo) {
+                return tipo;
+            }
+        }
+        throw new IllegalArgumentException("Comando inválido: " + codigo);
     }
+
+
 }

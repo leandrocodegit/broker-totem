@@ -5,6 +5,7 @@ import com.led.broker.model.Mensagem;
 import static com.led.broker.model.constantes.Comando.*;
 import com.led.broker.model.constantes.Topico;
 import com.led.broker.service.DispositivoService;
+import com.led.broker.util.MensagemFormater;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ public class MqttMessageHandler implements MessageHandler {
 
     private final DispositivoService dispositivoService;
     private final ExecutorService executorService = Executors.newFixedThreadPool(1);
-    private final ConcurrentHashMap<String, Future<?>> tasks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Future<?>> tasks = new ConcurrentHashMap<>();
 
 
     @Override
@@ -38,11 +39,11 @@ public class MqttMessageHandler implements MessageHandler {
         String topico = (String) message.getHeaders().get("mqtt_receivedTopic");
 
         try {
-            Mensagem payload = new Gson().fromJson(message.getPayload().toString(), Mensagem.class);
+            Mensagem payload = MensagemFormater.formatarMensagem(message.getPayload().toString());
             if (Stream.of(CONCLUIDO, CONFIGURACAO).anyMatch(cmd -> cmd.equals(payload.getComando()))) {
                 payload.setBrockerId(clientId.toString());
             var sincronizar = topico.equals(Topico.SINCRONIZAR);
-                processarDispositivo(payload.getId(), payload, sincronizar);
+               processarDispositivo(payload.getId(), payload, sincronizar);
             }
         } catch (Exception erro) {
             logger.error("Erro ao capturar id");
@@ -51,7 +52,7 @@ public class MqttMessageHandler implements MessageHandler {
         logger.info("Mensagem: " + message.getPayload().toString());
     }
 
-    private void processarDispositivo(String id, Mensagem payload, boolean apenasSincronizar) {
+    private void processarDispositivo(long id, Mensagem payload, boolean apenasSincronizar) {
         Future<?> existingTask = tasks.put(id, executorService.submit(() -> {
             try {
                 if(apenasSincronizar)

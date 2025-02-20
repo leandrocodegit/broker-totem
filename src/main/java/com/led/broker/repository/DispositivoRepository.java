@@ -18,12 +18,12 @@ public interface DispositivoRepository extends MongoRepository<Dispositivo, Stri
 
 
     long countByAtivo(boolean ativo);
-    Optional<Dispositivo> findByMacAndComando(String mac, Comando comando);
-    List<Dispositivo> findAllByMacInAndAtivo(List<String> macs, boolean ativo);
+    Optional<Dispositivo> findByIdAndComando(long id, Comando comando);
+    List<Dispositivo> findAllByIdInAndAtivo(List<Long> ids, boolean ativo);
     @Query("{ 'ativo': ?0, 'configuracao': { $ne: null } }")
     List<Dispositivo> findAllByAtivo(boolean ativo);
-    @Query("{'mac': ?0, 'ativo': ?1 }")
-    Optional<Dispositivo> findByIdAndAtivo(String mac, boolean ativo);
+    @Query("{'id': ?0, 'ativo': ?1 }")
+    Optional<Dispositivo> findByIdAndAtivo(long id, boolean ativo);
     @Query("{ 'ativo': ?0, 'ignorarAgenda': ?0, 'configuracao': { $ne: null } }")
     List<Dispositivo> findAllByAtivoIgnorarAgenda(boolean ativo, boolean ignorarAgenda);
     @Query("{ 'ativo': ?0, 'configuracao': { $ne: null } }")
@@ -43,13 +43,13 @@ public interface DispositivoRepository extends MongoRepository<Dispositivo, Stri
 
     @Query("{" +
             "   $or: [" +
-            "       { 'mac': ?0 }," +
+            "       { 'id': ?0 }," +
             "       { 'nome': { $regex: ?0, $options: 'i' } }," +
             "       { 'enderecoCompleto': { $regex: ?0, $options: 'i' } }" +
             "   ]," +
 //            "   'ativo': true" +
             "}")
-    Page<Dispositivo> findByMacAndNomeContaining(String texto, Pageable pageable);
+    Page<Dispositivo> findByIdAndNomeContaining(String texto, Pageable pageable);
 
     @Query(value = "{ 'conexao': {'ultimaAtualizacao' : { $lt: ?0 }}, 'conexao': {'status' : 'Online'}, 'ativo' : true }")
     List<Dispositivo> findAllAtivosComUltimaAtualizacaoAntesQueEstavaoOnline(Date dataLimite);

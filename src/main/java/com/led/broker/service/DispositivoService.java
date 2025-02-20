@@ -43,6 +43,7 @@ public class DispositivoService {
     private final ConexaoRepository conexaoRepository;
     private final MongoTemplate mongoTemplate;
     private final MqttService mqttService;
+    private final SequenceGeneratorService sequenceGeneratorService;
 
 
     public void salvarDispositivoComoOffline(List<Conexao> conexoes) {
@@ -58,8 +59,8 @@ public class DispositivoService {
                     .mensagem("Dispositivos offline")
                     .cor(null)
                     .comando(OFFLINE)
-                    .descricao(String.format(OFFLINE.value(), "grupo"))
-                    .mac(conexoes.stream().map(device -> device.getMac()).toList().toString())
+                    .descricao(String.format(OFFLINE.value, "grupo"))
+                    .id(0)
                     .build());
             logger.warn("Erro ao capturar id");
         }
@@ -76,15 +77,13 @@ public class DispositivoService {
 
             if (dispositivo.getConexao() == null) {
                 dispositivo.setConexao(Conexao.builder()
-                        .mac(dispositivo.getMac())
+                        .id(dispositivo.getId())
                         .build());
             }
             dispositivo.getConexao().setUltimaAtualizacao(LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime());
             dispositivo.getConexao().setStatus(Online);
             conexaoRepository.save(dispositivo.getConexao());
-            logger.warn("Atualizado conexão:  " + dispositivo.getMac() + " : " + dispositivo.getConexao().getStatus());
-            dispositivo.setIp(mensagem.getIp());
-            dispositivo.setMemoria(mensagem.getMemoria());
+            logger.warn("Atualizado conexão:  " + dispositivo.getId() + " : " + dispositivo.getConexao().getStatus());
             dispositivo.setComando(mensagem.getComando());
             dispositivo.setVersao(mensagem.getVersao());
             dispositivo.setBrokerId(mensagem.getBrockerId());
@@ -98,7 +97,7 @@ public class DispositivoService {
                 );
             }
             dispositivoRepository.save(dispositivo);
-            logger.warn("Atualizado dispositivo:  " + dispositivo.getMac());
+            logger.warn("Atualizado dispositivo:  " + dispositivo.getId());
 
             if (gerarLog || atualizarDashboard) {
                 dashboardService.atualizarDashboard("");
@@ -108,42 +107,42 @@ public class DispositivoService {
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
                         .usuario("Enviado pelo dispositivo")
-                        .mensagem(mensagem.getId())
+                        .mensagem("mensagem.getId()")
                         .cor(dispositivo.getCor())
                         .comando(mensagem.getComando())
-                        .descricao(mensagem.getComando().equals(ONLINE) ? String.format(mensagem.getComando().value(), mensagem.getId()) : mensagem.getComando().value())
-                        .mac(dispositivo.getMac())
+                        .descricao(mensagem.getComando().equals(ONLINE) ? String.format(mensagem.getComando().value, mensagem.getId()) : mensagem.getComando().value)
+                        .id(dispositivo.getId())
                         .build());
                 logger.warn("Criado log de tarefa");
             }
             sincronizar(dispositivo, mensagem);
         } else {
             if (dispositivoRepository.countByAtivo(true) < quantidadeClientes && dispositivoRepository.countByAtivo(false) < quantidadeClientes + 100) {
+                var id = sequenceGeneratorService.getNextSequence("deviceId");
                 Dispositivo dispositivo = dispositivoRepository.save(
                         Dispositivo.builder()
                                 .conexao(Conexao.builder()
-                                        .mac(mensagem.getId())
+                                        .id(id)
                                         .status(Online)
                                         .ultimaAtualizacao(LocalDateTime.now())
                                         .build())
-                                .mac(mensagem.getId())
+                                .id(id)
                                 .versao(mensagem.getVersao())
                                 .ignorarAgenda(false)
                                 .operacao(Operacao.builder()
-                                        .mac(mensagem.getId())
+                                        .id(id)
                                         .modoOperacao(DISPOSITIVO)
                                         .build())
-                                .memoria(0)
                                 .ativo(false)
                                 .permiteComando(true)
-                                .nome(mensagem.getId().substring(mensagem.getId().length() - 5, mensagem.getId().length()))
+                                .nome(String.valueOf(id))
                                 .comando(ONLINE)
                                 .configuracao(new Configuracao(1, 255, 2, RBG))
                                 .build());
-                logger.warn("Novo dispositivo adicionado " + dispositivo.getMac());
+                logger.warn("Novo dispositivo adicionado " + dispositivo.getId());
                 conexaoRepository.save(dispositivo.getConexao());
                 operacaoRepository.save(dispositivo.getOperacao());
-                dashboardService.atualizarDashboard("");
+                //dashboardService.atualizarDashboard("");
                 mqttService.sendRetainedMessage(TOPICO_DASHBOARD, "Atualizando dashboard");
             }
         }
@@ -157,15 +156,15 @@ public class DispositivoService {
 
     public void sincronizar(Dispositivo dispositivo, Mensagem mensagem) {
         var cor = repararCor(dispositivo);
-        logger.info("Nova mensagem " + mensagem.getComando().value());
+        logger.info("Nova mensagem " + mensagem.getComando().value);
         if (cor == null) {
             logger.warn("Sem cor definina");
         } else if (Stream.of(CONCLUIDO, CONFIGURACAO).anyMatch(cmd -> cmd.equals(mensagem.getComando()))) {
-            comandoService.sincronizar(dispositivo.getMac());
+            comandoService.sincronizar(dispositivo.getId());
             logger.warn("Tarefa de configuração executada");
-        } else if (mensagem.getCor() != null || (mensagem.getComando().equals(ONLINE) && mensagem.getCor().equals(cor.getId().toString()))) {
+        } else if ("mensagem.getCor()" != null || (mensagem.getComando().equals(ONLINE) && "mensagem.getCor()".equals(cor.getId().toString()))) {
             logger.warn("Reparação de efeito de " + cor.getParametros().get(0).getEfeito() + " para " + mensagem.getEfeito());
-            comandoService.sincronizar(dispositivo.getMac());
+            comandoService.sincronizar(dispositivo.getId());
         }
     }
 
@@ -188,7 +187,7 @@ public class DispositivoService {
 
         if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().getModoOperacao().equals(AGENDA)) {
             Agenda agenda = dispositivo.getOperacao().getAgenda();
-            if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && agenda.getDispositivos().contains(dispositivo.getMac())) {
+            if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && agenda.getDispositivos().contains(dispositivo.getId())) {
                 MonthDay inicio = MonthDay.from(agenda.getInicio());
                 MonthDay fim = MonthDay.from(agenda.getTermino());
 

@@ -18,10 +18,9 @@ import java.time.LocalDateTime;
 public class Dispositivo {
 
     @Id
-    private String mac;
+    private long id;
     private String nome;
     private String ip;
-    private Integer memoria;
     private String versao;
     private boolean ignorarAgenda;
     private boolean ativo;

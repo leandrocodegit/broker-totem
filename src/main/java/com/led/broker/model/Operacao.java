@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class Operacao {
 
     @Id
-    private String mac;
+    private long id;
     private ModoOperacao modoOperacao;
     @DBRef
     private Agenda agenda;
