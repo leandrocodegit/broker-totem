@@ -29,6 +29,7 @@ public class Dispositivo {
     private String brokerId;
     private Endereco endereco;
     private String enderecoCompleto;
+    private Float sensibilidadeVibracao;
     @DBRef
     private Operacao operacao;
     @DBRef

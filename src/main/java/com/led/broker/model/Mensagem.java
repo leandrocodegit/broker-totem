@@ -17,7 +17,6 @@ public class Mensagem {
     private int memoria;
     private Comando comando;
     private Efeito efeito;
-    private int[] parametros;
     private String brockerId;
 
     @Override
@@ -29,7 +28,6 @@ public class Mensagem {
                 ", memoria=" + memoria +
                 ", comando=" + comando +
                 ", efeito=" + efeito +
-                ", parametros=" + Arrays.toString(parametros) +
                 ", brockerId='" + brockerId + '\'' +
                 '}';
     }

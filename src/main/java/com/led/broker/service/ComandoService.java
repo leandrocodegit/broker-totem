@@ -6,14 +6,12 @@ import com.led.broker.model.Agenda;
 import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
-import com.led.broker.model.constantes.Comando;
-import com.led.broker.model.constantes.ModoOperacao;
-import com.led.broker.model.constantes.StatusConexao;
-import com.led.broker.model.constantes.Topico;
+import com.led.broker.model.constantes.*;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
 import com.led.broker.repository.OperacaoRepository;
+import com.led.broker.util.ComandoFormater;
 import com.led.broker.util.ConfiguracaoUtil;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
@@ -53,14 +51,14 @@ public class ComandoService {
 
         Mono<String> mono = createMono(mac);
 
-        if (dispositivo != null && dispositivo.getConfiguracao() != null) {
-            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComandoTeste(dispositivo.getConfiguracao()));
-        }
+//        if (dispositivo != null && dispositivo.getConfiguracao() != null) {
+//            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComandoTeste(dispositivo.getConfiguracao()));
+//        }
 
         return mono;
     }
 
-    public Mono<String> enviardComandoSincronizar(String mac, boolean responder) {
+    public Mono<String> enviardComandoSincronizar(String mac, boolean responder, TipoConfiguracao tipoConfiguracao) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
 
         if (!dispositivoOptional.isPresent()) {
@@ -75,10 +73,16 @@ public class ComandoService {
         Dispositivo dispositivo = dispositivoOptional.get();
         Mono<String> mono = createMono(mac);
 
-        if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null) {
-            dispositivo.setCor(repararCor(dispositivo));
-            if (dispositivo.getCor() != null) {
-                mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, responder));
+        if(tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN)){
+
+        }
+
+        if (dispositivo.isAtivo()) {
+            if(tipoConfiguracao.equals(TipoConfiguracao.LED)){
+                dispositivo.setCor(repararCor(dispositivo));
+            }
+            if (dispositivo.getCor() != null || !tipoConfiguracao.equals(TipoConfiguracao.LED)) {
+                mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ComandoFormater.gerarCodigo(dispositivo, responder, tipoConfiguracao));
                 if (!responder) {
                     return mono.just("ok");
                 }
@@ -102,7 +106,7 @@ public class ComandoService {
         Dispositivo dispositivo = dispositivoOptional.get();
         Mono<String> mono = createMono(mac);
 
-        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComandoFirmware(host));
+     //   mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), "ConfiguracaoUtil.gerarComandoFirmware(host)");
         return mono;
     }
 
@@ -114,8 +118,8 @@ public class ComandoService {
                 dispositivo.setCor(repararCor(buscarPorMac(dispositivo.getMac())));
             }
 
-            if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null && dispositivo.getCor() != null) {
-                mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, true));
+            if (dispositivo.isAtivo() && dispositivo.getCor() != null) {
+             //   mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ComandoFormater.gerarCodigo(dispositivo, true));
             }
         } catch (Exception err) {
             logger.error(err.getMessage());
@@ -136,8 +140,8 @@ public class ComandoService {
             dispositivo.setCor(repararCor(buscarPorMac(dispositivo.getMac())));
         }
 
-        if (dispositivo.isAtivo() && dispositivo.getConfiguracao() != null && dispositivo.getCor() != null) {
-            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComando(dispositivo, true));
+        if (dispositivo.isAtivo() && dispositivo.getCor() != null) {
+          //  mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ComandoFormater.gerarCodigo(dispositivo, true));
         }
 
         logger.warn("Comando rápido criado: " + dispositivo.getMac());
@@ -163,12 +167,12 @@ public class ComandoService {
                         .build());
 
                 dispositivos.forEach(device -> {
-                    if (device.isAtivo() && device.getConfiguracao() != null) {
+                    if (device.isAtivo()) {
                         device.setCor(repararCor(device));
-                        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ConfiguracaoUtil.gerarComando(device, responder));
+                    //    mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ComandoFormater.gerarCodigo(device, responder));
                     }
                 });
-                mqttService.sendRetainedMessage(Topico.DASHBOARD, "Atualizando dashboard todos");
+              //  mqttService.sendRetainedMessage(Topico.DASHBOARD, "Atualizando dashboard todos");
             } else {
                 logRepository.save(Log.builder()
                         .data(LocalDateTime.now())
@@ -185,9 +189,17 @@ public class ComandoService {
             return "Sincronização não foi concluida";
         }
     }
+    public static byte[] hexStringToByteArray(String hex) {
+        int length = hex.length();
+        byte[] data = new byte[length / 2]; // Cada 2 caracteres = 1 byte
 
+        for (int i = 0; i < length; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                    + Character.digit(hex.charAt(i+1), 16));
+        }
+        return data;
+    }
     private Cor repararCor(Dispositivo dispositivo) {
-
         if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
             if (TimeUtil.isTime(dispositivo)) {
                 if (dispositivo.getOperacao().getCorTemporizador() != null) {

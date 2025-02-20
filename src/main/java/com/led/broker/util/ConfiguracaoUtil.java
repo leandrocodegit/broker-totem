@@ -13,79 +13,79 @@ public class ConfiguracaoUtil {
 
     private ConfiguracaoUtil() {}
 
-    public static ComandoRequest gerarComando(Cor cor, Configuracao configuracao ){
-        return ComandoRequest.builder()
-                .efeito(cor.getEfeito())
-                .cor(getCor(cor.getCor(), configuracao.getTipoCor()))
-                .correcao(getCorrecao(cor.getCorrecao(), configuracao.getTipoCor()))
-                .velocidade(cor.getVelocidade())
-                .responder(cor.isResponder())
-                .faixa(configuracao.getFaixa())
-                .leds(configuracao.getLeds())
-                .intensidade(configuracao.getIntensidade()).build();
-    }
-
-    public static ComandoRequest gerarComando(Dispositivo dispositivo, Cor cor){
-        return ComandoRequest.builder()
-                .efeito(cor.getEfeito())
-                .cor(getCor(cor.getCor(), dispositivo.getConfiguracao().getTipoCor()))
-                .correcao(getCorrecao(cor.getCorrecao(), dispositivo.getConfiguracao().getTipoCor()))
-                .velocidade(cor.getVelocidade())
-                .responder(cor.isResponder())
-                .faixa(dispositivo.getConfiguracao().getFaixa())
-                .leds(dispositivo.getConfiguracao().getLeds())
-                .intensidade(dispositivo.getConfiguracao().getIntensidade()).build();
-    }
-
-    public static ComandoRequest gerarComando(Dispositivo dispositivo){
-        return ComandoRequest.builder()
-                .efeito(dispositivo.getCor().getEfeito())
-                .cor(getCor(dispositivo.getCor().getCor(), dispositivo.getConfiguracao().getTipoCor()))
-                .correcao(getCorrecao(dispositivo.getCor().getCorrecao(), dispositivo.getConfiguracao().getTipoCor()))
-                .velocidade(dispositivo.getCor().getVelocidade())
-                .responder(true)
-                .faixa(dispositivo.getConfiguracao().getFaixa())
-                .leds(dispositivo.getConfiguracao().getLeds())
-                .intensidade(dispositivo.getConfiguracao().getIntensidade()).build();
-    }
-    public static ComandoRequest gerarComando(Dispositivo dispositivo, boolean responder){
-        return ComandoRequest.builder()
-                .efeito(dispositivo.getCor().getEfeito())
-                .cor(getCor(dispositivo.getCor().getCor(), dispositivo.getConfiguracao().getTipoCor()))
-                .correcao(getCorrecao(dispositivo.getCor().getCorrecao(), dispositivo.getConfiguracao().getTipoCor()))
-                .velocidade(dispositivo.getCor().getVelocidade())
-                .responder(responder)
-                .faixa(dispositivo.getConfiguracao().getFaixa())
-                .leds(dispositivo.getConfiguracao().getLeds())
-                .intensidade(dispositivo.getConfiguracao().getIntensidade()).build();
-    }
-
-    public static ComandoRequest gerarComandoFirmware(String host){
-        return ComandoRequest.builder()
-                .efeito(Efeito.TESTE)
-                .comando(Comando.UPDATE)
-                .cor(new int[]{0,0,0,0,0,0})
-                .correcao(new int[]{255,255,255})
-                .velocidade(100)
-                .responder(true)
-                .faixa(2)
-                .leds(1)
-                .intensidade(255)
-                .host(host)
-                .build();
-    }
-
-    public static ComandoRequest gerarComandoTeste(Configuracao configuracao){
-        return ComandoRequest.builder()
-                .efeito(Efeito.TESTE)
-                .cor(new int[]{0,0,0,0,0,0})
-                .correcao(new int[]{255,255,255})
-                .velocidade(100)
-                .responder(true)
-                .faixa(2)
-                .leds(configuracao.getLeds())
-                .intensidade(255).build();
-    }
+//    public static ComandoRequest gerarComando(Cor cor, Configuracao configuracao ){
+//        return ComandoRequest.builder()
+//                .efeito(cor.getEfeito())
+//                .cor(getCor(cor.getCor(), configuracao.getTipoCor()))
+//                .correcao(getCorrecao(cor.getCorrecao(), configuracao.getTipoCor()))
+//                .velocidade(cor.getVelocidade())
+//                .responder(cor.isResponder())
+//                .faixa(configuracao.getFaixa())
+//                .leds(configuracao.getLeds())
+//                .intensidade(configuracao.getIntensidade()).build();
+//    }
+//
+//    public static ComandoRequest gerarComando(Dispositivo dispositivo, Cor cor){
+//        return ComandoRequest.builder()
+//                .efeito(cor.getEfeito())
+//                .cor(getCor(cor.getCor(), dispositivo.getConfiguracao().getTipoCor()))
+//                .correcao(getCorrecao(cor.getCorrecao(), dispositivo.getConfiguracao().getTipoCor()))
+//                .velocidade(cor.getVelocidade())
+//                .responder(cor.isResponder())
+//                .faixa(dispositivo.getConfiguracao().getFaixa())
+//                .leds(dispositivo.getConfiguracao().getLeds())
+//                .intensidade(dispositivo.getConfiguracao().getIntensidade()).build();
+//    }
+//
+//    public static ComandoRequest gerarComando(Dispositivo dispositivo){
+//        return ComandoRequest.builder()
+//                .efeito(dispositivo.getCor().getEfeito())
+//                .cor(getCor(dispositivo.getCor().getCor(), dispositivo.getConfiguracao().getTipoCor()))
+//                .correcao(getCorrecao(dispositivo.getCor().getCorrecao(), dispositivo.getConfiguracao().getTipoCor()))
+//                .velocidade(dispositivo.getCor().getVelocidade())
+//                .responder(true)
+//                .faixa(dispositivo.getConfiguracao().getFaixa())
+//                .leds(dispositivo.getConfiguracao().getLeds())
+//                .intensidade(dispositivo.getConfiguracao().getIntensidade()).build();
+//    }
+//    public static ComandoRequest gerarComando(Dispositivo dispositivo, boolean responder){
+//        return ComandoRequest.builder()
+//                .efeito(dispositivo.getCor().getEfeito())
+//                .cor(getCor(dispositivo.getCor().getCor(), dispositivo.getConfiguracao().getTipoCor()))
+//                .correcao(getCorrecao(dispositivo.getCor().getCorrecao(), dispositivo.getConfiguracao().getTipoCor()))
+//                .velocidade(dispositivo.getCor().getVelocidade())
+//                .responder(responder)
+//                .faixa(dispositivo.getConfiguracao().getFaixa())
+//                .leds(dispositivo.getConfiguracao().getLeds())
+//                .intensidade(dispositivo.getConfiguracao().getIntensidade()).build();
+//    }
+//
+//    public static ComandoRequest gerarComandoFirmware(String host){
+//        return ComandoRequest.builder()
+//                .efeito(Efeito.TESTE)
+//                .comando(Comando.UPDATE)
+//                .cor(new int[]{0,0,0,0,0,0})
+//                .correcao(new int[]{255,255,255})
+//                .velocidade(100)
+//                .responder(true)
+//                .faixa(2)
+//                .leds(1)
+//                .intensidade(255)
+//                .host(host)
+//                .build();
+//    }
+//
+//    public static ComandoRequest gerarComandoTeste(Configuracao configuracao){
+//        return ComandoRequest.builder()
+//                .efeito(Efeito.TESTE)
+//                .cor(new int[]{0,0,0,0,0,0})
+//                .correcao(new int[]{255,255,255})
+//                .velocidade(100)
+//                .responder(true)
+//                .faixa(2)
+//                .leds(configuracao.getLeds())
+//                .intensidade(255).build();
+//    }
 
     private static int [] getCor(int[] cores, TipoCor tipoCor){
         if(cores.length < 6){

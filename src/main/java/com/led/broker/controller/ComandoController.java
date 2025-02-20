@@ -2,6 +2,7 @@ package com.led.broker.controller;
 
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
+import com.led.broker.model.constantes.TipoConfiguracao;
 import com.led.broker.repository.LogRepository;
 import com.led.broker.service.AuthService;
 import com.led.broker.service.ComandoService;
@@ -47,12 +48,12 @@ public class ComandoController {
                     .mac("Todos ativos")
                     .build());
             return devicesFlux.flatMap(mac ->
-                    comandoService.enviardComandoSincronizar(mac, false)
+                    comandoService.enviardComandoSincronizar(mac, false, TipoConfiguracao.LED)
                             .then(Mono.just("Comando enviado para " + mac))
             );
         }else{
            var user = authService.validarToken(token);
-            Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(false));
+            Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(true));
             logRepository.save(Log.builder()
                     .data(LocalDateTime.now())
                     .usuario(user)
@@ -63,7 +64,7 @@ public class ComandoController {
                     .mac("Todos ativos")
                     .build());
             return devicesFlux.flatMap(mac ->
-                    comandoService.enviardComandoSincronizar(mac, true)
+                    comandoService.enviardComandoSincronizar(mac, true, TipoConfiguracao.LED)
                             .timeout(Duration.ofSeconds(timeExpiratio))
                             .doOnNext(response -> System.out.println("Resposta recebida: " + response))
                             .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu"))
@@ -71,12 +72,12 @@ public class ComandoController {
         }
     }
 
-    @GetMapping(value = "/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizar(@PathVariable String mac, @RequestParam("token") String token) {
+    @GetMapping(value = "/{mac}/{tipoConfiguracao}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> sincronizar(@PathVariable String mac, @PathVariable TipoConfiguracao tipoConfiguracao, @RequestParam("token") String token) {
         var user = authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
-                comandoService.enviardComandoSincronizar(mac, true)
+                comandoService.enviardComandoSincronizar(mac, true, tipoConfiguracao)
                         .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
     }
@@ -145,7 +146,7 @@ public class ComandoController {
     public Flux<String> sincronizarInterno(@PathVariable String mac) {
         return  Flux.concat(
                 Mono.just("ok"),
-                comandoService.enviardComandoSincronizar(mac, false));
+                comandoService.enviardComandoSincronizar(mac, false, TipoConfiguracao.LED));
     }
 
 

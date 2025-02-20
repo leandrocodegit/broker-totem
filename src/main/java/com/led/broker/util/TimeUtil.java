@@ -1,6 +1,5 @@
 package com.led.broker.util;
 
-import com.led.broker.controller.response.DispositivoResponse;
 import com.led.broker.model.Dispositivo;
 import com.led.broker.model.constantes.ModoOperacao;
 
@@ -16,14 +15,6 @@ public class TimeUtil {
     public static Map<String, Dispositivo> timers = new HashMap<>();
     public static boolean isTime(Dispositivo dispositivo) {
         if (dispositivo == null || dispositivo.getOperacao() == null || !dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
-            return false;
-        }
-        long differenceInMinutes = Duration.between(dispositivo.getOperacao().getTime(), LocalDateTime.now()).toMinutes();
-        return differenceInMinutes <= 0;
-    }
-
-    public static boolean isTime(DispositivoResponse dispositivo) {
-        if (dispositivo == null || dispositivo.getOperacao().getTime() == null || !dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
             return false;
         }
         long differenceInMinutes = Duration.between(dispositivo.getOperacao().getTime(), LocalDateTime.now()).toMinutes();

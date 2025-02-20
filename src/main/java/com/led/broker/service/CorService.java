@@ -83,8 +83,7 @@ public class CorService {
                                 .descricao(String.format(Comando.TIMER_CRIADO.value(), dispositivo.getMac()))
                                 .mac(dispositivo.getMac())
                                 .build());
-                        logger.warn("Temporizador criado para " + dispositivo.getMac());
-                        logger.warn("Efeito " + dispositivo.getCor().getEfeito());
+                        logger.warn("Temporizador criado para " + dispositivo.getMac()); 
                         mqttService.sendRetainedMessage(Topico.MAPA, "Atualizar mapa");
                         return comandoService.enviardComandoRapido(dispositivo, false, false);
                     } else {

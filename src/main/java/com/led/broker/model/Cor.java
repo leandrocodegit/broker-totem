@@ -22,6 +22,8 @@ public class Cor {
     private long time;
     private int quantidadePinos;
     private boolean rapida;
+    private boolean vibracao;
+    private int velocidade;
     private List<Parametro> parametros;
     @Transient
     private boolean responder;

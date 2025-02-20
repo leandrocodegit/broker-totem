@@ -19,5 +19,17 @@ public class Conexao {
     private String mac;
     private LocalDateTime ultimaAtualizacao;
     private StatusConexao status;
+    private boolean habilitarWifi;
+    private String ssid;
+    private String senha;
+    private boolean habilitarLoraWan;
+    private int modoLora;
+    private String classe;
+    private String devEui;
+    private String appEui;
+    private String appKey;
+    private String nwkSKey;
+    private String appSKey;
+    private String devAddr;
 
 }

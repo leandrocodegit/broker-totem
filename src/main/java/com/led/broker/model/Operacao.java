@@ -23,5 +23,7 @@ public class Operacao {
     private Agenda agenda;
     @DBRef
     private Cor corTemporizador;
+    @DBRef
+    private Cor corVibracao;
     private LocalDateTime time;
 }
