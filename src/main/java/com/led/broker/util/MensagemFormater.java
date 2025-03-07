@@ -1,33 +1,56 @@
 package com.led.broker.util;
 
-import com.led.broker.model.Configuracao;
-import com.led.broker.model.Parametro;
+import com.led.broker.model.Mensagem;
+import static com.led.broker.model.constantes.Comando.*;
+
+import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.Efeito;
+import com.led.broker.model.constantes.TipoConexao;
+import com.led.broker.model.constantes.TipoConexao.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class MensagemFormater {
 
-    public static Parametro recuperarConfiguracao(String mensagemHexa) {
-        // EFEITO(1) + PINO(1) + LEDS(4) + FAIXA(4) + INTENSIDADE(2) + VELOCIDADE(2)
-        // CORRECAO 1 + CORRECAO 2 + CORRECAO 3 + COR 1 + COR 2 + COR 3 + COR 4 + COR 5 + COR 6
-        // 01 + 1 + 1388 + 1388 + FF + FF;
+    public static Mensagem formatarMensagem(String mensagemHexa) {
+        //TIPO COMANDO(2) + ID(7) + TIPOCONEXAO(2) + PINO(2) + EFEITO(8) + VERSAO(6)
+        //1 ETH
+        //2 WIFI
+        //3 LORA
 
+        var inicio = 0;
+        var comando = Comando.fromDescricao(hexToInt(mensagemHexa.substring(inicio, inicio + 2)));
 
-        Parametro parametro = Parametro.builder()
-                .efeito(Efeito.fromDescricao(hexToInt(mensagemHexa.substring(0, 2))))
-                .pino(hexToInt(mensagemHexa.substring(2, 4)))
-                .configuracao(Configuracao.builder()
-                        .leds(hexToInt(mensagemHexa.substring(4, 8)))
-                        .faixa(hexToInt(mensagemHexa.substring(8, 12)))
-                        .intensidade(hexToInt(mensagemHexa.substring(12, 14)))
-                        .build())
-                .correcao(vetor(mensagemHexa.substring(16, 22)))
-                .cor(vetor(mensagemHexa.substring(22, 34)))
+        if (Stream.of(LORA_PARAMETROS_OK, LORA_PARAMETROS_ERRO, ACEITO).anyMatch(cmd -> cmd.equals(comando))){
+            return Mensagem.builder()
+                    .id(hexToInt(mensagemHexa.substring(inicio += 2, inicio + 14)))
+                    .comando(comando)
+                    .portas(0)
+                    .pino(0)
+                    .build();
+        }
+
+        return Mensagem.builder()
+                .comando(comando)
+                .id(hexToInt(mensagemHexa.substring(inicio += 2, inicio + 14)))
+                .tipoConexao(TipoConexao.fromDescricao(hexToInt(mensagemHexa.substring(inicio += 2, inicio + 2))))
+                .portas(hexToInt(mensagemHexa.substring(inicio += 2, inicio + 2)))
+                .pino(hexToInt(mensagemHexa.substring(inicio += 2, inicio + 2)))
+                .efeito(
+                        List.of(
+                                Efeito.fromDescricao(hexToInt(mensagemHexa.substring(inicio += 2, inicio + 2))),
+                                Efeito.fromDescricao(hexToInt(mensagemHexa.substring(inicio += 2, inicio + 2))),
+                                Efeito.fromDescricao(hexToInt(mensagemHexa.substring(inicio += 2, inicio + 2))),
+                                Efeito.fromDescricao(hexToInt(mensagemHexa.substring(inicio += 2, inicio + 2)))
+                        ))
+                .versao(String.format("%d.%d.%d",
+                        hexToInt(mensagemHexa.substring(inicio += 2, inicio + 2)),
+                        hexToInt(mensagemHexa.substring(inicio += 2, inicio + 2)),
+                        hexToInt(mensagemHexa.substring(inicio += 2, inicio + 2))))
                 .build();
 
-        return parametro;
     }
 
     public static int[] vetor(String hexa) {

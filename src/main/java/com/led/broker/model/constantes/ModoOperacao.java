@@ -4,6 +4,8 @@ public enum ModoOperacao {
 
     DISPOSITIVO,
     AGENDA,
-    TEMPORIZADOR
+    TEMPORIZADOR,
+    OCORRENCIA,
+    BOTAO;
 
 }

@@ -56,7 +56,6 @@ public class MqttIntegrationConfig {
                 new MqttPahoMessageDrivenChannelAdapter(brokerUrl, clientId + "-subscribe", mqttClientFactory(), Topico.DEVICE_CONFIRMACAO + "#", "teste");
         adapter.setCompletionTimeout(5000);
         var converter = new DefaultPahoMessageConverter();
-        converter.setPayloadAsBytes(true);
         adapter.setConverter(converter);
         adapter.setQos(0);
         adapter.setOutputChannel(mqttInputChannel());

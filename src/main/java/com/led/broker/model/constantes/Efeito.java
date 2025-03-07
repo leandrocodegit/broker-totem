@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Efeito {
 
+    SEM_EFEITO(0),
     CILONIO(1),
     GIROFLEX(2),
     CONTADOR(3),
@@ -19,6 +20,7 @@ public enum Efeito {
     QUEBRANDO(13),
     CONSTELACAO(14),
     GAME(15),
+    FAIXA_3(16),
     UPDATE(10);
 
     public int codigo;
@@ -34,6 +36,6 @@ public enum Efeito {
                 return tipo;
             }
         }
-        throw new IllegalArgumentException("Codigo inválido: " + codigo);
+        return SEM_EFEITO;
     }
 }

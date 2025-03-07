@@ -1,6 +1,8 @@
 package com.led.broker.model;
 
+import com.led.broker.model.constantes.ClasseLora;
 import com.led.broker.model.constantes.StatusConexao;
+import com.led.broker.model.constantes.TipoConexao;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,20 +18,46 @@ import java.time.LocalDateTime;
 public class Conexao {
 
     @Id
-    private String mac;
+    private String id;
     private LocalDateTime ultimaAtualizacao;
     private StatusConexao status;
-    private boolean habilitarWifi;
+    private TipoConexao tipoConexao;
+    private Boolean habilitarWifi;
     private String ssid;
     private String senha;
-    private boolean habilitarLoraWan;
-    private int modoLora;
-    private String classe;
+    private Boolean habilitarLoraWan;
+    private Integer modoLora;
+    private ClasseLora classe;
     private String devEui;
     private String appEui;
     private String appKey;
     private String nwkSKey;
     private String appSKey;
     private String devAddr;
+    private Integer txPower;
+    private Integer dataRate;
+    private Integer adr;
+    private Integer snr;
+    private Integer rssi;
+    private Boolean autoJoin;
 
+    public Integer getModoLora() {
+        return modoLora == null ? 0 : modoLora;
+    }
+
+    public Integer getTxPower() {
+        return txPower == null ? 0 : txPower;
+    }
+
+    public Integer getAdr() {
+        return adr == null ? 0 : adr;
+    }
+
+    public Integer getSnr() {
+        return snr == null ? 0 : snr;
+    }
+
+    public Integer getRssi() {
+        return rssi == null ? 0 : rssi;
+    }
 }

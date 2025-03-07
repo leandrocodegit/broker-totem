@@ -12,7 +12,7 @@ public class TimeUtil {
 
     private TimeUtil(){}
 
-    public static Map<String, Dispositivo> timers = new HashMap<>();
+    public static Map<Long, Dispositivo> timers = new HashMap<>();
     public static boolean isTime(Dispositivo dispositivo) {
         if (dispositivo == null || dispositivo.getOperacao() == null || !dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
             return false;

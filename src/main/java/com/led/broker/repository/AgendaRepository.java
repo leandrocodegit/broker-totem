@@ -15,8 +15,8 @@ public interface AgendaRepository extends MongoRepository<Agenda, UUID> {
     @Query("{ 'cor._id': ?0 }")
     List<Agenda> findAgendasByCorId(UUID configuracaoId);
 
-    @Query("{ 'dispositivos.mac': ?0 }")
-    List<Agenda> findAgendasByDispositivoId(String mac);
+    @Query("{ 'dispositivos.id': ?0 }")
+    List<Agenda> findAgendasByDispositivoId(long id);
 
     @Query("{" +
             "   $expr: {" +
@@ -84,11 +84,11 @@ public interface AgendaRepository extends MongoRepository<Agenda, UUID> {
             "       { $gte: [ { $dateToString: { format: '%m-%d', date: '$termino' } }, { $dateToString: { format: '%m-%d', date: ?0 } } ] }" +
             "   ]" +
             " }," +
-            " 'dispositivos.mac': ?2," +
+            " 'dispositivos.id': ?2," +
             " 'ativo': true" +
             " '_id': { $ne: ?3 }" +
             "}")
-    List<Agenda> findFirstByDataAndDispositivo(LocalDate inicio, LocalDate termino, String dispositivoMac, UUID agendaId);
+    List<Agenda> findFirstByDataAndDispositivo(LocalDate inicio, LocalDate termino, long id, UUID agendaId);
 
 
 }

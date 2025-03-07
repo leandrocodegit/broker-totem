@@ -37,31 +37,31 @@ public class ComandoController {
     public Flux<String> sincronizarTodos(@PathVariable boolean responder, @RequestParam("token") String token) {
         if(!responder) {
             var user = authService.validarToken(token);
-            Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(responder));
+            Flux<Long> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(responder));
             logRepository.save(Log.builder()
                     .data(LocalDateTime.now())
                     .usuario(user)
                     .mensagem("Todos")
                     .cor(null)
                     .comando(Comando.SINCRONIZAR)
-                    .descricao(Comando.SINCRONIZAR.value())
-                    .mac("Todos ativos")
+                    .descricao(Comando.SINCRONIZAR.value)
+                    .id(0)
                     .build());
-            return devicesFlux.flatMap(mac ->
-                    comandoService.enviardComandoSincronizar(mac, false, TipoConfiguracao.LED)
-                            .then(Mono.just("Comando enviado para " + mac))
+            return devicesFlux.flatMap(id ->
+                    comandoService.enviardComandoSincronizar(id, false, TipoConfiguracao.LED)
+                            .then(Mono.just("Comando enviado para " + id))
             );
         }else{
            var user = authService.validarToken(token);
-            Flux<String> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(true));
+            Flux<Long> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(true));
             logRepository.save(Log.builder()
                     .data(LocalDateTime.now())
                     .usuario(user)
                     .mensagem("Todos")
                     .cor(null)
                     .comando(Comando.SINCRONIZAR)
-                    .descricao(Comando.SINCRONIZAR.value())
-                    .mac("Todos ativos")
+                    .descricao(Comando.SINCRONIZAR.value)
+                    .id(0)
                     .build());
             return devicesFlux.flatMap(mac ->
                     comandoService.enviardComandoSincronizar(mac, true, TipoConfiguracao.LED)
@@ -72,82 +72,90 @@ public class ComandoController {
         }
     }
 
-    @GetMapping(value = "/{mac}/{tipoConfiguracao}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizar(@PathVariable String mac, @PathVariable TipoConfiguracao tipoConfiguracao, @RequestParam("token") String token) {
+    @GetMapping(value = "/{id}/{tipoConfiguracao}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> sincronizar(@PathVariable long id, @PathVariable TipoConfiguracao tipoConfiguracao, @RequestParam("token") String token) {
         var user = authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
-                comandoService.enviardComandoSincronizar(mac, true, tipoConfiguracao)
+                comandoService.enviardComandoSincronizar(id, true, tipoConfiguracao)
                         .timeout(Duration.ofSeconds(timeExpiratio))
-                        .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
+                        .onErrorResume(e -> Mono.just("Dispositivo " + id + " não respondeu")));
     }
 
-    @GetMapping("/flux/temporizar/{idCor}/{mac}")
-    public Flux<String> temporizarFlux(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
+    @GetMapping("/flux/temporizar/{idCor}/{id}")
+    public Flux<String> temporizarFlux(@PathVariable UUID idCor, @PathVariable long id, @RequestParam("token") String token) {
         var user = authService.validarToken(token);
         return Flux.concat(
                 Mono.just("ok"),
-                corService.salvarCorTemporizada(idCor, mac, false, user)
+                corService.salvarCorTemporizada(idCor, id, false, user)
                         .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
 
-    @GetMapping("/temporizar/{idCor}/{mac}")
-    public ResponseEntity<String> temporizar(@PathVariable UUID idCor, @PathVariable String mac, @RequestParam("token") String token) {
+    @GetMapping("/temporizar/{idCor}/{id}")
+    public ResponseEntity<String> temporizar(@PathVariable UUID idCor, @PathVariable long id, @RequestParam("token") String token) {
         var user = authService.validarToken(token);
-        corService.salvarCorTemporizadaReponse(idCor, mac, false, true, user);
+        corService.salvarCorTemporizadaReponse(idCor, id, false, true, user);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/flux/temporizar/{mac}")
-    public Flux<String> cancelarTemporizarFlux(@PathVariable String mac, @RequestParam("token") String token) {
+    @GetMapping("/flux/temporizar/{id}")
+    public Flux<String> cancelarTemporizarFlux(@PathVariable long id, @RequestParam("token") String token) {
         var user = authService.validarToken(token);
         return Flux.concat(
                 Mono.just("ok"),
-                corService.salvarCorTemporizada(null, mac, true, user)
+                corService.salvarCorTemporizada(null, id, true, user)
                         .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Falha, não houve resposta")));
     }
 
-    @GetMapping(value = "/teste/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> testar(@PathVariable String mac, @RequestParam("token") String token) {
+    @GetMapping(value = "/teste/{id}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> testar(@PathVariable long id, @RequestParam("token") String token) {
         authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
-                comandoService.enviardComandoTeste(mac)
+                comandoService.enviardComandoTeste(id)
                         .timeout(Duration.ofSeconds(timeExpiratio))
-                        .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
+                        .onErrorResume(e -> Mono.just("Dispositivo " + id + " não respondeu")));
     }
 
-    @GetMapping("/temporizar/{mac}")
-    public ResponseEntity<String> cancelarTemporizar(@PathVariable String mac, @RequestParam("token") String token) {
+    @GetMapping("/temporizar/{id}")
+    public ResponseEntity<String> cancelarTemporizar(@PathVariable long id, @RequestParam("token") String token) {
         var user = authService.validarToken(token.replace("Bearer ", ""));
-        return  ResponseEntity.ok(corService.salvarCorTemporizada(null, mac, true, user).just("Comando enviado com sucesso").block());
+        return  ResponseEntity.ok(corService.salvarCorTemporizada(null, id, true, user).just("Comando enviado com sucesso").block());
     }
 
-
-    @GetMapping(value = "/interno/sincronizar/{user}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizarTodosInterno(@PathVariable String user) {
-        return Flux.concat(
-                Flux.just("ok"),
-                Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(false, user)))
-        );
-    }
 
     @GetMapping(value = "/interno/sincronizar/{user}/{responder}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> sincronizarTodosInterno(@PathVariable boolean responder, @PathVariable String user) {
         return Flux.concat(
                 Flux.just("ok"),
-                Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(responder, user)))
+                Flux.defer(() -> Flux.just(comandoService.enviarComandoTodos(responder, user, null, TipoConfiguracao.LED, true)))
         );
     }
 
-    @GetMapping(value = "/interno/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> sincronizarInterno(@PathVariable String mac) {
-        return  Flux.concat(
-                Mono.just("ok"),
-                comandoService.enviardComandoSincronizar(mac, false, TipoConfiguracao.LED));
+    @GetMapping(value = "/interno/sincronizar/{cor}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> sincronizarTodosVibracaoInterno(@PathVariable UUID cor) {
+        return Flux.concat(
+                Flux.just("ok"),
+                Flux.defer(() -> Flux.just(comandoService.enviarComandoTodosVibracao( cor)))
+        );
     }
 
+    @GetMapping(value = "/interno/{id}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> sincronizarInterno(@PathVariable long id) {
+        return  Flux.concat(
+                Mono.just("ok"),
+                comandoService.enviardComandoSincronizar(id, false, TipoConfiguracao.LED));
+    }
+    @GetMapping(value = "/interno/{id}/{topico}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public void sincronizarInternoTipo(@PathVariable long id, @PathVariable int topico) {
+         comandoService.enviardComandoSincronizarId(id, topico);
+    }
 
+    @GetMapping("interno/temporizar/{idCor}/{id}")
+    public ResponseEntity<String> temporizarInterno(@PathVariable UUID idCor, @PathVariable long id) {
+        corService.salvarCorTemporizada(idCor, id, false, "Sistema");
+        return ResponseEntity.ok().build();
+    }
  }

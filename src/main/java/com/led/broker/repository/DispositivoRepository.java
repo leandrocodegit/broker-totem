@@ -8,13 +8,18 @@ import org.springframework.data.mongodb.repository.Query;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-public interface DispositivoRepository extends MongoRepository<Dispositivo, String> {
+public interface DispositivoRepository extends MongoRepository<Dispositivo, Long> {
 
 
+    Optional<Dispositivo> findAllByIdAndTopico(long id, long topico);
 
-    List<Dispositivo> findAllByMacInAndAtivo(List<String> macs, boolean ativo);
-    @Query("{ 'ativo': ?0, 'configuracao': { $ne: null } }")
+    List<Dispositivo> findAllByIdInAndAtivo(List<Long> ids, boolean ativo);
+
     List<Dispositivo> findAllByAtivo(boolean ativo);
+
+    List<Dispositivo> findAllByCorVibracao(String id);
 
 }

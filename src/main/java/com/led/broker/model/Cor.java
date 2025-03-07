@@ -28,4 +28,5 @@ public class Cor {
     @Transient
     private boolean responder;
 
+
 }

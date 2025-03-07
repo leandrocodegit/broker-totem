@@ -25,16 +25,16 @@ public class AgendaDeviceService {
         LocalDate data = LocalDateTime.now().toLocalDate();
         return agendaRepository.findAgendasByDataDentroDoIntervalo(data);
     }
-    public Agenda buscarAgendaDipositivoPrevistaHoje(String mac) {
-        List<Agenda> agendaList = agendaRepository.findFirstByDataAndDispositivo(LocalDateTime.now().minusHours(3).toLocalDate(), LocalDateTime.now().minusHours(3).toLocalDate(), mac, UUID.randomUUID());
+    public Agenda buscarAgendaDipositivoPrevistaHoje(long id) {
+        List<Agenda> agendaList = agendaRepository.findFirstByDataAndDispositivo(LocalDateTime.now().minusHours(3).toLocalDate(), LocalDateTime.now().minusHours(3).toLocalDate(), id, UUID.randomUUID());
         if(!agendaList.isEmpty()){
             return agendaList.get(0);
         }
         return null;
     }
 
-    public boolean possuiAgendaDipositivoPrevistaHoje(Agenda agenda, String mac) {
-        return !agendaRepository.findFirstByDataAndDispositivo(agenda.getInicio(), agenda.getTermino(), mac, agenda.getId()).isEmpty();
+    public boolean possuiAgendaDipositivoPrevistaHoje(Agenda agenda, long id) {
+        return !agendaRepository.findFirstByDataAndDispositivo(agenda.getInicio(), agenda.getTermino(), id, agenda.getId()).isEmpty();
     }
 
     public void atualizarDataExecucao(Agenda agenda) {

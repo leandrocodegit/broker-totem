@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -43,21 +42,21 @@ public class FirmwareController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-    @GetMapping(value = "/update/{mac}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> atualizarFirmware(@PathVariable String mac, @RequestParam("token") String token) {
+    @GetMapping(value = "/update/{id}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> atualizarFirmware(@PathVariable long id, @RequestParam("token") String token) {
          authService.validarToken(token);
         return  Flux.concat(
                 Mono.just("ok"),
-                comandoService.enviardComandoUpdateFirmware(mac, host)
+                comandoService.enviardComandoUpdateFirmware(id, host)
                         .timeout(Duration.ofSeconds(60))
-                        .onErrorResume(e -> Mono.just("Dispositivo " + mac + " não respondeu")));
+                        .onErrorResume(e -> Mono.just("Dispositivo " + id + " não respondeu")));
     }
 
-    @PostMapping(value = "/upload/{mac}", consumes = "multipart/form-data")
-    public Mono<ResponseEntity<Map<String, String>>> uploadFile(@PathVariable String mac, @RequestPart("file") Mono<FilePart> filePartMono, @RequestParam("token") String token) {
+    @PostMapping(value = "/upload/{id}", consumes = "multipart/form-data")
+    public Mono<ResponseEntity<Map<String, String>>> uploadFile(@PathVariable long id, @RequestPart("file") Mono<FilePart> filePartMono, @RequestParam("token") String token) {
          authService.validarToken(token);
         return filePartMono
-                .flatMap(filePart -> firmwareService.storeFile(mac.replaceAll(":","-"), Mono.just(filePart)))
+                .flatMap(filePart -> firmwareService.storeFile(String.valueOf(id), Mono.just(filePart)))
                 .map(newFileName -> {
                     Map<String, String> response = new HashMap<>();
                     response.put("message", "Arquivo salvo com sucesso");
@@ -72,10 +71,10 @@ public class FirmwareController {
                 });
     }
 
-    @GetMapping("/{mac}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable("mac") String mac) {
+    @GetMapping("/{id}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable("id") String id) {
         try {
-            Resource resource = firmwareService.loadFileAsResource(mac.replaceAll(":","-"));
+            Resource resource = firmwareService.loadFileAsResource(String.valueOf(id));
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                     .body(resource);

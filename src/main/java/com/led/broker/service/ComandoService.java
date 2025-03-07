@@ -2,10 +2,7 @@ package com.led.broker.service;
 
 
 import com.google.gson.Gson;
-import com.led.broker.model.Agenda;
-import com.led.broker.model.Cor;
-import com.led.broker.model.Dispositivo;
-import com.led.broker.model.Log;
+import com.led.broker.model.*;
 import com.led.broker.model.constantes.*;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
@@ -13,6 +10,7 @@ import com.led.broker.repository.LogRepository;
 import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.ComandoFormater;
 import com.led.broker.util.ConfiguracaoUtil;
+import com.led.broker.util.CorUtil;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -34,22 +32,22 @@ public class ComandoService {
     private final DispositivoRepository dispositivoRepository;
     private final CorRepository corRepository;
     private final LogRepository logRepository;
-    private final OperacaoRepository operacaoRepository;
-    public static Map<String, MonoSink<String>> streams = new HashMap<>();
+    private final CorUtil corUtil;
+    public static Map<Long, MonoSink<String>> streams = new HashMap<>();
 
 
-    public Mono<String> createMono(String mac) {
+    public Mono<String> createMono(long id) {
         return Mono.create(sink -> {
-            streams.put(mac, sink);
+            streams.put(id, sink);
         });
     }
 
-    public Mono<String> enviardComandoTeste(String mac) {
+    public Mono<String> enviardComandoTeste(long id) {
 
-        logger.warn("Comando de teste: " + mac);
-        Dispositivo dispositivo = buscarPorMac(mac);
+        logger.warn("Comando de teste: " + id);
+        Dispositivo dispositivo = buscarPorId(id);
 
-        Mono<String> mono = createMono(mac);
+        Mono<String> mono = createMono(id);
 
 //        if (dispositivo != null && dispositivo.getConfiguracao() != null) {
 //            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ConfiguracaoUtil.gerarComandoTeste(dispositivo.getConfiguracao()));
@@ -58,36 +56,63 @@ public class ComandoService {
         return mono;
     }
 
-    public Mono<String> enviardComandoSincronizar(String mac, boolean responder, TipoConfiguracao tipoConfiguracao) {
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
+    public void enviardComandoSincronizarId(long id, int topico) {
+
+        if (topico <= 1000) {
+            var dispositivo = dispositivoRepository.findAllByIdAndTopico(id, topico);
+            if (!dispositivo.isPresent()) {
+                mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + topico, ComandoFormater.gerarConfiguracaoId(id));
+            }
+        }
+    }
+
+    public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao) {
+        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
 
         if (!dispositivoOptional.isPresent()) {
-            logger.error(mac + " não encontrado ou inativo ");
-            return Mono.just(mac + " não encontrado ou inativo ");
+            logger.error(id + " não encontrado ou inativo ");
+            return Mono.just(id + " não encontrado ou inativo ");
         }
 
-        if(dispositivoOptional.get().getConexao().getStatus().equals(StatusConexao.Offline)){
-            return Mono.just( "Dispositivo " + mac +  " offline ");
+        if (dispositivoOptional.get().getConexao().getStatus().equals(StatusConexao.Offline)) {
+            return Mono.just("Dispositivo " + id + " offline ");
         }
 
         Dispositivo dispositivo = dispositivoOptional.get();
-        Mono<String> mono = createMono(mac);
+        Mono<String> mono = createMono(id);
 
-        if(tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN)){
-
+        if (tipoConfiguracao.equals(TipoConfiguracao.LIMPAR_FLASH)) {
+            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoErase(dispositivo));
+            return mono;
+        }
+        if (tipoConfiguracao.equals(TipoConfiguracao.WIFI)) {
+            if(dispositivo.getConexao().getHabilitarWifi() == null || dispositivo.getConexao().getHabilitarWifi() == Boolean.FALSE)
+                return Mono.just("Erro, WiFi não está habilitado");
+            if(dispositivo.getConexao().getSsid() == null || dispositivo.getConexao().getSsid().isEmpty())
+                return Mono.just("Erro, SSID é obrigatório");
+            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoWIFI(dispositivo));
+            return mono;
+        }
+        if (tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN) || tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN_PARAM)) {
+            if(dispositivo.getConexao().getHabilitarLoraWan() == null || dispositivo.getConexao().getHabilitarLoraWan() == Boolean.FALSE)
+                return Mono.just("Erro, LoraWan não está habilitado");
+            if (tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN) && dispositivo.getConexao().getClasse() == null)
+                return Mono.just("Erro, Classe LoraWan é obrigatória");
+            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoLora(dispositivo, true, tipoConfiguracao));
+            return mono;
         }
 
         if (dispositivo.isAtivo()) {
-            if(tipoConfiguracao.equals(TipoConfiguracao.LED)){
-                dispositivo.setCor(repararCor(dispositivo));
+            if (tipoConfiguracao.equals(TipoConfiguracao.LED) || tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART)) {
+                dispositivo.setCor(corUtil.repararCor(dispositivo));
             }
-            if (dispositivo.getCor() != null || !tipoConfiguracao.equals(TipoConfiguracao.LED)) {
-                mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ComandoFormater.gerarCodigo(dispositivo, responder, tipoConfiguracao));
+            if (dispositivo.getCor() != null || (!tipoConfiguracao.equals(TipoConfiguracao.LED) && !tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART))) {
+                mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigo(dispositivo, responder, tipoConfiguracao));
                 if (!responder) {
                     return mono.just("ok");
                 }
             } else {
-                logger.error(mac + " não possui configuração de cor");
+                logger.error(id + " não possui configuração de cor");
                 return mono.just("não possui configuração de cor");
             }
 
@@ -95,36 +120,19 @@ public class ComandoService {
         return mono;
     }
 
-    public Mono<String> enviardComandoUpdateFirmware(String mac, String host) {
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
+    public Mono<String> enviardComandoUpdateFirmware(long id, String host) {
+        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
 
         if (!dispositivoOptional.isPresent()) {
-            logger.error(mac + " não encontrado ou inativo ");
-            return Mono.just(mac + " não encontrado ou inativo ");
+            logger.error(id + " não encontrado ou inativo ");
+            return Mono.just(id + " não encontrado ou inativo ");
         }
 
         Dispositivo dispositivo = dispositivoOptional.get();
-        Mono<String> mono = createMono(mac);
+        Mono<String> mono = createMono(id);
 
-     //   mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), "ConfiguracaoUtil.gerarComandoFirmware(host)");
+        //   mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), "ConfiguracaoUtil.gerarComandoFirmware(host)");
         return mono;
-    }
-
-    public void enviardComandoRapido(Dispositivo dispositivo, boolean cancelar) {
-
-        try {
-            if (cancelar) {
-                logger.warn("Cancelar comando rápido: " + dispositivo.getMac());
-                dispositivo.setCor(repararCor(buscarPorMac(dispositivo.getMac())));
-            }
-
-            if (dispositivo.isAtivo() && dispositivo.getCor() != null) {
-             //   mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ComandoFormater.gerarCodigo(dispositivo, true));
-            }
-        } catch (Exception err) {
-            logger.error(err.getMessage());
-        }
-
     }
 
     public Mono<String> enviardComandoRapido(Dispositivo dispositivo, boolean cancelar, boolean interno) {
@@ -132,125 +140,105 @@ public class ComandoService {
         Mono<String> mono = Mono.empty();
 
         if (!interno) {
-            mono = createMono(dispositivo.getMac());
+            mono = createMono(dispositivo.getId());
         }
 
         if (cancelar) {
-            logger.warn("Cancelar comando rápido: " + dispositivo.getMac());
-            dispositivo.setCor(repararCor(buscarPorMac(dispositivo.getMac())));
+            logger.warn("Cancelar comando rápido: " + dispositivo.getId());
+            dispositivo.setCor(corUtil.repararCor(buscarPorId(dispositivo.getId())));
+        } else {
+            dispositivo.setCor(corUtil.parametricarCorDispositivo(dispositivo.getCor(), dispositivo));
         }
 
         if (dispositivo.isAtivo() && dispositivo.getCor() != null) {
-          //  mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), ComandoFormater.gerarCodigo(dispositivo, true));
+            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoCor(dispositivo, true, TipoConfiguracao.LED));
         }
 
-        logger.warn("Comando rápido criado: " + dispositivo.getMac());
+        logger.warn("Comando rápido criado: " + dispositivo.getId());
         return mono;
     }
 
-    public String enviarComandoTodos(boolean responder,  String user) {
+    public String enviarComandoTodosVibracao(UUID cor) {
+        enviarComandoTodos(false, "Sistema", cor, TipoConfiguracao.VIBRACAO, true);
+        logger.warn("Sincronizando cor de vibração " + cor.toString());
+        return "Sincrolização enviada";
+    }
+
+    public String enviarComandoTodos(boolean responder, String user, UUID cor, TipoConfiguracao tipoConfiguracao, boolean interno) {
 
         try {
-            List<Dispositivo> dispositivos = listaTodosDispositivos();
+            List<Dispositivo> dispositivos = listaTodosDispositivos(tipoConfiguracao, cor);
             logger.warn("Comando enviado para todos: " + dispositivos.size());
 
             if (!dispositivos.isEmpty()) {
-
-                logRepository.save(Log.builder()
-                        .data(LocalDateTime.now())
-                        .usuario(user)
-                        .mensagem("Todos")
-                        .cor(null)
-                        .comando(Comando.SINCRONIZAR)
-                        .descricao(Comando.SINCRONIZAR.value())
-                        .mac("Todos ativos")
-                        .build());
+                if (!interno)
+                    logRepository.save(Log.builder()
+                            .key(UUID.randomUUID())
+                            .data(LocalDateTime.now())
+                            .usuario(user)
+                            .mensagem("Todos")
+                            .cor(null)
+                            .comando(Comando.SINCRONIZAR)
+                            .descricao(Comando.SINCRONIZAR.value)
+                            .id(0)
+                            .build());
 
                 dispositivos.forEach(device -> {
                     if (device.isAtivo()) {
-                        device.setCor(repararCor(device));
-                    //    mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getMac(), ComandoFormater.gerarCodigo(device, responder));
+                        device.setCor(corUtil.repararCor(device));
+                        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getId(), ComandoFormater.gerarCodigo(device, responder, tipoConfiguracao));
                     }
                 });
-              //  mqttService.sendRetainedMessage(Topico.DASHBOARD, "Atualizando dashboard todos");
+                mqttService.sendRetainedMessage(Topico.DASHBOARD, "Atualizando dashboard todos");
             } else {
                 logRepository.save(Log.builder()
+                        .key(UUID.randomUUID())
                         .data(LocalDateTime.now())
                         .usuario("request.getUsuario()")
                         .cor(null)
                         .mensagem("Nenhum dos dispositos estão ativos")
                         .comando(Comando.NENHUM_DEVICE)
-                        .descricao(Comando.NENHUM_DEVICE.value())
+                        .descricao(Comando.NENHUM_DEVICE.value)
+                        .id(0)
                         .build());
             }
             return "Comando enviado para todos";
         } catch (Exception erro) {
-            logger.error("Erro ao sincronizar");
+            logger.info("Erro ao sincronizar");
+            logger.error(erro.getMessage());
             return "Sincronização não foi concluida";
         }
     }
+
     public static byte[] hexStringToByteArray(String hex) {
         int length = hex.length();
         byte[] data = new byte[length / 2]; // Cada 2 caracteres = 1 byte
 
         for (int i = 0; i < length; i += 2) {
             data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                    + Character.digit(hex.charAt(i+1), 16));
+                    + Character.digit(hex.charAt(i + 1), 16));
         }
         return data;
     }
-    private Cor repararCor(Dispositivo dispositivo) {
-        if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
-            if (TimeUtil.isTime(dispositivo)) {
-                if (dispositivo.getOperacao().getCorTemporizador() != null) {
-                    return dispositivo.getOperacao().getCorTemporizador();
-                }
-            }
-        }
 
-        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA)) {
-            Agenda agenda = dispositivo.getOperacao().getAgenda();
-            if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && agenda.getDispositivos().contains(dispositivo.getMac())) {
-                if(verificaSeAgendaValida(agenda, dispositivo.getMac()))
-                    return agenda.getCor();
-            }
-        }
 
-        dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
-        operacaoRepository.save(dispositivo.getOperacao());
-        return dispositivo.getCor();
-    }
+    private Dispositivo buscarPorId(long id) {
 
-    public boolean verificaSeAgendaValida(Agenda agenda, String mac){
-
-        if(!agenda.isAtivo() || agenda.getDispositivos() == null || agenda.getDispositivos().isEmpty())
-            return false;
-        var bool = agenda.getInicio().equals(LocalDate.now()) || agenda.getInicio().isBefore(LocalDate.now());
-        if(bool)
-            bool = agenda.getTermino().equals(LocalDate.now()) || agenda.getTermino().isAfter(LocalDate.now());;
-        if(bool){
-            return agenda.getDispositivos().contains(mac);
-        }
-        return false;
-    }
-
-    public Optional<Cor> buscaCor(UUID id) {
-        return corRepository.findById(id);
-    }
-
-    private Dispositivo buscarPorMac(String mac) {
-
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(mac);
+        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
         if (dispositivoOptional.isPresent()) {
             return dispositivoOptional.get();
-        } else if (ComandoService.streams.containsKey(mac)) {
-            ComandoService.streams.remove(mac).success(mac + " não encontrado ou inativo ");
+        } else if (ComandoService.streams.containsKey(id)) {
+            ComandoService.streams.remove(id).success(id + " não encontrado ou inativo ");
         }
         return null;
     }
 
-    private List<Dispositivo> listaTodosDispositivos() {
-        return dispositivoRepository.findAllByAtivo(true);
+    private List<Dispositivo> listaTodosDispositivos(TipoConfiguracao tipoConfiguracao, UUID cor) {
+        if (tipoConfiguracao.equals(TipoConfiguracao.LED))
+            return dispositivoRepository.findAllByAtivo(true);
+        else if (tipoConfiguracao.equals(TipoConfiguracao.VIBRACAO) && cor != null)
+            return dispositivoRepository.findAllByCorVibracao(cor.toString());
+        return Collections.emptyList();
     }
 
 }

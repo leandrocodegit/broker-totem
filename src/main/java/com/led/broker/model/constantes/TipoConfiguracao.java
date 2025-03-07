@@ -9,11 +9,12 @@ public enum TipoConfiguracao {
     VIBRACAO(3),
     WIFI(4),
     LORA_WAN(5),
-    LIMPAR_FLASH(6),
-    A(7),
-    B(8),
-    C(9),
-    UPDATE(10);
+    LORA_WAN_PARAM(6),
+    LIMPAR_FLASH(7),
+    ID(8),
+    B(9),
+    C(10),
+    UPDATE(11);
 
     public int codigo;
 

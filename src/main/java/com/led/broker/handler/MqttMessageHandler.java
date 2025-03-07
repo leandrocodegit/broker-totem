@@ -2,7 +2,7 @@ package com.led.broker.handler;
 
 import com.google.gson.Gson;
 import com.led.broker.model.Mensagem;
-import com.led.broker.model.constantes.Comando;
+import static com.led.broker.model.constantes.Comando.*;
 import com.led.broker.service.ComandoService;
 import com.led.broker.util.MensagemFormater;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,9 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -32,19 +34,14 @@ public class MqttMessageHandler implements MessageHandler {
     @Override
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handleMessage(Message<?> message) {
+        UUID clientId = (UUID) message.getHeaders().get("id");
         String topico = (String) message.getHeaders().get("mqtt_receivedTopic");
-        logger.warn("Mensagem recebida: " + topico);
-        byte[] payloadD = (byte[]) message.getPayload();
-        String hex = bytesToHex(payloadD);
-        System.err.println("Recebi: " + hex);
-
-        var parametro = MensagemFormater.recuperarConfiguracao(hex);
 
         try {
-            Mensagem payload = new Gson().fromJson(message.getPayload().toString(), Mensagem.class);
-            if (payload.getComando().equals(Comando.ACEITO) && ComandoService.streams.containsKey(payload.getId())) {
+            Mensagem payload = MensagemFormater.formatarMensagem(message.getPayload().toString());
+            if (Stream.of(LORA_PARAMETROS_OK, LORA_PARAMETROS_ERRO, ACEITO).anyMatch(cmd -> cmd.equals(payload.getComando())) && ComandoService.streams.containsKey(payload.getId())) {
                 logger.warn("Payload: " + payload.toString());
-                ComandoService.streams.remove(payload.getId()).success(Comando.ACEITO.value() + " " + payload.getId());
+                ComandoService.streams.remove(payload.getId()).success(ACEITO.value + " " + payload.getId());
             }
         } catch (Exception erro) {
             if (message != null && message.getPayload() != null)

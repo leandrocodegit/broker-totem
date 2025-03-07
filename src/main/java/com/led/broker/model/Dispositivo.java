@@ -15,7 +15,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Dispositivo {
 
     @Id
-    private String mac;
+    private long id;
+    private Long topico;
     private String nome;
     private String ip;
     private Integer memoria;
@@ -30,6 +31,8 @@ public class Dispositivo {
     private Endereco endereco;
     private String enderecoCompleto;
     private Float sensibilidadeVibracao;
+    private String corVibracao;
+    private Integer tempoAtividade;
     @DBRef
     private Operacao operacao;
     @DBRef

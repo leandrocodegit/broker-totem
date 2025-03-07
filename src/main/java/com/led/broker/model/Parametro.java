@@ -6,6 +6,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -18,8 +19,11 @@ public class Parametro {
     private int pino;
     private Efeito efeito;
     private int[] cor;
-    private String primaria;
-    private String secundaria;
+    private List<String> corHexa;
     private int[] correcao;
     private Configuracao configuracao;
+
+    public static int [] apagado(){
+        return new int[]{0,0,0,0,0,0,0,0,0,0,1};
+    }
 }
