@@ -18,7 +18,8 @@ public interface DispositivoRepository extends MongoRepository<Dispositivo, Long
 
     List<Dispositivo> findAllByIdInAndAtivo(List<Long> ids, boolean ativo);
 
-    List<Dispositivo> findAllByAtivo(boolean ativo);
+    @Query("{'cliente': { $ne: null }, 'cliente.id': ?0, 'ativo': ?1 }")
+    List<Dispositivo> findAllByAtivo(UUID clienteId, boolean ativo);
 
     List<Dispositivo> findAllByCorVibracao(String id);
 

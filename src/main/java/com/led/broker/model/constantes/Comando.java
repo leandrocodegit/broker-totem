@@ -26,7 +26,8 @@ public enum Comando {
     VIBRACAO(19,"Vibração detectada"),
     ERASE(20,"Vibração detectada"),
     LORA_PARAMETROS_OK(21,"Parametros LoraWan configurados com sucesso"),
-    LORA_PARAMETROS_ERRO(22,"Erro ao configurar LoraWan");
+    LORA_PARAMETROS_ERRO(22,"Erro ao configurar LoraWan"),
+    MENSAGEM_PARICIONADA(23,"Erro ao configurar LoraWan");
 
     public String value;
     public int codigo;

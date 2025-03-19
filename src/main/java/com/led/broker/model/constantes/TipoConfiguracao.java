@@ -10,11 +10,14 @@ public enum TipoConfiguracao {
     WIFI(4),
     LORA_WAN(5),
     LORA_WAN_PARAM(6),
-    LIMPAR_FLASH(7),
-    ID(8),
-    B(9),
-    C(10),
-    UPDATE(11);
+    LORA_WAN_JOIN(7),
+    LORA_WAN_SEND(8),
+    LIMPAR_FLASH(9),
+    LORA_WAN_RESET(10),
+    ID(11),
+    DEBUG(12),
+
+    UPDATE(13);
 
     public int codigo;
 

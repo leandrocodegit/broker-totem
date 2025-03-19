@@ -19,6 +19,8 @@ public class Agenda {
 
     @Id
     private UUID id;
+    @DBRef
+    private Cliente cliente;
     private String nome;
     private boolean ativo;
     private String status;

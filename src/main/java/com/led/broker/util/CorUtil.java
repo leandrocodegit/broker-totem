@@ -10,6 +10,8 @@ import com.led.broker.repository.OperacaoRepository;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,10 +24,47 @@ public class CorUtil {
         this.operacaoRepository = operacaoRepository;
     }
 
+
+    public static Cor parametricarCorDispositivoOperacao(Cor cor, Dispositivo dispositivo){
+
+        var corDispositivo = dispositivo.getCor();
+
+        corDispositivo.setParametros(corDispositivo.getParametros().stream().limit(4).sorted(Comparator.comparing(Parametro::getPino)).toList());
+        cor.setParametros(cor.getParametros().stream().limit(corDispositivo.getParametros().size()).sorted(Comparator.comparing(Parametro::getPino)).toList());
+
+        for (int i = 0; i < cor.getParametros().size(); i++) {
+            var parametroCor = cor.getParametros().get(i);
+            var parametroDispositivo = corDispositivo.getParametros().get(i);
+
+            parametroCor.getConfiguracao().setTipoCor(parametroDispositivo.getConfiguracao().getTipoCor());
+            parametroCor.setPino(parametroDispositivo.getPino());
+            if(parametroDispositivo.getConfiguracao().getFaixa() < parametroCor.getConfiguracao().getFaixa())
+                parametroCor.getConfiguracao().setFaixa(parametroDispositivo.getConfiguracao().getFaixa());
+            parametroCor.getConfiguracao().setLeds(parametroDispositivo.getConfiguracao().getLeds());
+            if (cor.getParametros().size() - 1 <= i)
+                break;
+        }
+
+        var portasNaoVinculadas = dispositivo.getCor().getParametros().stream().filter(porta -> !cor.getParametros().stream().map(Parametro::getPino).toList().contains(porta.getPino())).toList();
+
+        var parametros = new ArrayList<Parametro>();
+        cor.getParametros().forEach(parametro -> {
+            parametros.add(parametro);
+        });
+        for (int i = 0; i < portasNaoVinculadas.size(); i++) {
+            var porta = portasNaoVinculadas.get(i);
+            porta.setCor(Parametro.apagado());
+            porta.setCorrecao(Parametro.apagado());
+            porta.setEfeito(Efeito.COLORIDO);
+            parametros.add(porta);
+        }
+        cor.setParametros(parametros);
+        return cor;
+    }
     public static Cor parametricarCorDispositivo(Cor cor, Dispositivo dispositivo) {
         var corDispositivo = dispositivo.getCor();
-        corDispositivo.setNome(cor.getNome());
-        corDispositivo.setVelocidade(cor.getVelocidade());
+        cor.setNome(corDispositivo.getNome());
+        cor.setVelocidade(corDispositivo.getVelocidade());
 
         if(cor == null || cor.getParametros().isEmpty())
             return dispositivo.getCor();

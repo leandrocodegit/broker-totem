@@ -23,7 +23,7 @@ public class MensagemFormater {
         var inicio = 0;
         var comando = Comando.fromDescricao(hexToInt(mensagemHexa.substring(inicio, inicio + 2)));
 
-        if (Stream.of(LORA_PARAMETROS_OK, LORA_PARAMETROS_ERRO, ACEITO).anyMatch(cmd -> cmd.equals(comando))){
+        if (Stream.of(LORA_PARAMETROS_OK, LORA_PARAMETROS_ERRO, ACEITO, MENSAGEM_PARICIONADA).anyMatch(cmd -> cmd.equals(comando))){
             return Mensagem.builder()
                     .id(hexToInt(mensagemHexa.substring(inicio += 2, inicio + 14)))
                     .comando(comando)

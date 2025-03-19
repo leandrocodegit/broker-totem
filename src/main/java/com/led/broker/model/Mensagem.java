@@ -2,6 +2,7 @@ package com.led.broker.model;
 
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.Efeito;
+import com.led.broker.model.constantes.StatusConexao;
 import com.led.broker.model.constantes.TipoConexao;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,8 +22,12 @@ public class Mensagem {
     private TipoConexao tipoConexao;
     private int portas;
     private int pino;
+    private StatusConexao statusMCU;
     private List<Efeito> efeito;
     private String brockerId;
+    private String mensagem;
+    private ParamsLora params;
+    private Meta meta;
 
 
     @Override

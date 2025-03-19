@@ -16,6 +16,8 @@ public class Dispositivo {
 
     @Id
     private long id;
+    @DBRef
+    private Cliente cliente;
     private Long topico;
     private String nome;
     private String ip;
@@ -25,14 +27,11 @@ public class Dispositivo {
     private boolean permiteComando;
     private boolean ativo;
     private Comando comando;
-    private String latitude;
-    private String longitude;
     private String brokerId;
     private Endereco endereco;
     private String enderecoCompleto;
     private Float sensibilidadeVibracao;
     private String corVibracao;
-    private Integer tempoAtividade;
     @DBRef
     private Operacao operacao;
     @DBRef

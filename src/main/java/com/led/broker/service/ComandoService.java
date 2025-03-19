@@ -22,6 +22,9 @@ import reactor.core.publisher.MonoSink;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
+
+import static com.led.broker.model.constantes.Comando.ACEITO;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class ComandoService {
     private final LogRepository logRepository;
     private final CorUtil corUtil;
     public static Map<Long, MonoSink<String>> streams = new HashMap<>();
+    public static Map<String, UUID> clientes = new HashMap<>();
 
 
     public Mono<String> createMono(long id) {
@@ -66,7 +70,10 @@ public class ComandoService {
         }
     }
 
-    public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao) {
+    public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao){
+       return enviardComandoSincronizar(id, responder, tipoConfiguracao, false);
+    }
+    public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao, boolean forcarVibracao) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
 
         if (!dispositivoOptional.isPresent()) {
@@ -74,40 +81,57 @@ public class ComandoService {
             return Mono.just(id + " não encontrado ou inativo ");
         }
 
-        if (dispositivoOptional.get().getConexao().getStatus().equals(StatusConexao.Offline)) {
+        if (dispositivoOptional.get().getConexao().getStatus().equals(StatusConexao.Offline) && !dispositivoOptional.get().getConexao().getTipoConexao().equals(TipoConexao.LORA)) {
             return Mono.just("Dispositivo " + id + " offline ");
         }
 
         Dispositivo dispositivo = dispositivoOptional.get();
+        var topico = Topico.DEVICE_RECEIVE + dispositivo.getId();
+        var isLora = dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA);
+        if(dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA))
+             topico = Topico.KORE;
+
         Mono<String> mono = createMono(id);
 
         if (tipoConfiguracao.equals(TipoConfiguracao.LIMPAR_FLASH)) {
-            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoErase(dispositivo));
+            mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigoErase(dispositivo), dispositivo.getConexao());
+            if(isLora){
+                streams.remove(dispositivo.getId());
+                return mono.just("");
+            }
             return mono;
         }
         if (tipoConfiguracao.equals(TipoConfiguracao.WIFI)) {
-            if(dispositivo.getConexao().getHabilitarWifi() == null || dispositivo.getConexao().getHabilitarWifi() == Boolean.FALSE)
-                return Mono.just("Erro, WiFi não está habilitado");
             if(dispositivo.getConexao().getSsid() == null || dispositivo.getConexao().getSsid().isEmpty())
                 return Mono.just("Erro, SSID é obrigatório");
-            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoWIFI(dispositivo));
+            mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigoWIFI(dispositivo), dispositivo.getConexao());
+            if(isLora){
+                streams.remove(dispositivo.getId());
+                return mono.just("");
+            }
             return mono;
         }
-        if (tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN) || tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN_PARAM)) {
+        if (Stream.of(TipoConfiguracao.LORA_WAN, TipoConfiguracao.LORA_WAN_PARAM, TipoConfiguracao.LORA_WAN_JOIN, TipoConfiguracao.LORA_WAN_SEND, TipoConfiguracao.LORA_WAN_RESET).anyMatch(tipo -> tipo.equals(tipoConfiguracao))) {
             if(dispositivo.getConexao().getHabilitarLoraWan() == null || dispositivo.getConexao().getHabilitarLoraWan() == Boolean.FALSE)
                 return Mono.just("Erro, LoraWan não está habilitado");
             if (tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN) && dispositivo.getConexao().getClasse() == null)
                 return Mono.just("Erro, Classe LoraWan é obrigatória");
-            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoLora(dispositivo, true, tipoConfiguracao));
+            mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigoLora(dispositivo, true, tipoConfiguracao), dispositivo.getConexao());
+            if(isLora){
+                streams.remove(dispositivo.getId());
+                return mono.just("");
+            }
             return mono;
         }
 
         if (dispositivo.isAtivo()) {
             if (tipoConfiguracao.equals(TipoConfiguracao.LED) || tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART)) {
                 dispositivo.setCor(corUtil.repararCor(dispositivo));
+            }if(forcarVibracao && !isLora && tipoConfiguracao.equals(TipoConfiguracao.LED)){
+                mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigo(dispositivo, responder, TipoConfiguracao.VIBRACAO), dispositivo.getConexao());
             }
             if (dispositivo.getCor() != null || (!tipoConfiguracao.equals(TipoConfiguracao.LED) && !tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART))) {
-                mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigo(dispositivo, responder, tipoConfiguracao));
+                mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigo(dispositivo, responder, tipoConfiguracao), dispositivo.getConexao());
                 if (!responder) {
                     return mono.just("ok");
                 }
@@ -117,11 +141,16 @@ public class ComandoService {
             }
 
         }
+        if(isLora){
+            streams.remove(dispositivo.getId());
+            return mono.just("");
+        }
         return mono;
     }
 
     public Mono<String> enviardComandoUpdateFirmware(long id, String host) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
+
 
         if (!dispositivoOptional.isPresent()) {
             logger.error(id + " não encontrado ou inativo ");
@@ -129,13 +158,25 @@ public class ComandoService {
         }
 
         Dispositivo dispositivo = dispositivoOptional.get();
+
+        var isLora = dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA);
+        if(isLora){
+            streams.remove(dispositivo.getId());
+          return Mono.just("Opção não disponivel para conexão LoraWan");
+        }
         Mono<String> mono = createMono(id);
 
         //   mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), "ConfiguracaoUtil.gerarComandoFirmware(host)");
         return mono;
     }
 
-    public Mono<String> enviardComandoRapido(Dispositivo dispositivo, boolean cancelar, boolean interno) {
+    public Mono<String> enviardComandoRapido(Dispositivo dispositivo, boolean responder, boolean cancelar, boolean interno) {
+
+        var isLora = dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA);
+        if(isLora){
+            streams.remove(dispositivo.getId());
+          //  return Mono.just("Opção não disponivel para conexão LoraWan");
+        }
 
         Mono<String> mono = Mono.empty();
 
@@ -145,29 +186,39 @@ public class ComandoService {
 
         if (cancelar) {
             logger.warn("Cancelar comando rápido: " + dispositivo.getId());
+            if(!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
+                return Mono.just("Comando já foi cancelado");
             dispositivo.setCor(corUtil.repararCor(buscarPorId(dispositivo.getId())));
         } else {
             dispositivo.setCor(corUtil.parametricarCorDispositivo(dispositivo.getCor(), dispositivo));
         }
 
+        if(responder && isLora)
+            responder = false;
+
         if (dispositivo.isAtivo() && dispositivo.getCor() != null) {
-            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoCor(dispositivo, true, TipoConfiguracao.LED));
+            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoCor(dispositivo, responder, TipoConfiguracao.LED), dispositivo.getConexao());
         }
 
         logger.warn("Comando rápido criado: " + dispositivo.getId());
+
+        if(isLora){
+            streams.remove(dispositivo.getId());
+             return Mono.just("Opção de resposta não disponivel para LoraWan");
+        }
         return mono;
     }
 
-    public String enviarComandoTodosVibracao(UUID cor) {
-        enviarComandoTodos(false, "Sistema", cor, TipoConfiguracao.VIBRACAO, true);
+    public String enviarComandoTodosVibracao(UUID clienteId, UUID cor) {
+        enviarComandoTodos(clienteId, false, "Sistema", cor, TipoConfiguracao.VIBRACAO, true);
         logger.warn("Sincronizando cor de vibração " + cor.toString());
         return "Sincrolização enviada";
     }
 
-    public String enviarComandoTodos(boolean responder, String user, UUID cor, TipoConfiguracao tipoConfiguracao, boolean interno) {
+    public String enviarComandoTodos(UUID clienteId, boolean responder, String user, UUID cor, TipoConfiguracao tipoConfiguracao, boolean interno) {
 
         try {
-            List<Dispositivo> dispositivos = listaTodosDispositivos(tipoConfiguracao, cor);
+            List<Dispositivo> dispositivos = listaTodosDispositivos(clienteId, tipoConfiguracao, cor);
             logger.warn("Comando enviado para todos: " + dispositivos.size());
 
             if (!dispositivos.isEmpty()) {
@@ -186,10 +237,11 @@ public class ComandoService {
                 dispositivos.forEach(device -> {
                     if (device.isAtivo()) {
                         device.setCor(corUtil.repararCor(device));
-                        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getId(), ComandoFormater.gerarCodigo(device, responder, tipoConfiguracao));
+                        if (device.getCliente() != null)
+                            clientes.put(device.getCliente().getId().toString(), device.getCliente().getId());
+                        mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + device.getId(), ComandoFormater.gerarCodigo(device, responder, tipoConfiguracao), device.getConexao());
                     }
                 });
-                mqttService.sendRetainedMessage(Topico.DASHBOARD, "Atualizando dashboard todos");
             } else {
                 logRepository.save(Log.builder()
                         .key(UUID.randomUUID())
@@ -209,20 +261,7 @@ public class ComandoService {
             return "Sincronização não foi concluida";
         }
     }
-
-    public static byte[] hexStringToByteArray(String hex) {
-        int length = hex.length();
-        byte[] data = new byte[length / 2]; // Cada 2 caracteres = 1 byte
-
-        for (int i = 0; i < length; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                    + Character.digit(hex.charAt(i + 1), 16));
-        }
-        return data;
-    }
-
-
-    private Dispositivo buscarPorId(long id) {
+     private Dispositivo buscarPorId(long id) {
 
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
         if (dispositivoOptional.isPresent()) {
@@ -233,9 +272,9 @@ public class ComandoService {
         return null;
     }
 
-    private List<Dispositivo> listaTodosDispositivos(TipoConfiguracao tipoConfiguracao, UUID cor) {
+    private List<Dispositivo> listaTodosDispositivos(UUID clienteId, TipoConfiguracao tipoConfiguracao, UUID cor) {
         if (tipoConfiguracao.equals(TipoConfiguracao.LED))
-            return dispositivoRepository.findAllByAtivo(true);
+            return dispositivoRepository.findAllByAtivo(clienteId, true);
         else if (tipoConfiguracao.equals(TipoConfiguracao.VIBRACAO) && cor != null)
             return dispositivoRepository.findAllByCorVibracao(cor.toString());
         return Collections.emptyList();

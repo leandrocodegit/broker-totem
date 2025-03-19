@@ -4,6 +4,7 @@ import com.led.broker.model.Configuracao;
 import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Parametro;
+import com.led.broker.model.constantes.TipoConexao;
 import com.led.broker.model.constantes.TipoConfiguracao;
 import com.led.broker.model.constantes.TipoCor;
 
@@ -18,13 +19,19 @@ public class ComandoFormater {
 
 
         codigo.append(toHexa(tipoConfiguracao.codigo));
+        if (tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN_RESET)) {
+            String tamanho = toHexa(codigo.toString().length());
+            return (tamanho + codigo.toString() + tamanho).toUpperCase();
+        }
+
+        codigo.append(toHexa(conexao.getHabilitarLoraWan() ? 1 : 0));
         codigo.append(toHexa(conexao.getModoLora()));
         codigo.append(toHexa(conexao.getClasse().codigo));
 
         codigo.append(toHexa(conexao.getTxPower()));
         codigo.append(toHexa(conexao.getDataRate()));
-        codigo.append(toHexa(conexao.getAdr()));
-        codigo.append(toHexa(conexao.getAutoJoin()  != null && conexao.getAutoJoin() ? 1 : 0));
+        codigo.append(toHexa(conexao.getAdr() ? 1 : 0));
+
 
         if (tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN)) {
 
@@ -33,8 +40,9 @@ public class ComandoFormater {
                 codigo.append(conexao.getAppSKey().replaceAll(":", ""));
                 codigo.append(conexao.getDevAddr().replaceAll(":", ""));
             } else {
-                 codigo.append(conexao.getAppEui().replaceAll(":", ""));
-                 codigo.append(conexao.getAppKey().replaceAll(":", ""));
+                codigo.append(toHexa(conexao.getAutoJoin() != null && conexao.getAutoJoin() ? 1 : 0));
+                codigo.append(conexao.getAppEui().replaceAll(":", ""));
+                codigo.append(conexao.getAppKey().replaceAll(":", ""));
             }
         }
 
@@ -63,6 +71,7 @@ public class ComandoFormater {
     public static String gerarCodigoWIFI(Dispositivo dispositivo) {
         StringBuilder codigo = new StringBuilder();
         codigo.append(toHexa(TipoConfiguracao.WIFI.codigo));
+        codigo.append(toHexa(dispositivo.getConexao().getHabilitarWifi() ? 1 : 0));
 
         for (char c : dispositivo.getConexao().getSsid().toCharArray()) {
             codigo.append(toHexa((int) c));
@@ -90,28 +99,26 @@ public class ComandoFormater {
 
     public static String gerarCodigoCor(Dispositivo dispositivo, boolean responder, TipoConfiguracao tipoConfiguracao) {
 
-        var cor = dispositivo.getCor();
-
-
-        if (tipoConfiguracao.equals(TipoConfiguracao.VIBRACAO)) {
-            cor = CorUtil.parametricarCorDispositivo(dispositivo.getOperacao().getCorVibracao(), dispositivo);
+        Cor cor = null;
+        if (tipoConfiguracao.equals(TipoConfiguracao.VIBRACAO) && dispositivo.getOperacao().getCorVibracao() != null) {
+            cor = CorUtil.parametricarCorDispositivoOperacao(dispositivo.getOperacao().getCorVibracao(), dispositivo);
+        }else{
+          cor = dispositivo.getCor();
         }
 
         StringBuilder codigo = new StringBuilder();
 
-
         codigo.append(toHexa(tipoConfiguracao.codigo));
-        codigo.append(toHexa(dispositivo.getCor().getParametros().size()));
-        codigo.append(responder ? toHexa(1) : toHexa(0));
+        codigo.append(toHexa(cor.getParametros().size()));
+        codigo.append(responder && !dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA) ? toHexa(1) : toHexa(0));
         codigo.append(toHexa(cor.getVelocidade()));
-        codigo.append(toHexa(dispositivo.getTempoAtividade() == null ? 1 : dispositivo.getTempoAtividade()));
+        codigo.append(toHexa(dispositivo.getConexao().getTempoAtividade() == null ? 3 : dispositivo.getConexao().getTempoAtividade()));
         if (dispositivo.getSensibilidadeVibracao() == null || dispositivo.getSensibilidadeVibracao() == 0 || dispositivo.getOperacao().getCorVibracao() == null) {
             codigo.append("00000000");
         } else {
             int bits = Float.floatToIntBits(dispositivo.getSensibilidadeVibracao());
             codigo.append(String.format("%08X", bits));
         }
-
 
         cor.getParametros().forEach(parametro -> {
             codigo.append(gerarTextoConfiguracaoLeds(parametro));
