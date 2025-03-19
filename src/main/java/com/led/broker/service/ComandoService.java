@@ -188,8 +188,6 @@ public class ComandoService {
 
         if (cancelar) {
             logger.warn("Cancelar comando rápido: " + dispositivo.getId());
-            if (!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
-                return Mono.just("Comando já foi cancelado");
             dispositivo.setCor(corUtil.repararCor(buscarPorId(dispositivo.getId())));
         } else {
             dispositivo.setCor(corUtil.parametricarCorDispositivo(dispositivo.getCor(), dispositivo));

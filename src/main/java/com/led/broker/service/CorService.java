@@ -48,8 +48,10 @@ public class CorService {
                 if (cancelar) {
                     logger.warn("Cancelando comando");
                     Dispositivo dispositivo = dispositivoOptional.get();
-                    if(!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
+                    if(!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)){
+                        logger.warn("Comando já foi cancelado");
                         return Mono.just("Comando já foi cancelado");
+                    }
                     setOperacao(dispositivo);
                     operacaoRepository.save(dispositivo.getOperacao());
                     logRepository.save(Log.builder()
@@ -73,7 +75,8 @@ public class CorService {
                         Dispositivo dispositivo = dispositivoOptional.get();
 
                         var modoOcorrencia = dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.OCORRENCIA) || dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.BOTAO);
-                        if (modoOcorrencia)
+                       // if (modoOcorrencia)
+
                             dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
                         dispositivo.getOperacao().setTime(LocalDateTime.now().plusMinutes(corOptional.get().getTime()));
                         dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
