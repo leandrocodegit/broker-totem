@@ -70,9 +70,10 @@ public class ComandoService {
         }
     }
 
-    public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao){
-       return enviardComandoSincronizar(id, responder, tipoConfiguracao, false);
+    public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao) {
+        return enviardComandoSincronizar(id, responder, tipoConfiguracao, false);
     }
+
     public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao, boolean forcarVibracao) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
 
@@ -88,36 +89,36 @@ public class ComandoService {
         Dispositivo dispositivo = dispositivoOptional.get();
         var topico = Topico.DEVICE_RECEIVE + dispositivo.getId();
         var isLora = dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA);
-        if(dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA))
-             topico = Topico.KORE;
+        if (dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA))
+            topico = Topico.KORE;
 
         Mono<String> mono = createMono(id);
 
         if (tipoConfiguracao.equals(TipoConfiguracao.LIMPAR_FLASH)) {
             mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigoErase(dispositivo), dispositivo.getConexao());
-            if(isLora){
+            if (isLora) {
                 streams.remove(dispositivo.getId());
                 return mono.just("");
             }
             return mono;
         }
         if (tipoConfiguracao.equals(TipoConfiguracao.WIFI)) {
-            if(dispositivo.getConexao().getSsid() == null || dispositivo.getConexao().getSsid().isEmpty())
+            if (dispositivo.getConexao().getSsid() == null || dispositivo.getConexao().getSsid().isEmpty())
                 return Mono.just("Erro, SSID é obrigatório");
             mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigoWIFI(dispositivo), dispositivo.getConexao());
-            if(isLora){
+            if (isLora) {
                 streams.remove(dispositivo.getId());
                 return mono.just("");
             }
             return mono;
         }
         if (Stream.of(TipoConfiguracao.LORA_WAN, TipoConfiguracao.LORA_WAN_PARAM, TipoConfiguracao.LORA_WAN_JOIN, TipoConfiguracao.LORA_WAN_SEND, TipoConfiguracao.LORA_WAN_RESET).anyMatch(tipo -> tipo.equals(tipoConfiguracao))) {
-            if(dispositivo.getConexao().getHabilitarLoraWan() == null || dispositivo.getConexao().getHabilitarLoraWan() == Boolean.FALSE)
+            if (dispositivo.getConexao().getHabilitarLoraWan() == null || dispositivo.getConexao().getHabilitarLoraWan() == Boolean.FALSE)
                 return Mono.just("Erro, LoraWan não está habilitado");
             if (tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN) && dispositivo.getConexao().getClasse() == null)
                 return Mono.just("Erro, Classe LoraWan é obrigatória");
             mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigoLora(dispositivo, true, tipoConfiguracao), dispositivo.getConexao());
-            if(isLora){
+            if (isLora) {
                 streams.remove(dispositivo.getId());
                 return mono.just("");
             }
@@ -127,7 +128,8 @@ public class ComandoService {
         if (dispositivo.isAtivo()) {
             if (tipoConfiguracao.equals(TipoConfiguracao.LED) || tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART)) {
                 dispositivo.setCor(corUtil.repararCor(dispositivo));
-            }if(forcarVibracao && !isLora && tipoConfiguracao.equals(TipoConfiguracao.LED)){
+            }
+            if (forcarVibracao && !isLora && tipoConfiguracao.equals(TipoConfiguracao.LED)) {
                 mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigo(dispositivo, responder, TipoConfiguracao.VIBRACAO), dispositivo.getConexao());
             }
             if (dispositivo.getCor() != null || (!tipoConfiguracao.equals(TipoConfiguracao.LED) && !tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART))) {
@@ -141,7 +143,7 @@ public class ComandoService {
             }
 
         }
-        if(isLora){
+        if (isLora) {
             streams.remove(dispositivo.getId());
             return mono.just("");
         }
@@ -160,9 +162,9 @@ public class ComandoService {
         Dispositivo dispositivo = dispositivoOptional.get();
 
         var isLora = dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA);
-        if(isLora){
+        if (isLora) {
             streams.remove(dispositivo.getId());
-          return Mono.just("Opção não disponivel para conexão LoraWan");
+            return Mono.just("Opção não disponivel para conexão LoraWan");
         }
         Mono<String> mono = createMono(id);
 
@@ -173,9 +175,9 @@ public class ComandoService {
     public Mono<String> enviardComandoRapido(Dispositivo dispositivo, boolean responder, boolean cancelar, boolean interno) {
 
         var isLora = dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA);
-        if(isLora){
+        if (isLora) {
             streams.remove(dispositivo.getId());
-          //  return Mono.just("Opção não disponivel para conexão LoraWan");
+            //  return Mono.just("Opção não disponivel para conexão LoraWan");
         }
 
         Mono<String> mono = Mono.empty();
@@ -186,14 +188,14 @@ public class ComandoService {
 
         if (cancelar) {
             logger.warn("Cancelar comando rápido: " + dispositivo.getId());
-            if(!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
+            if (!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
                 return Mono.just("Comando já foi cancelado");
             dispositivo.setCor(corUtil.repararCor(buscarPorId(dispositivo.getId())));
         } else {
             dispositivo.setCor(corUtil.parametricarCorDispositivo(dispositivo.getCor(), dispositivo));
         }
 
-        if(responder && isLora)
+        if (responder && isLora)
             responder = false;
 
         if (dispositivo.isAtivo() && dispositivo.getCor() != null) {
@@ -202,9 +204,9 @@ public class ComandoService {
 
         logger.warn("Comando rápido criado: " + dispositivo.getId());
 
-        if(isLora){
+        if (isLora) {
             streams.remove(dispositivo.getId());
-             return Mono.just("Opção de resposta não disponivel para LoraWan");
+            return Mono.just("Opção de resposta não disponivel para LoraWan");
         }
         return mono;
     }
@@ -224,6 +226,7 @@ public class ComandoService {
             if (!dispositivos.isEmpty()) {
                 if (!interno)
                     logRepository.save(Log.builder()
+                            .cliente(Cliente.builder().id(clienteId).principal(false).build())
                             .key(UUID.randomUUID())
                             .data(LocalDateTime.now())
                             .usuario(user)
@@ -245,6 +248,7 @@ public class ComandoService {
             } else {
                 logRepository.save(Log.builder()
                         .key(UUID.randomUUID())
+                        .cliente(Cliente.builder().id(clienteId).principal(false).build())
                         .data(LocalDateTime.now())
                         .usuario("request.getUsuario()")
                         .cor(null)
@@ -261,7 +265,8 @@ public class ComandoService {
             return "Sincronização não foi concluida";
         }
     }
-     private Dispositivo buscarPorId(long id) {
+
+    private Dispositivo buscarPorId(long id) {
 
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
         if (dispositivoOptional.isPresent()) {

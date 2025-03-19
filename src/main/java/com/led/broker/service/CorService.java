@@ -1,17 +1,11 @@
 package com.led.broker.service;
 
-import com.led.broker.model.Agenda;
-import com.led.broker.model.Cor;
-import com.led.broker.model.Dispositivo;
-import com.led.broker.model.Log;
+import com.led.broker.model.*;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.model.constantes.TipoConexao;
 import com.led.broker.model.constantes.Topico;
-import com.led.broker.repository.CorRepository;
-import com.led.broker.repository.DispositivoRepository;
-import com.led.broker.repository.LogRepository;
-import com.led.broker.repository.OperacaoRepository;
+import com.led.broker.repository.*;
 import com.led.broker.util.CorUtil;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +32,7 @@ public class CorService {
     private final OperacaoRepository operacaoRepository;
     private final MqttService mqttService;
     private final CorUtil corUtil;
+    private final UserRepository userRepository;
 
     public Cor buscaCor(UUID id) {
         return corRepository.findById(id).orElseThrow(() -> new RuntimeException("Cor inválida ou removida"));
@@ -59,6 +54,7 @@ public class CorService {
                     operacaoRepository.save(dispositivo.getOperacao());
                     logRepository.save(Log.builder()
                             .key(UUID.randomUUID())
+                                    .cliente(dispositivo.getCliente())
                             .data(LocalDateTime.now())
                             .usuario(user)
                             .mensagem(String.format(Comando.TIMER_CANCELADO.value, dispositivo.getId()))
@@ -87,6 +83,7 @@ public class CorService {
                         TimeUtil.timers.put(dispositivo.getId(), dispositivo);
                         logRepository.save(Log.builder()
                                 .key(UUID.randomUUID())
+                                .cliente(dispositivo.getCliente())
                                 .data(LocalDateTime.now())
                                 .usuario(user)
                                 .mensagem(String.format(Comando.TIMER_CRIADO.value, dispositivo.getId()))
@@ -117,6 +114,7 @@ public class CorService {
     public void salvarCorTemporizadaReponse(UUID idCor, long id, boolean cancelar, boolean retentar, String user) {
 
         try {
+
             Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
             if (dispositivoOptional.isPresent() && dispositivoOptional.get().isPermiteComando()) {
                 if (cancelar) {
@@ -129,6 +127,7 @@ public class CorService {
                         mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivo.getCliente().getId().toString(), "Atualizar mapa");
                     logRepository.save(Log.builder()
                             .key(UUID.randomUUID())
+                            .cliente(dispositivo.getCliente())
                             .data(LocalDateTime.now())
                             .usuario(user)
                             .mensagem(String.format(Comando.TIMER_CANCELADO.value, dispositivo.getId()))
@@ -156,6 +155,7 @@ public class CorService {
                             mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivo.getCliente().getId().toString(), "Atualizar mapa");
                         logRepository.save(Log.builder()
                                 .key(UUID.randomUUID())
+                                .cliente(dispositivo.getCliente())
                                 .data(LocalDateTime.now())
                                 .usuario(user)
                                 .mensagem(String.format(Comando.TIMER_CRIADO.value, dispositivo.getId()))
