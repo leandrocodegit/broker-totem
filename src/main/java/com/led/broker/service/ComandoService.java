@@ -145,7 +145,7 @@ public class ComandoService {
         }
         if (isLora) {
             streams.remove(dispositivo.getId());
-            return mono.just("");
+            return mono.just("Comando enviado via LoraWan");
         }
         return mono;
     }

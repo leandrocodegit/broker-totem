@@ -53,7 +53,7 @@ public class ComandoController {
             );
         }else{
            var user = authService.validarToken(token);
-            Flux<Long> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(user.getClienteId(), true));
+            Flux<Long> devicesFlux = Flux.fromIterable(dispositivoService.listaTodosDispositivos(user.getClienteId(), false));
             logRepository.save(Log.builder()
                             .key(UUID.randomUUID())
                     .data(LocalDateTime.now())
