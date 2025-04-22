@@ -64,7 +64,8 @@ public class CorUtil {
     public static Cor parametricarCorDispositivo(Cor cor, Dispositivo dispositivo) {
         var corDispositivo = dispositivo.getCor();
         cor.setNome(corDispositivo.getNome());
-        cor.setVelocidade(corDispositivo.getVelocidade());
+        if(!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
+            cor.setVelocidade(corDispositivo.getVelocidade());
 
         if(cor == null || cor.getParametros().isEmpty())
             return dispositivo.getCor();
