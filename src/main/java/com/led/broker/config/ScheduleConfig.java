@@ -49,14 +49,8 @@ public class ScheduleConfig {
         List<String> devicesRemove = new ArrayList<>();
         TimeUtil.timers.values().forEach(device -> {
             if(!TimeUtil.isTime(device)) {
-                corService.cancelarComando(device, "Sistema");
+                corService.cancelarComando(TimeUtil.timers.remove(device.getId()), "Sistema");
             }
         });
-        if(!devicesRemove.isEmpty()){
-            devicesRemove.forEach(dev -> {
-                TimeUtil.timers.remove(dev);
-            });
-            devicesRemove.clear();
-        }
     }
 }
