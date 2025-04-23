@@ -41,8 +41,7 @@ public class CorService {
 
     public void cancelarComando(Dispositivo dispositivo, String user) {
         logger.warn("Cancelando comando");
-        if (!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
-
+        if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
             setOperacao(dispositivo);
             operacaoRepository.save(dispositivo.getOperacao());
             logRepository.save(Log.builder()

@@ -46,11 +46,18 @@ public class ScheduleConfig {
     @Scheduled(fixedRate = 20 * 1000)
     public void checkTimers() {
         logger.info("Checando timers: " + TimeUtil.timers.size());
-        List<String> devicesRemove = new ArrayList<>();
+        List<Long> devicesRemove = new ArrayList<>();
         TimeUtil.timers.values().forEach(device -> {
             if(TimeUtil.isTime(device)) {
-                corService.cancelarComando(TimeUtil.timers.remove(device.getId()), "Sistema");
+                corService.cancelarComando(device, "Sistema");
+                devicesRemove.add(device.getId());
             }
         });
+        if(!devicesRemove.isEmpty()){
+            devicesRemove.forEach(dev -> {
+                TimeUtil.timers.remove(dev);
+            });
+            devicesRemove.clear();
+        }
     }
 }
