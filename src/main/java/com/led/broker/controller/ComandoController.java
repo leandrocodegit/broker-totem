@@ -1,5 +1,7 @@
 package com.led.broker.controller;
 
+import com.led.broker.controller.request.DispositivoRequest;
+import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.TipoConfiguracao;
@@ -81,6 +83,13 @@ public class ComandoController {
                 comandoService.enviardComandoSincronizar(id, true, tipoConfiguracao, true)
                         .timeout(Duration.ofSeconds(timeExpiratio))
                         .onErrorResume(e -> Mono.just("Dispositivo " + id + " não respondeu")));
+    }
+
+    @PostMapping(value = "/sincronismo/{id}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<String> sincronizarOff(@RequestBody DispositivoRequest request, @RequestParam("token") String token) {
+        var user = authService.validarToken(token);
+        comandoService.enviardComandoSincronizar(request);
+       return ResponseEntity.ok("Sincronizado");
     }
 
     @GetMapping("/flux/temporizar/{idCor}/{id}")

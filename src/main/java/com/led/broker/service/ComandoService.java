@@ -2,6 +2,7 @@ package com.led.broker.service;
 
 
 import com.google.gson.Gson;
+import com.led.broker.controller.request.DispositivoRequest;
 import com.led.broker.model.*;
 import com.led.broker.model.constantes.*;
 import com.led.broker.repository.CorRepository;
@@ -74,7 +75,11 @@ public class ComandoService {
         return enviardComandoSincronizar(id, responder, tipoConfiguracao, false);
     }
 
-    public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao, boolean forcarVibracao) {
+    public void enviardComandoSincronizar(DispositivoRequest request) {
+        var topico = Topico.DEVICE_RECEIVE + request.getId();
+        mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigoCor(request));
+    }
+        public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao, boolean forcarVibracao) {
         Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
 
         if (!dispositivoOptional.isPresent()) {

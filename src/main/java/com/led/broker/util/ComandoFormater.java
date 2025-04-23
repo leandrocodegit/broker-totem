@@ -1,5 +1,6 @@
 package com.led.broker.util;
 
+import com.led.broker.controller.request.DispositivoRequest;
 import com.led.broker.model.Configuracao;
 import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
@@ -97,6 +98,30 @@ public class ComandoFormater {
         return "";
     }
 
+    public static String gerarCodigoCor(DispositivoRequest dispositivo) {
+
+        Cor cor = dispositivo.getCor();
+        StringBuilder codigo = new StringBuilder();
+
+        codigo.append(toHexa(TipoConfiguracao.LED.codigo));
+        codigo.append(toHexa(cor.getParametros().size()));
+        codigo.append(toHexa(0));
+        codigo.append(toHexa(cor.getVelocidade()));
+        codigo.append(toHexa(5));
+        codigo.append("00000000");
+
+        cor.getParametros().forEach(parametro -> {
+            codigo.append(gerarTextoConfiguracaoLeds(parametro));
+            formatarPadraoCor(parametro, dispositivo.getCor());
+            codigo.append(gerarTextoParametros(parametro));
+        });
+
+        System.err.println(codigo.toString().toUpperCase());
+        String tamanho = toHexa(codigo.toString().length());
+
+        return (tamanho + codigo.toString() + tamanho).toUpperCase();
+    }
+
     public static String gerarCodigoCor(Dispositivo dispositivo, boolean responder, TipoConfiguracao tipoConfiguracao) {
 
         Cor cor = null;
@@ -174,7 +199,10 @@ public class ComandoFormater {
     }
 
     private static void formatarPadraoCor(Parametro parametro, Dispositivo dispositivo) {
-        var parametroDispositivo = dispositivo.getCor().getParametros().stream().filter(param -> param.getPino() == parametro.getPino()).findFirst();
+        formatarPadraoCor(parametro, dispositivo.getCor());
+    }
+    private static void formatarPadraoCor(Parametro parametro, Cor cor) {
+        var parametroDispositivo = cor.getParametros().stream().filter(param -> param.getPino() == parametro.getPino()).findFirst();
         var R1 = parametro.getCor()[0];
         var G1 = parametro.getCor()[1];
         var B1 = parametro.getCor()[2];
