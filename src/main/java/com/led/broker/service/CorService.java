@@ -173,7 +173,7 @@ public class CorService {
                         var modoOcorrencia = dispositivo.getOperacao().equals(ModoOperacao.OCORRENCIA) || dispositivo.getOperacao().equals(ModoOperacao.BOTAO);
                         if (!modoOcorrencia)
                             dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
-                        dispositivo.getOperacao().setTime(LocalDateTime.now().plusMinutes(-1));
+                        dispositivo.getOperacao().setTime(LocalDateTime.now());
                         dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
                         dispositivoRepository.save(dispositivo);
                         dispositivo.setCor(corOptional.get());

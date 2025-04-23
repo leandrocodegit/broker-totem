@@ -20,4 +20,12 @@ public class TimeUtil {
         long differenceInMinutes = Duration.between(dispositivo.getOperacao().getTime(), LocalDateTime.now()).toMinutes();
         return differenceInMinutes <= 0;
     }
+
+    public static boolean isTimeTemporizador(Dispositivo dispositivo) {
+        if (dispositivo == null || dispositivo.getOperacao() == null || !dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
+            return false;
+        }
+        long differenceInMinutes = Duration.between(dispositivo.getOperacao().getTime(), LocalDateTime.now()).toMinutes();
+        return differenceInMinutes <= 0;
+    }
 }
