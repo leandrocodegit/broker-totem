@@ -28,6 +28,5 @@ public class Operacao {
     @DBRef
     private Cor corVibracao;
     private LocalDateTime time;
-    @Transient
     private LocalDateTime timeout;
 }
