@@ -109,7 +109,9 @@ public class CorService {
                         operacaoRepository.save(dispositivo.getOperacao());
                         dispositivoRepository.save(dispositivo);
                         dispositivo.setCor(corUtil.parametricarCorDispositivo(corOptional.get(), dispositivo));
-                        TimeUtil.timers.put(dispositivo.getId(), dispositivo);
+                        TimeUtil.timers.put(dispositivo.getId(), TemporizadorControle.builder()
+                                .timeout(LocalDateTime.now().plusMinutes(corOptional.get().getTime()))
+                                .dispositivo(dispositivo).build());
                         logRepository.save(Log.builder()
                                 .key(UUID.randomUUID())
                                 .cliente(dispositivo.getCliente())
@@ -174,11 +176,12 @@ public class CorService {
                         if (!modoOcorrencia)
                             dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
                         dispositivo.getOperacao().setTime(LocalDateTime.now());
-                        dispositivo.getOperacao().setTimeout(LocalDateTime.now().plusMinutes(corOptional.get().getTime()));
                         dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
                         dispositivoRepository.save(dispositivo);
                         dispositivo.setCor(corOptional.get());
-                        TimeUtil.timers.put(dispositivo.getId(), dispositivo);
+                        TimeUtil.timers.put(dispositivo.getId(), TemporizadorControle.builder()
+                                        .timeout(LocalDateTime.now().plusMinutes(corOptional.get().getTime()))
+                                .dispositivo(dispositivo).build());
                         if (!modoOcorrencia)
                             comandoService.enviardComandoRapido(dispositivo, false, false, true);
                         if (dispositivo.getCliente() != null)
