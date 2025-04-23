@@ -174,6 +174,7 @@ public class CorService {
                         if (!modoOcorrencia)
                             dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
                         dispositivo.getOperacao().setTime(LocalDateTime.now());
+                        dispositivo.getOperacao().setTimeout(LocalDateTime.now().plusMinutes(corOptional.get().getTime()));
                         dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
                         dispositivoRepository.save(dispositivo);
                         dispositivo.setCor(corOptional.get());

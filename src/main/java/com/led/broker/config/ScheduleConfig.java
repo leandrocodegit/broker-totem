@@ -48,7 +48,7 @@ public class ScheduleConfig {
         logger.info("Checando timers: " + TimeUtil.timers.size());
         List<Long> devicesRemove = new ArrayList<>();
         TimeUtil.timers.values().forEach(device -> {
-            if(!TimeUtil.isTime(device)) {
+            if(TimeUtil.isTimeTemporizador(device)) {
                 corService.cancelarComando(device, "Sistema");
                 devicesRemove.add(device.getId());
             }
