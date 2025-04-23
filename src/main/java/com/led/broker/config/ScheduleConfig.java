@@ -43,7 +43,7 @@ public class ScheduleConfig {
         }
     }
 
-    @Scheduled(fixedRate = 1 * 60 * 1000)
+    @Scheduled(fixedRate = 30 * 1000)
     public void checkTimers() {
         logger.info("Checando timers: " + TimeUtil.timers.size());
         List<String> devicesRemove = new ArrayList<>();
