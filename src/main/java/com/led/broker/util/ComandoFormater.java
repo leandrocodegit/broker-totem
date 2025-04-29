@@ -11,6 +11,15 @@ import com.led.broker.model.constantes.TipoCor;
 
 public class ComandoFormater {
 
+
+    public static String gerarCodigoFirmware(String host) {
+        StringBuilder codigo = new StringBuilder();
+        codigo.append(toHexa(TipoConfiguracao.UPDATE.codigo));
+        codigo.append(host);
+        String tamanho = toHexa(codigo.toString().length());
+        return (tamanho + codigo.toString() + tamanho);
+    }
+
     // EFEITO(2) + PINO(1) + LEDS(4) + FAIXA(4) + INTENSIDADE(2) + VELOCIDADE(2)
 
     public static String gerarCodigoLora(Dispositivo dispositivo, boolean responder, TipoConfiguracao tipoConfiguracao) {

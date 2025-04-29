@@ -173,7 +173,7 @@ public class ComandoService {
         }
         Mono<String> mono = createMono(id);
 
-        //   mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getMac(), "ConfiguracaoUtil.gerarComandoFirmware(host)");
+           mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), host);
         return mono;
     }
 
