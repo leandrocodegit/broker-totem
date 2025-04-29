@@ -173,7 +173,7 @@ public class ComandoService {
         }
         Mono<String> mono = createMono(id);
 
-           mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), host);
+           mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoFirmware(host));
         return mono;
     }
 
