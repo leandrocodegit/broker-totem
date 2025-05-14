@@ -5,6 +5,7 @@ import com.led.broker.model.Configuracao;
 import com.led.broker.model.Cor;
 import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Parametro;
+import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.model.constantes.TipoConexao;
 import com.led.broker.model.constantes.TipoConfiguracao;
 import com.led.broker.model.constantes.TipoCor;
@@ -139,6 +140,11 @@ public class ComandoFormater {
         }else{
           cor = dispositivo.getCor();
         }
+
+        if(dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
+            cor.setVelocidade(dispositivo.getOperacao().getCorTemporizador().getVelocidade());
+        if(dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA))
+            cor.setVelocidade(dispositivo.getOperacao().getAgenda().getCor().getVelocidade());
 
         StringBuilder codigo = new StringBuilder();
 
