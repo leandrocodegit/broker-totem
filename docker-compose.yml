@@ -8,6 +8,7 @@ services:
     image: comando:1.0.0
     ports:
       - "8080:8082"
+      - "5011:5005"
     environment:
       - JAVA_OPTS=-Dspring.profiles.active=prod
     container_name: comando

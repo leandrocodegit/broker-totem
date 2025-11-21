@@ -19,8 +19,10 @@ WORKDIR /app
 # Copia o JAR do estágio de build para o estágio de runtime
 COPY --from=builder /app/target/comando-1.0.0.jar /app/comando-1.0.0.jar
 
+ENV JAVA_TOOL_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+
 # Porta em que a aplicação irá rodar
-EXPOSE 8080
+EXPOSE 8080 5011
 
 # Comando para executar a aplicação
 CMD ["java", "-jar", "/app/comando-1.0.0.jar"]
