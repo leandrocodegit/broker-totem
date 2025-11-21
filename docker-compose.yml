@@ -10,7 +10,8 @@ services:
       - "8080:8082"
       - "5011:5005"
     environment:
-      - JAVA_OPTS=-Dspring.profiles.active=prod
+      - TZ=America/Sao_Paulo
+      - JAVA_OPTS=-Dspring.profiles.active=prod -Duser.timezone=America/Sao_Paulo
     container_name: comando
     networks:
       - backend-toten_totem-network

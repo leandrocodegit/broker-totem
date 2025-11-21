@@ -20,6 +20,8 @@ WORKDIR /app
 COPY --from=builder /app/target/comando-1.0.0.jar /app/comando-1.0.0.jar
 
 ENV JAVA_TOOL_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+ENV TZ=America/Sao_Paulo
+ENV JAVA_OPTS="-Duser.timezone=America/Sao_Paulo"
 
 # Porta em que a aplicação irá rodar
 EXPOSE 8080 5011
