@@ -131,7 +131,6 @@ public class CorUtil {
         var bool = agenda.getInicio().equals(LocalDate.now()) || agenda.getInicio().isBefore(LocalDate.now());
         if (bool)
             bool = agenda.getTermino().equals(LocalDate.now()) || agenda.getTermino().isAfter(LocalDate.now());
-        ;
         if (bool) {
             return agenda.getDispositivos().contains(id);
         }
