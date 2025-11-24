@@ -25,7 +25,7 @@ public class CorUtil {
     }
 
 
-    public static Cor parametricarCorDispositivoOperacao(Cor cor, Dispositivo dispositivo){
+    public static Cor parametricarCorDispositivoOperacao(Cor cor, Dispositivo dispositivo) {
 
         var corDispositivo = dispositivo.getCor();
 
@@ -38,7 +38,7 @@ public class CorUtil {
 
             parametroCor.getConfiguracao().setTipoCor(parametroDispositivo.getConfiguracao().getTipoCor());
             parametroCor.setPino(parametroDispositivo.getPino());
-            if(parametroDispositivo.getConfiguracao().getFaixa() < parametroCor.getConfiguracao().getFaixa())
+            if (parametroDispositivo.getConfiguracao().getFaixa() < parametroCor.getConfiguracao().getFaixa())
                 parametroCor.getConfiguracao().setFaixa(parametroDispositivo.getConfiguracao().getFaixa());
             parametroCor.getConfiguracao().setLeds(parametroDispositivo.getConfiguracao().getLeds());
             if (cor.getParametros().size() - 1 <= i)
@@ -61,13 +61,14 @@ public class CorUtil {
         cor.setParametros(parametros);
         return cor;
     }
+
     public static Cor parametricarCorDispositivo(Cor cor, Dispositivo dispositivo) {
         var corDispositivo = dispositivo.getCor();
         cor.setNome(corDispositivo.getNome());
-        if(!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
+        if (!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
             cor.setVelocidade(corDispositivo.getVelocidade());
 
-        if(cor == null || cor.getParametros().isEmpty())
+        if (cor == null || cor.getParametros().isEmpty())
             return dispositivo.getCor();
 
         var portasNaoVinculadas = dispositivo.getCor().getParametros().stream().filter(porta -> !cor.getParametros().stream().map(Parametro::getPino).toList().contains(porta.getPino()));
@@ -127,7 +128,8 @@ public class CorUtil {
     public boolean verificaSeAgendaValida(Agenda agenda, long id) {
 
         if (!agenda.isAtivo() || agenda.getDispositivos() == null || agenda.getDispositivos().isEmpty())
-            return false;
+            if (!agenda.isTodos())
+                return false;
         var bool = agenda.getInicio().equals(LocalDate.now()) || agenda.getInicio().isBefore(LocalDate.now());
         if (bool)
             bool = agenda.getTermino().equals(LocalDate.now()) || agenda.getTermino().isAfter(LocalDate.now());
