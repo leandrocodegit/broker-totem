@@ -132,7 +132,7 @@ public class CorUtil {
         if (bool)
             bool = agenda.getTermino().equals(LocalDate.now()) || agenda.getTermino().isAfter(LocalDate.now());
         if (bool) {
-            return agenda.getDispositivos().contains(id);
+            return agenda.getDispositivos().contains(id) || agenda.isTodos();
         }
         return false;
     }
