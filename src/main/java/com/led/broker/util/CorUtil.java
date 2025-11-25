@@ -114,7 +114,10 @@ public class CorUtil {
             Agenda agenda = dispositivo.getOperacao().getAgenda();
             if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && (agenda.getDispositivos().contains(dispositivo.getId()) || agenda.isTodos())) {
                 if (verificaSeAgendaValida(agenda, dispositivo.getId())){
-                    dispositivo.getOperacao().setModoOperacao(ModoOperacao.AGENDA);
+                    if(!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA)) {
+                        dispositivo.getOperacao().setModoOperacao(ModoOperacao.AGENDA);
+                        operacaoRepository.save(dispositivo.getOperacao());
+                    }
                     return parametricarCorDispositivo(agenda.getCor(), dispositivo);
                 }
 
