@@ -113,8 +113,11 @@ public class CorUtil {
         if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA) || dispositivo.getOperacao().getAgenda() != null)) {
             Agenda agenda = dispositivo.getOperacao().getAgenda();
             if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && (agenda.getDispositivos().contains(dispositivo.getId()) || agenda.isTodos())) {
-                if (verificaSeAgendaValida(agenda, dispositivo.getId()))
+                if (verificaSeAgendaValida(agenda, dispositivo.getId())){
+                    dispositivo.getOperacao().setModoOperacao(ModoOperacao.AGENDA);
                     return parametricarCorDispositivo(agenda.getCor(), dispositivo);
+                }
+
             }
         }
 
