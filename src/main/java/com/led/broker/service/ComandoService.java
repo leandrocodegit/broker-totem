@@ -135,7 +135,7 @@ public class ComandoService {
                 dispositivo.setCor(corUtil.repararCor(dispositivo));
             }
             if (forcarVibracao && !isLora && tipoConfiguracao.equals(TipoConfiguracao.LED)) {
-                mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigo(dispositivo, responder, tipoConfiguracao), dispositivo.getConexao());
+                mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigo(dispositivo, responder, TipoConfiguracao.VIBRACAO), dispositivo.getConexao());
             }
             if (dispositivo.getCor() != null || (!tipoConfiguracao.equals(TipoConfiguracao.LED) && !tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART))) {
                 mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigo(dispositivo, responder, tipoConfiguracao), dispositivo.getConexao());
