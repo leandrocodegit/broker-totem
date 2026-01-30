@@ -49,12 +49,12 @@ public class IntegracaoController {
     @GetMapping("/temporizar/{idCor}/{id}")
     public String temporizar(@PathVariable UUID idCor, @PathVariable long id, @RequestParam("token") String token) {
      //   var user = authService.validarToken(token);
-        return corService.salvarCorTemporizada(idCor, id, true,false, user.getEmail()).just("Comando enviado").block();
+        return corService.salvarCorTemporizada(idCor, id, true,false, "user.getEmail()").just("Comando enviado").block();
     }
 
     @GetMapping("/temporizar/{id}")
     public String cancelarTemporizar(@PathVariable long id, @RequestParam("token") String token) {
       //  var user = authService.validarToken(token);
-        return corService.salvarCorTemporizada(null, id, true,true, user.getEmail()).just("Comando enviado").block();
+        return corService.salvarCorTemporizada(null, id, true,true, "user.getEmail()").just("Comando enviado").block();
     }
 }
