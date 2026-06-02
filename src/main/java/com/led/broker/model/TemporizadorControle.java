@@ -11,6 +11,6 @@ import java.time.LocalDateTime;
 @Builder
 public class TemporizadorControle {
 
-    private Dispositivo dispositivo;
+    private DispositivoEntity dispositivoEntity;
     private LocalDateTime timeout;
 }

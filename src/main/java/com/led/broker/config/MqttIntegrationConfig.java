@@ -53,7 +53,7 @@ public class MqttIntegrationConfig {
     @Bean
     public MessageProducer inbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(brokerUrl, clientId + "-subscribe", mqttClientFactory(), Topico.DEVICE_CONFIRMACAO + "#", Topico.KORE);
+                new MqttPahoMessageDrivenChannelAdapter(brokerUrl, clientId + "-subscribe", mqttClientFactory(), Topico.DEVICE_CONFIRMACAO + "#");
         adapter.setCompletionTimeout(5000);
         var converter = new DefaultPahoMessageConverter();
         adapter.setConverter(converter);

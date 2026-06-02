@@ -1,9 +1,9 @@
 package com.led.broker.util;
 
 import com.led.broker.controller.request.DispositivoRequest;
-import com.led.broker.model.Configuracao;
+import com.led.broker.integracao.model.Dispositivo;
 import com.led.broker.model.Cor;
-import com.led.broker.model.Dispositivo;
+import com.led.broker.model.DispositivoEntity;
 import com.led.broker.model.Parametro;
 import com.led.broker.model.constantes.ModoOperacao;
 import com.led.broker.model.constantes.TipoConexao;
@@ -23,9 +23,9 @@ public class ComandoFormater {
 
     // EFEITO(2) + PINO(1) + LEDS(4) + FAIXA(4) + INTENSIDADE(2) + VELOCIDADE(2)
 
-    public static String gerarCodigoLora(Dispositivo dispositivo, boolean responder, TipoConfiguracao tipoConfiguracao) {
+    public static String gerarCodigoLora(DispositivoEntity dispositivoEntity, boolean responder, TipoConfiguracao tipoConfiguracao) {
 
-        var conexao = dispositivo.getConexao();
+        var conexao = dispositivoEntity.getConexao();
         StringBuilder codigo = new StringBuilder();
 
 
@@ -71,7 +71,7 @@ public class ComandoFormater {
         return (tamanho + codigo.toString() + tamanho).toUpperCase();
     }
 
-    public static String gerarCodigoErase(Dispositivo dispositivo) {
+    public static String gerarCodigoErase(Dispositivo dispositivoEntity) {
         StringBuilder codigo = new StringBuilder();
         codigo.append(toHexa(TipoConfiguracao.ID.codigo));
         codigo.append(toHexa(TipoConfiguracao.LIMPAR_FLASH.codigo));
@@ -79,16 +79,16 @@ public class ComandoFormater {
         return (tamanho + codigo.toString() + tamanho).toUpperCase();
     }
 
-    public static String gerarCodigoWIFI(Dispositivo dispositivo) {
+    public static String gerarCodigoWIFI(Dispositivo dispositivoEntity) {
         StringBuilder codigo = new StringBuilder();
         codigo.append(toHexa(TipoConfiguracao.WIFI.codigo));
-        codigo.append(toHexa(dispositivo.getConexao().getHabilitarWifi() ? 1 : 0));
+        codigo.append(toHexa(dispositivoEntity.getConexao().getHabilitarWifi() ? 1 : 0));
 
-        for (char c : dispositivo.getConexao().getSsid().toCharArray()) {
+        for (char c : dispositivoEntity.getConexao().getSsid().toCharArray()) {
             codigo.append(toHexa((int) c));
         }
         codigo.append("20");
-        for (char c : dispositivo.getConexao().getSenha().toCharArray()) {
+        for (char c : dispositivoEntity.getConexao().getSenha().toCharArray()) {
             codigo.append(toHexa((int) c));
         }
         codigo.append("20");
@@ -96,14 +96,14 @@ public class ComandoFormater {
         return (tamanho + codigo.toString() + tamanho).toUpperCase();
     }
 
-    public static String gerarCodigo(Dispositivo dispositivo, boolean responder, TipoConfiguracao tipoConfiguracao) {
+    public static String gerarCodigo(Dispositivo dispositivoEntity, boolean responder, TipoConfiguracao tipoConfiguracao) {
 
         if (tipoConfiguracao.equals(TipoConfiguracao.LED) || tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART))
-            return gerarCodigoCor(dispositivo, responder, tipoConfiguracao);
+            return gerarCodigoCor(dispositivoEntity, responder, tipoConfiguracao);
         else if (tipoConfiguracao.equals(TipoConfiguracao.VIBRACAO))
-            return gerarCodigoCor(dispositivo, responder, tipoConfiguracao);
+            return gerarCodigoCor(dispositivoEntity, responder, tipoConfiguracao);
         else if (tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN) || tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN_PARAM))
-            return gerarCodigoLora(dispositivo, responder, tipoConfiguracao);
+            return gerarCodigoLora(dispositivoEntity, responder, tipoConfiguracao);
 
         return "";
     }
@@ -132,37 +132,37 @@ public class ComandoFormater {
         return (tamanho + codigo.toString() + tamanho).toUpperCase();
     }
 
-    public static String gerarCodigoCor(Dispositivo dispositivo, boolean responder, TipoConfiguracao tipoConfiguracao) {
+    public static String gerarCodigoCor(Dispositivo dispositivoEntity, boolean responder, TipoConfiguracao tipoConfiguracao) {
 
         Cor cor = null;
-        if (tipoConfiguracao.equals(TipoConfiguracao.VIBRACAO) && dispositivo.getOperacao().getCorVibracao() != null) {
-            cor = CorUtil.parametricarCorDispositivoOperacao(dispositivo.getOperacao().getCorVibracao(), dispositivo);
+        if (tipoConfiguracao.equals(TipoConfiguracao.VIBRACAO) && dispositivoEntity.getOperacao().getCorVibracao() != null) {
+            cor = CorUtil.parametricarCorDispositivoOperacao(dispositivoEntity.getOperacao().getCorVibracao(), dispositivoEntity);
         }else{
-          cor = dispositivo.getCor();
+          cor = dispositivoEntity.getCor();
         }
 
-        if(dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
-            cor.setVelocidade(dispositivo.getOperacao().getCorTemporizador().getVelocidade());
-        if(dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA))
-            cor.setVelocidade(dispositivo.getOperacao().getAgenda().getCor().getVelocidade());
+        if(dispositivoEntity.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
+            cor.setVelocidade(dispositivoEntity.getOperacao().getCorTemporizador().getVelocidade());
+        if(dispositivoEntity.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA))
+            cor.setVelocidade(dispositivoEntity.getOperacao().getAgenda().getCor().getVelocidade());
 
         StringBuilder codigo = new StringBuilder();
 
         codigo.append(toHexa(tipoConfiguracao.codigo));
         codigo.append(toHexa(cor.getParametros().size()));
-        codigo.append(responder && !dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA) ? toHexa(1) : toHexa(0));
+        codigo.append(responder && !dispositivoEntity.getConexao().getTipoConexao().equals(TipoConexao.LORA) ? toHexa(1) : toHexa(0));
         codigo.append(toHexa(cor.getVelocidade()));
-        codigo.append(toHexa(dispositivo.getConexao().getTempoAtividade() == null ? 3 : dispositivo.getConexao().getTempoAtividade()));
-        if (dispositivo.getSensibilidadeVibracao() == null || dispositivo.getSensibilidadeVibracao() == 0 || dispositivo.getOperacao().getCorVibracao() == null) {
+        codigo.append(toHexa(dispositivoEntity.getConexao().getTempoAtividade() == null ? 3 : dispositivoEntity.getConexao().getTempoAtividade()));
+        if (dispositivoEntity.getSensibilidadeVibracao() == null || dispositivoEntity.getSensibilidadeVibracao() == 0 || dispositivoEntity.getOperacao().getCorVibracao() == null) {
             codigo.append("00000000");
         } else {
-            int bits = Float.floatToIntBits(dispositivo.getSensibilidadeVibracao());
+            int bits = Float.floatToIntBits(dispositivoEntity.getSensibilidadeVibracao());
             codigo.append(String.format("%08X", bits));
         }
 
         cor.getParametros().forEach(parametro -> {
             codigo.append(gerarTextoConfiguracaoLeds(parametro));
-            formatarPadraoCor(parametro, dispositivo);
+            formatarPadraoCor(parametro, dispositivoEntity);
             codigo.append(gerarTextoParametros(parametro));
         });
 
@@ -213,8 +213,8 @@ public class ComandoFormater {
         return codigo.toString();
     }
 
-    private static void formatarPadraoCor(Parametro parametro, Dispositivo dispositivo) {
-        formatarPadraoCor(parametro, dispositivo.getCor());
+    private static void formatarPadraoCor(Parametro parametro, DispositivoEntity dispositivoEntity) {
+        formatarPadraoCor(parametro, dispositivoEntity.getCor());
     }
     private static void formatarPadraoCor(Parametro parametro, Cor cor) {
         var parametroDispositivo = cor.getParametros().stream().filter(param -> param.getPino() == parametro.getPino()).findFirst();

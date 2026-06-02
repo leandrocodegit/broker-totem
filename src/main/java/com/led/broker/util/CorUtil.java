@@ -1,8 +1,9 @@
 package com.led.broker.util;
 
+import com.led.broker.integracao.model.Dispositivo;
 import com.led.broker.model.Agenda;
 import com.led.broker.model.Cor;
-import com.led.broker.model.Dispositivo;
+import com.led.broker.model.DispositivoEntity;
 import com.led.broker.model.Parametro;
 import com.led.broker.model.constantes.Efeito;
 import com.led.broker.model.constantes.ModoOperacao;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
@@ -25,9 +25,9 @@ public class CorUtil {
     }
 
 
-    public static Cor parametricarCorDispositivoOperacao(Cor cor, Dispositivo dispositivo) {
+    public static Cor parametricarCorDispositivoOperacao(Cor cor, Dispositivo dispositivoEntity) {
 
-        var corDispositivo = dispositivo.getCor();
+        var corDispositivo = dispositivoEntity.getCor();
 
         corDispositivo.setParametros(corDispositivo.getParametros().stream().limit(4).sorted(Comparator.comparing(Parametro::getPino)).toList());
         cor.setParametros(cor.getParametros().stream().limit(corDispositivo.getParametros().size()).sorted(Comparator.comparing(Parametro::getPino)).toList());
@@ -45,7 +45,7 @@ public class CorUtil {
                 break;
         }
 
-        var portasNaoVinculadas = dispositivo.getCor().getParametros().stream().filter(porta -> !cor.getParametros().stream().map(Parametro::getPino).toList().contains(porta.getPino())).toList();
+        var portasNaoVinculadas = dispositivoEntity.getCor().getParametros().stream().filter(porta -> !cor.getParametros().stream().map(Parametro::getPino).toList().contains(porta.getPino())).toList();
 
         var parametros = new ArrayList<Parametro>();
         cor.getParametros().forEach(parametro -> {
@@ -62,16 +62,16 @@ public class CorUtil {
         return cor;
     }
 
-    public static Cor parametricarCorDispositivo(Cor cor, Dispositivo dispositivo) {
-        var corDispositivo = dispositivo.getCor();
+    public static Cor parametricarCorDispositivo(Cor cor, DispositivoEntity dispositivoEntity) {
+        var corDispositivo = dispositivoEntity.getCor();
         cor.setNome(corDispositivo.getNome());
-        if (!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
+        if (!dispositivoEntity.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR))
             cor.setVelocidade(corDispositivo.getVelocidade());
 
         if (cor == null || cor.getParametros().isEmpty())
-            return dispositivo.getCor();
+            return dispositivoEntity.getCor();
 
-        var portasNaoVinculadas = dispositivo.getCor().getParametros().stream().filter(porta -> !cor.getParametros().stream().map(Parametro::getPino).toList().contains(porta.getPino()));
+        var portasNaoVinculadas = dispositivoEntity.getCor().getParametros().stream().filter(porta -> !cor.getParametros().stream().map(Parametro::getPino).toList().contains(porta.getPino()));
 
         portasNaoVinculadas.forEach(porta -> {
             porta.setCor(Parametro.apagado());
@@ -101,34 +101,34 @@ public class CorUtil {
 
     }
 
-    public Cor repararCor(Dispositivo dispositivo) {
-        if (Stream.of(ModoOperacao.OCORRENCIA, ModoOperacao.TEMPORIZADOR).anyMatch(modo -> dispositivo.getOperacao().getModoOperacao().equals(modo))) {
-            if (TimeUtil.isTime(dispositivo)) {
-                if (dispositivo.getOperacao().getCorTemporizador() != null) {
-                    return parametricarCorDispositivo(dispositivo.getOperacao().getCorTemporizador(), dispositivo);
+    public Cor repararCor(Dispositivo dispositivoEntity) {
+        if (Stream.of(ModoOperacao.OCORRENCIA, ModoOperacao.TEMPORIZADOR).anyMatch(modo -> dispositivoEntity.getOperacao().getModoOperacao().equals(modo))) {
+            if (TimeUtil.isTime(dispositivoEntity)) {
+                if (dispositivoEntity.getOperacao().getCorTemporizador() != null) {
+                    return parametricarCorDispositivo(dispositivoEntity.getOperacao().getCorTemporizador(), dispositivoEntity);
                 }
             }
         }
 
-        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda()) && (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA) || dispositivo.getOperacao().getAgenda() != null)) {
-            Agenda agenda = dispositivo.getOperacao().getAgenda();
-            if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && (agenda.getDispositivos().contains(dispositivo.getId()) || agenda.isTodos())) {
-                if (verificaSeAgendaValida(agenda, dispositivo.getId())){
-                    if(!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA)) {
-                        dispositivo.getOperacao().setModoOperacao(ModoOperacao.AGENDA);
-                        operacaoRepository.save(dispositivo.getOperacao());
+        if (Boolean.FALSE.equals(dispositivoEntity.isIgnorarAgenda()) && (dispositivoEntity.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA) || dispositivoEntity.getOperacao().getAgenda() != null)) {
+            Agenda agenda = dispositivoEntity.getOperacao().getAgenda();
+            if (agenda != null && agenda.getCor() != null && agenda.isAtivo() && (agenda.getDispositivos().contains(dispositivoEntity.getId()) || agenda.isTodos())) {
+                if (verificaSeAgendaValida(agenda, dispositivoEntity.getId())){
+                    if(!dispositivoEntity.getOperacao().getModoOperacao().equals(ModoOperacao.AGENDA)) {
+                        dispositivoEntity.getOperacao().setModoOperacao(ModoOperacao.AGENDA);
+                        operacaoRepository.save(dispositivoEntity.getOperacao());
                     }
-                    return parametricarCorDispositivo(agenda.getCor(), dispositivo);
+                    return parametricarCorDispositivo(agenda.getCor(), dispositivoEntity);
                 }
 
             }
         }
 
-        dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
-        operacaoRepository.save(dispositivo.getOperacao());
-        parametrizarFaixa(dispositivo.getCor());
+        dispositivoEntity.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
+        operacaoRepository.save(dispositivoEntity.getOperacao());
+        parametrizarFaixa(dispositivoEntity.getCor());
 
-        return dispositivo.getCor();
+        return dispositivoEntity.getCor();
     }
 
     public boolean verificaSeAgendaValida(Agenda agenda, long id) {

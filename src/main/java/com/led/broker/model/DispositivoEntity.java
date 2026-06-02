@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @Builder
 @Document(collection = "dispositivos")
-public class Dispositivo {
+public class DispositivoEntity {
 
     @Id
     private long id;

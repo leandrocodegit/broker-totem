@@ -39,26 +39,26 @@ public class CorService {
     }
 
 
-    public void cancelarComando(Dispositivo dispositivo, String user) {
+    public void cancelarComando(DispositivoEntity dispositivoEntity, String user) {
         logger.warn("Cancelando comando");
-        if (dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
-            setOperacao(dispositivo);
-            operacaoRepository.save(dispositivo.getOperacao());
+        if (dispositivoEntity.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
+            setOperacao(dispositivoEntity);
+            operacaoRepository.save(dispositivoEntity.getOperacao());
             logRepository.save(Log.builder()
                     .key(UUID.randomUUID())
-                    .cliente(dispositivo.getCliente())
+                    .cliente(dispositivoEntity.getCliente())
                     .data(LocalDateTime.now())
                     .usuario(user)
-                    .mensagem(String.format(Comando.TIMER_CANCELADO.value, dispositivo.getId()))
+                    .mensagem(String.format(Comando.TIMER_CANCELADO.value, dispositivoEntity.getId()))
                     .cor(null)
                     .comando(Comando.TIMER_CANCELADO)
-                    .descricao(String.format(Comando.TIMER_CANCELADO.value, dispositivo.getId()))
-                    .id(dispositivo.getId())
+                    .descricao(String.format(Comando.TIMER_CANCELADO.value, dispositivoEntity.getId()))
+                    .id(dispositivoEntity.getId())
                     .build());
-            dispositivoRepository.save(dispositivo);
-            if (dispositivo.getCliente() != null)
-                mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivo.getCliente().getId().toString(), "Atualizar mapa");
-            comandoService.enviardComandoRapido(dispositivo, false, true, false);
+            dispositivoRepository.save(dispositivoEntity);
+            if (dispositivoEntity.getCliente() != null)
+                mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivoEntity.getCliente().getId().toString(), "Atualizar mapa");
+            comandoService.enviardComandoRapido(dispositivoEntity, false, true, false);
         }else{
             logger.warn("Comando já foi cancelado");
         }
@@ -67,68 +67,68 @@ public class CorService {
     public Mono<String> salvarCorTemporizada(UUID idCor, long id, boolean responder, boolean cancelar, String user) {
 
         try {
-            Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
+            Optional<DispositivoEntity> dispositivoOptional = dispositivoRepository.findById(id);
             if (dispositivoOptional.isPresent() && dispositivoOptional.get().isPermiteComando()) {
                 if (responder && dispositivoOptional.get().getConexao().getTipoConexao().equals(TipoConexao.LORA))
                     responder = false;
                 if (cancelar) {
                     logger.warn("Cancelando comando");
-                    Dispositivo dispositivo = dispositivoOptional.get();
-                    if (!dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
+                    DispositivoEntity dispositivoEntity = dispositivoOptional.get();
+                    if (!dispositivoEntity.getOperacao().getModoOperacao().equals(ModoOperacao.TEMPORIZADOR)) {
                         logger.warn("Comando já foi cancelado");
                         return Mono.just("Comando já foi cancelado");
                     }
-                    setOperacao(dispositivo);
-                    operacaoRepository.save(dispositivo.getOperacao());
+                    setOperacao(dispositivoEntity);
+                    operacaoRepository.save(dispositivoEntity.getOperacao());
                     logRepository.save(Log.builder()
                             .key(UUID.randomUUID())
-                            .cliente(dispositivo.getCliente())
+                            .cliente(dispositivoEntity.getCliente())
                             .data(LocalDateTime.now())
                             .usuario(user)
-                            .mensagem(String.format(Comando.TIMER_CANCELADO.value, dispositivo.getId()))
+                            .mensagem(String.format(Comando.TIMER_CANCELADO.value, dispositivoEntity.getId()))
                             .cor(null)
                             .comando(Comando.TIMER_CANCELADO)
-                            .descricao(String.format(Comando.TIMER_CANCELADO.value, dispositivo.getId()))
-                            .id(dispositivo.getId())
+                            .descricao(String.format(Comando.TIMER_CANCELADO.value, dispositivoEntity.getId()))
+                            .id(dispositivoEntity.getId())
                             .build());
-                    dispositivoRepository.save(dispositivo);
-                    if (dispositivo.getCliente() != null)
-                        mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivo.getCliente().getId().toString(), "Atualizar mapa");
-                    return comandoService.enviardComandoRapido(dispositivo, responder, true, false);
+                    dispositivoRepository.save(dispositivoEntity);
+                    if (dispositivoEntity.getCliente() != null)
+                        mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivoEntity.getCliente().getId().toString(), "Atualizar mapa");
+                    return comandoService.enviardComandoRapido(dispositivoEntity, responder, true, false);
                 } else {
                     Optional<Cor> corOptional = corRepository.findById(idCor);
                     if (corOptional.isPresent()) {
-                        Dispositivo dispositivo = dispositivoOptional.get();
+                        DispositivoEntity dispositivoEntity = dispositivoOptional.get();
 
-                        var modoOcorrencia = dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.OCORRENCIA) || dispositivo.getOperacao().getModoOperacao().equals(ModoOperacao.BOTAO);
+                        var modoOcorrencia = dispositivoEntity.getOperacao().getModoOperacao().equals(ModoOperacao.OCORRENCIA) || dispositivoEntity.getOperacao().getModoOperacao().equals(ModoOperacao.BOTAO);
                         // if (modoOcorrencia)
 
-                        dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
-                        dispositivo.getOperacao().setTime(LocalDateTime.now().plusSeconds(corOptional.get().getTime()));
-                        dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
-                        operacaoRepository.save(dispositivo.getOperacao());
-                        dispositivoRepository.save(dispositivo);
-                        dispositivo.setCor(corUtil.parametricarCorDispositivo(corOptional.get(), dispositivo));
-                        TimeUtil.timers.put(dispositivo.getId(), TemporizadorControle.builder()
+                        dispositivoEntity.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
+                        dispositivoEntity.getOperacao().setTime(LocalDateTime.now().plusSeconds(corOptional.get().getTime()));
+                        dispositivoEntity.getOperacao().setCorTemporizador(buscaCor(idCor));
+                        operacaoRepository.save(dispositivoEntity.getOperacao());
+                        dispositivoRepository.save(dispositivoEntity);
+                        dispositivoEntity.setCor(corUtil.parametricarCorDispositivo(corOptional.get(), dispositivoEntity));
+                        TimeUtil.timers.put(dispositivoEntity.getId(), TemporizadorControle.builder()
                                 .timeout(LocalDateTime.now().plusSeconds(corOptional.get().getTime()))
-                                .dispositivo(dispositivo).build());
+                                .dispositivoEntity(dispositivoEntity).build());
                         logRepository.save(Log.builder()
                                 .key(UUID.randomUUID())
-                                .cliente(dispositivo.getCliente())
+                                .cliente(dispositivoEntity.getCliente())
                                 .data(LocalDateTime.now())
                                 .usuario(user)
-                                .mensagem(String.format(Comando.TIMER_CRIADO.value, dispositivo.getId()))
+                                .mensagem(String.format(Comando.TIMER_CRIADO.value, dispositivoEntity.getId()))
                                 .cor(null)
                                 .comando(Comando.TIMER_CRIADO)
-                                .descricao(String.format(Comando.TIMER_CRIADO.value, dispositivo.getId()))
-                                .id(dispositivo.getId())
+                                .descricao(String.format(Comando.TIMER_CRIADO.value, dispositivoEntity.getId()))
+                                .id(dispositivoEntity.getId())
                                 .build());
-                        logger.warn("Temporizador criado para " + dispositivo.getId());
-                        if (dispositivo.getCliente() != null)
-                            mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivo.getCliente().getId().toString(), "Atualizar mapa");
+                        logger.warn("Temporizador criado para " + dispositivoEntity.getId());
+                        if (dispositivoEntity.getCliente() != null)
+                            mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivoEntity.getCliente().getId().toString(), "Atualizar mapa");
                         if (modoOcorrencia)
                             return Mono.just("Atualizado");
-                        return comandoService.enviardComandoRapido(dispositivo, responder, false, false);
+                        return comandoService.enviardComandoRapido(dispositivoEntity, responder, false, false);
                     } else {
                         logger.error("Falha, cor não existe ou não encontrada");
                         return Mono.just("Falha, cor não existe ou não encontrada");
@@ -146,56 +146,56 @@ public class CorService {
 
         try {
 
-            Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
+            Optional<DispositivoEntity> dispositivoOptional = dispositivoRepository.findById(id);
             if (dispositivoOptional.isPresent() && dispositivoOptional.get().isPermiteComando()) {
                 if (cancelar) {
-                    Dispositivo dispositivo = dispositivoOptional.get();
-                    setOperacao(dispositivo);
+                    DispositivoEntity dispositivoEntity = dispositivoOptional.get();
+                    setOperacao(dispositivoEntity);
 
-                    dispositivoRepository.save(dispositivo);
-                    comandoService.enviardComandoRapido(dispositivo, false, true, true);
-                    if (dispositivo.getCliente() != null)
-                        mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivo.getCliente().getId().toString(), "Atualizar mapa");
+                    dispositivoRepository.save(dispositivoEntity);
+                    comandoService.enviardComandoRapido(dispositivoEntity, false, true, true);
+                    if (dispositivoEntity.getCliente() != null)
+                        mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivoEntity.getCliente().getId().toString(), "Atualizar mapa");
                     logRepository.save(Log.builder()
                             .key(UUID.randomUUID())
-                            .cliente(dispositivo.getCliente())
+                            .cliente(dispositivoEntity.getCliente())
                             .data(LocalDateTime.now())
                             .usuario(user)
-                            .mensagem(String.format(Comando.TIMER_CANCELADO.value, dispositivo.getId()))
+                            .mensagem(String.format(Comando.TIMER_CANCELADO.value, dispositivoEntity.getId()))
                             .cor(null)
                             .comando(Comando.TIMER_CANCELADO)
-                            .descricao(String.format(Comando.TIMER_CANCELADO.value, dispositivo.getId()))
-                            .id(dispositivo.getId())
+                            .descricao(String.format(Comando.TIMER_CANCELADO.value, dispositivoEntity.getId()))
+                            .id(dispositivoEntity.getId())
                             .build());
                 } else {
                     Optional<Cor> corOptional = corRepository.findById(idCor);
                     if (corOptional.isPresent()) {
-                        Dispositivo dispositivo = dispositivoOptional.get();
+                        DispositivoEntity dispositivoEntity = dispositivoOptional.get();
 
-                        var modoOcorrencia = dispositivo.getOperacao().equals(ModoOperacao.OCORRENCIA) || dispositivo.getOperacao().equals(ModoOperacao.BOTAO);
+                        var modoOcorrencia = dispositivoEntity.getOperacao().equals(ModoOperacao.OCORRENCIA) || dispositivoEntity.getOperacao().equals(ModoOperacao.BOTAO);
                         if (!modoOcorrencia)
-                            dispositivo.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
-                        dispositivo.getOperacao().setTime(LocalDateTime.now());
-                        dispositivo.getOperacao().setCorTemporizador(buscaCor(idCor));
-                        dispositivoRepository.save(dispositivo);
-                        dispositivo.setCor(corOptional.get());
-                        TimeUtil.timers.put(dispositivo.getId(), TemporizadorControle.builder()
+                            dispositivoEntity.getOperacao().setModoOperacao(ModoOperacao.TEMPORIZADOR);
+                        dispositivoEntity.getOperacao().setTime(LocalDateTime.now());
+                        dispositivoEntity.getOperacao().setCorTemporizador(buscaCor(idCor));
+                        dispositivoRepository.save(dispositivoEntity);
+                        dispositivoEntity.setCor(corOptional.get());
+                        TimeUtil.timers.put(dispositivoEntity.getId(), TemporizadorControle.builder()
                                         .timeout(LocalDateTime.now().plusSeconds(corOptional.get().getTime()))
-                                .dispositivo(dispositivo).build());
+                                .dispositivoEntity(dispositivoEntity).build());
                         if (!modoOcorrencia)
-                            comandoService.enviardComandoRapido(dispositivo, false, false, true);
-                        if (dispositivo.getCliente() != null)
-                            mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivo.getCliente().getId().toString(), "Atualizar mapa");
+                            comandoService.enviardComandoRapido(dispositivoEntity, false, false, true);
+                        if (dispositivoEntity.getCliente() != null)
+                            mqttService.sendRetainedMessage(Topico.MAPA + "/" + dispositivoEntity.getCliente().getId().toString(), "Atualizar mapa");
                         logRepository.save(Log.builder()
                                 .key(UUID.randomUUID())
-                                .cliente(dispositivo.getCliente())
+                                .cliente(dispositivoEntity.getCliente())
                                 .data(LocalDateTime.now())
                                 .usuario(user)
-                                .mensagem(String.format(Comando.TIMER_CRIADO.value, dispositivo.getId()))
+                                .mensagem(String.format(Comando.TIMER_CRIADO.value, dispositivoEntity.getId()))
                                 .cor(null)
                                 .comando(Comando.TIMER_CRIADO)
-                                .descricao(String.format(Comando.TIMER_CRIADO.value, dispositivo.getId()))
-                                .id(dispositivo.getId())
+                                .descricao(String.format(Comando.TIMER_CRIADO.value, dispositivoEntity.getId()))
+                                .id(dispositivoEntity.getId())
                                 .build());
                     }
                 }
@@ -210,13 +210,13 @@ public class CorService {
         }
     }
 
-    public void setOperacao(Dispositivo dispositivo) {
+    public void setOperacao(DispositivoEntity dispositivoEntity) {
         Agenda agenda = null;
 
-        dispositivo.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
+        dispositivoEntity.getOperacao().setModoOperacao(ModoOperacao.DISPOSITIVO);
 
-        if (Boolean.FALSE.equals(dispositivo.isIgnorarAgenda())) {
-            agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(dispositivo.getId());
+        if (Boolean.FALSE.equals(dispositivoEntity.isIgnorarAgenda())) {
+            agenda = agendaDeviceService.buscarAgendaDipositivoPrevistaHoje(dispositivoEntity.getId());
             if (agenda == null) {
                 List<Agenda> agendasParatodosHoje = agendaDeviceService.listaTodosAgendasPrevistaHoje(true);
                 if (!agendasParatodosHoje.isEmpty()) {
@@ -224,8 +224,8 @@ public class CorService {
                 }
             }
             if (agenda != null && agenda.getCor() != null) {
-                dispositivo.getOperacao().setModoOperacao(ModoOperacao.AGENDA);
-                dispositivo.getOperacao().setAgenda(agenda);
+                dispositivoEntity.getOperacao().setModoOperacao(ModoOperacao.AGENDA);
+                dispositivoEntity.getOperacao().setAgenda(agenda);
             }
         }
     }

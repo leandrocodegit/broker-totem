@@ -1,11 +1,7 @@
 package com.led.broker.config;
 
-import com.led.broker.model.Log;
-import com.led.broker.model.constantes.Comando;
-import com.led.broker.model.constantes.Topico;
 import com.led.broker.service.ComandoService;
 import com.led.broker.service.CorService;
-import com.led.broker.service.DispositivoService;
 import com.led.broker.service.MqttService;
 import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,8 +44,8 @@ public class ScheduleConfig {
         List<Long> devicesRemove = new ArrayList<>();
         TimeUtil.timers.values().forEach(device -> {
             if(TimeUtil.isTimeTemporizador(device)) {
-                corService.cancelarComando(device.getDispositivo(), "Sistema");
-                devicesRemove.add(device.getDispositivo().getId());
+                corService.cancelarComando(device.getDispositivoEntity(), "Sistema");
+                devicesRemove.add(device.getDispositivoEntity().getId());
             }
         });
         if(!devicesRemove.isEmpty()){

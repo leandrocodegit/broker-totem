@@ -1,18 +1,16 @@
 package com.led.broker.service;
 
 
-import com.google.gson.Gson;
 import com.led.broker.controller.request.DispositivoRequest;
+import com.led.broker.integracao.model.Dispositivo;
+import com.led.broker.integracao.rest.DispositivoRest;
 import com.led.broker.model.*;
 import com.led.broker.model.constantes.*;
 import com.led.broker.repository.CorRepository;
 import com.led.broker.repository.DispositivoRepository;
 import com.led.broker.repository.LogRepository;
-import com.led.broker.repository.OperacaoRepository;
 import com.led.broker.util.ComandoFormater;
-import com.led.broker.util.ConfiguracaoUtil;
 import com.led.broker.util.CorUtil;
-import com.led.broker.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +18,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
-
-import static com.led.broker.model.constantes.Comando.ACEITO;
 
 @Service
 @RequiredArgsConstructor
@@ -33,24 +28,24 @@ public class ComandoService {
 
     private static final Logger logger = LoggerFactory.getLogger(ComandoService.class);
     private final MqttService mqttService;
-    private final DispositivoRepository dispositivoRepository;
+    private final DispositivoRest dispositivoRest;
     private final CorRepository corRepository;
     private final LogRepository logRepository;
     private final CorUtil corUtil;
-    public static Map<Long, MonoSink<String>> streams = new HashMap<>();
+    public static Map<UUID, MonoSink<String>> streams = new HashMap<>();
     public static Map<String, UUID> clientes = new HashMap<>();
 
 
-    public Mono<String> createMono(long id) {
+    public Mono<String> createMono(UUID id) {
         return Mono.create(sink -> {
             streams.put(id, sink);
         });
     }
 
-    public Mono<String> enviardComandoTeste(long id) {
+    public Mono<String> enviardComandoTeste(UUID id) {
 
         logger.warn("Comando de teste: " + id);
-        Dispositivo dispositivo = buscarPorId(id);
+        Dispositivo dispositivoEntity = buscarPorId(id);
 
         Mono<String> mono = createMono(id);
 
@@ -61,17 +56,17 @@ public class ComandoService {
         return mono;
     }
 
-    public void enviardComandoSincronizarId(long id, int topico) {
+    public void enviardComandoSincronizarId(UUID id, int topico) {
 
         if (topico <= 1000) {
-            var dispositivo = dispositivoRepository.findAllByIdAndTopico(id, topico);
-            if (!dispositivo.isPresent()) {
+            var dispositivo = buscarPorId(id);
+            if (dispositivo != null) {
                 mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + topico, ComandoFormater.gerarConfiguracaoId(id));
             }
         }
     }
 
-    public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao) {
+    public Mono<String> enviardComandoSincronizar(UUID id, boolean responder, TipoConfiguracao tipoConfiguracao) {
         return enviardComandoSincronizar(id, responder, tipoConfiguracao, false);
     }
 
@@ -79,19 +74,18 @@ public class ComandoService {
         var topico = Topico.DEVICE_RECEIVE + request.getId();
         mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigoCor(request));
     }
-        public Mono<String> enviardComandoSincronizar(long id, boolean responder, TipoConfiguracao tipoConfiguracao, boolean forcarVibracao) {
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
+        public Mono<String> enviardComandoSincronizar(UUID id, boolean responder, TipoConfiguracao tipoConfiguracao, boolean forcarVibracao) {
+        Dispositivo dispositivo = buscarPorId(id);
 
-        if (!dispositivoOptional.isPresent()) {
+        if (dispositivo != null) {
             logger.error(id + " não encontrado ou inativo ");
             return Mono.just(id + " não encontrado ou inativo ");
         }
 
-        if (dispositivoOptional.get().getConexao().getStatus().equals(StatusConexao.Offline) && !dispositivoOptional.get().getConexao().getTipoConexao().equals(TipoConexao.LORA)) {
+        if (dispositivo.getConexao().getStatus().equals(StatusConexao.Offline)) {
             return Mono.just("Dispositivo " + id + " offline ");
         }
 
-        Dispositivo dispositivo = dispositivoOptional.get();
         var topico = Topico.DEVICE_RECEIVE + dispositivo.getId();
         var isLora = dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA);
         if (dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA))
@@ -117,28 +111,17 @@ public class ComandoService {
             }
             return mono;
         }
-        if (Stream.of(TipoConfiguracao.LORA_WAN, TipoConfiguracao.LORA_WAN_PARAM, TipoConfiguracao.LORA_WAN_JOIN, TipoConfiguracao.LORA_WAN_SEND, TipoConfiguracao.LORA_WAN_RESET).anyMatch(tipo -> tipo.equals(tipoConfiguracao))) {
-            if (dispositivo.getConexao().getHabilitarLoraWan() == null || dispositivo.getConexao().getHabilitarLoraWan() == Boolean.FALSE)
-                return Mono.just("Erro, LoraWan não está habilitado");
-            if (tipoConfiguracao.equals(TipoConfiguracao.LORA_WAN) && dispositivo.getConexao().getClasse() == null)
-                return Mono.just("Erro, Classe LoraWan é obrigatória");
-            mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigoLora(dispositivo, true, tipoConfiguracao), dispositivo.getConexao());
-            if (isLora) {
-                streams.remove(dispositivo.getId());
-                return mono.just("");
-            }
-            return mono;
-        }
+
 
         if (dispositivo.isAtivo()) {
             if (tipoConfiguracao.equals(TipoConfiguracao.LED) || tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART)) {
                 dispositivo.setCor(corUtil.repararCor(dispositivo));
             }
             if (forcarVibracao && !isLora && tipoConfiguracao.equals(TipoConfiguracao.LED)) {
-                mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigo(dispositivo, responder, TipoConfiguracao.VIBRACAO), dispositivo.getConexao());
+                mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigo(dispositivo, responder, TipoConfiguracao.VIBRACAO), dispositivoEntity.getConexao());
             }
-            if (dispositivo.getCor() != null || (!tipoConfiguracao.equals(TipoConfiguracao.LED) && !tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART))) {
-                mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigo(dispositivo, responder, tipoConfiguracao), dispositivo.getConexao());
+            if (dispositivoEntity.getCor() != null || (!tipoConfiguracao.equals(TipoConfiguracao.LED) && !tipoConfiguracao.equals(TipoConfiguracao.LED_RESTART))) {
+                mqttService.sendRetainedMessage(topico, ComandoFormater.gerarCodigo(dispositivo, responder, tipoConfiguracao), dispositivoEntity.getConexao());
                 if (!responder) {
                     return mono.just("ok");
                 }
@@ -149,14 +132,14 @@ public class ComandoService {
 
         }
         if (isLora) {
-            streams.remove(dispositivo.getId());
+            streams.remove(dispositivoEntity.getId());
             return mono.just("Comando enviado via LoraWan");
         }
         return mono;
     }
 
-    public Mono<String> enviardComandoUpdateFirmware(long id, String host) {
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
+    public Mono<String> enviardComandoUpdateFirmware(UUID id, String host) {
+        Optional<DispositivoEntity> dispositivoOptional = dispositivoRepository.findById(id);
 
 
         if (!dispositivoOptional.isPresent()) {
@@ -164,51 +147,45 @@ public class ComandoService {
             return Mono.just(id + " não encontrado ou inativo ");
         }
 
-        Dispositivo dispositivo = dispositivoOptional.get();
+        DispositivoEntity dispositivoEntity = dispositivoOptional.get();
 
-        var isLora = dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA);
+        var isLora = dispositivoEntity.getConexao().getTipoConexao().equals(TipoConexao.LORA);
         if (isLora) {
-            streams.remove(dispositivo.getId());
+            streams.remove(dispositivoEntity.getId());
             return Mono.just("Opção não disponivel para conexão LoraWan");
         }
         Mono<String> mono = createMono(id);
 
-           mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoFirmware(host + dispositivo.getId()));
+           mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivoEntity.getId(), ComandoFormater.gerarCodigoFirmware(host + dispositivoEntity.getId()));
         return mono;
     }
 
-    public Mono<String> enviardComandoRapido(Dispositivo dispositivo, boolean responder, boolean cancelar, boolean interno) {
-
-        var isLora = dispositivo.getConexao().getTipoConexao().equals(TipoConexao.LORA);
-        if (isLora) {
-            streams.remove(dispositivo.getId());
-            //  return Mono.just("Opção não disponivel para conexão LoraWan");
-        }
+    public Mono<String> enviardComandoRapido(DispositivoEntity dispositivoEntity, boolean responder, boolean cancelar, boolean interno) {
 
         Mono<String> mono = Mono.empty();
 
         if (!interno) {
-            mono = createMono(dispositivo.getId());
+            mono = createMono(dispositivoEntity.getId());
         }
 
         if (cancelar) {
-            logger.warn("Cancelar comando rápido: " + dispositivo.getId());
-            dispositivo.setCor(corUtil.repararCor(buscarPorId(dispositivo.getId())));
+            logger.warn("Cancelar comando rápido: " + dispositivoEntity.getId());
+            dispositivoEntity.setCor(corUtil.repararCor(buscarPorId(dispositivoEntity.getId())));
         } else {
-            dispositivo.setCor(corUtil.parametricarCorDispositivo(dispositivo.getCor(), dispositivo));
+            dispositivoEntity.setCor(corUtil.parametricarCorDispositivo(dispositivoEntity.getCor(), dispositivoEntity));
         }
 
         if (responder && isLora)
             responder = false;
 
-        if (dispositivo.isAtivo() && dispositivo.getCor() != null) {
-            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivo.getId(), ComandoFormater.gerarCodigoCor(dispositivo, responder, TipoConfiguracao.LED), dispositivo.getConexao());
+        if (dispositivoEntity.isAtivo() && dispositivoEntity.getCor() != null) {
+            mqttService.sendRetainedMessage(Topico.DEVICE_RECEIVE + dispositivoEntity.getId(), ComandoFormater.gerarCodigoCor(dispositivoEntity, responder, TipoConfiguracao.LED), dispositivoEntity.getConexao());
         }
 
-        logger.warn("Comando rápido criado: " + dispositivo.getId());
+        logger.warn("Comando rápido criado: " + dispositivoEntity.getId());
 
         if (isLora) {
-            streams.remove(dispositivo.getId());
+            streams.remove(dispositivoEntity.getId());
             return Mono.just("Opção de resposta não disponivel para LoraWan");
         }
         return mono;
@@ -223,10 +200,10 @@ public class ComandoService {
     public String enviarComandoTodos(UUID clienteId, boolean responder, String user, UUID cor, TipoConfiguracao tipoConfiguracao, boolean interno) {
 
         try {
-            List<Dispositivo> dispositivos = listaTodosDispositivos(clienteId, tipoConfiguracao, cor);
-            logger.warn("Comando enviado para todos: " + dispositivos.size());
+            List<DispositivoEntity> dispositivoEntities = listaTodosDispositivos(clienteId, tipoConfiguracao, cor);
+            logger.warn("Comando enviado para todos: " + dispositivoEntities.size());
 
-            if (!dispositivos.isEmpty()) {
+            if (!dispositivoEntities.isEmpty()) {
                 if (!interno)
                     logRepository.save(Log.builder()
                             .cliente(Cliente.builder().id(clienteId).principal(false).build())
@@ -240,7 +217,7 @@ public class ComandoService {
                             .id(0)
                             .build());
 
-                dispositivos.forEach(device -> {
+                dispositivoEntities.forEach(device -> {
                     if (device.isAtivo()) {
                         device.setCor(corUtil.repararCor(device));
                         if (device.getCliente() != null)
@@ -269,22 +246,15 @@ public class ComandoService {
         }
     }
 
-    private Dispositivo buscarPorId(long id) {
-
-        Optional<Dispositivo> dispositivoOptional = dispositivoRepository.findById(id);
-        if (dispositivoOptional.isPresent()) {
-            return dispositivoOptional.get();
-        } else if (ComandoService.streams.containsKey(id)) {
-            ComandoService.streams.remove(id).success(id + " não encontrado ou inativo ");
-        }
-        return null;
+    private Dispositivo buscarPorId(UUID id) {
+        return dispositivoRest.buscarDispositivo(id);
     }
 
-    private List<Dispositivo> listaTodosDispositivos(UUID clienteId, TipoConfiguracao tipoConfiguracao, UUID cor) {
-        if (tipoConfiguracao.equals(TipoConfiguracao.LED))
-            return dispositivoRepository.findAllByAtivo(clienteId, true);
-        else if (tipoConfiguracao.equals(TipoConfiguracao.VIBRACAO) && cor != null)
-            return dispositivoRepository.findAllByCorVibracao(cor.toString());
+    private List<DispositivoEntity> listaTodosDispositivos(UUID clienteId, TipoConfiguracao tipoConfiguracao, UUID cor) {
+//        if (tipoConfiguracao.equals(TipoConfiguracao.LED))
+//            return dispositivoRepository.findAllByAtivo(clienteId, true);
+//        else if (tipoConfiguracao.equals(TipoConfiguracao.VIBRACAO) && cor != null)
+//            return dispositivoRepository.findAllByCorVibracao(cor.toString());
         return Collections.emptyList();
     }
 

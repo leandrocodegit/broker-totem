@@ -1,7 +1,6 @@
 package com.led.broker.controller;
 
 import com.led.broker.controller.request.DispositivoRequest;
-import com.led.broker.model.Dispositivo;
 import com.led.broker.model.Log;
 import com.led.broker.model.constantes.Comando;
 import com.led.broker.model.constantes.TipoConfiguracao;
